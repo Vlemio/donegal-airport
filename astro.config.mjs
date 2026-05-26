@@ -9,7 +9,7 @@ export default defineConfig({
   // Absolute URL of the deployed site. Used by Astro.site so OG /
   // canonical / sitemap tags can output fully-qualified URLs. Update
   // when the airport's real domain is wired up.
-  site: 'https://donegal-airport.vercel.app',
+  site: 'https://donegal-airport-errigal.vercel.app',
 
   // English is the default locale and renders WITHOUT a /en/ prefix
   // so the URL the average traveller types stays clean. Irish lives
