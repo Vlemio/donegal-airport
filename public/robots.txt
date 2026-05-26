@@ -1,0 +1,7 @@
+# Block all crawlers while the site lives on the vercel.app
+# preview domain so it doesn't compete in Google with the real
+# airport site (donegalairport.ie). Remove this `Disallow: /` AND
+# the noindex meta in BaseLayout.astro the day we move to the real
+# domain.
+User-agent: *
+Disallow: /

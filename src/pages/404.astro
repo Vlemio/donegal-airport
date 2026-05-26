@@ -1,0 +1,33 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const title = "Off the runway · Donegal Airport";
+const description = "This page doesn't exist. Let's get you back on course.";
+---
+
+<BaseLayout title={title} description={description}>
+  <section class="mx-auto flex min-h-[calc(100vh-var(--header-h))] max-w-3xl flex-col items-center justify-center px-6 py-32 text-center">
+    <p class="font-mono text-xs uppercase tracking-[0.3em] text-sand">404</p>
+    <h1 class="mt-6 font-display text-5xl leading-[1.05] sm:text-6xl">
+      You've drifted off the runway.
+    </h1>
+    <p class="mt-6 max-w-xl text-base text-mute">
+      The page you were looking for didn't make it onto the schedule. Let's get
+      you back on a flight path.
+    </p>
+    <div class="mt-10 flex flex-wrap items-center justify-center gap-3">
+      <a
+        href="/"
+        class="rounded-full bg-atlantic px-7 py-3 text-sm font-semibold uppercase tracking-[0.15em] text-atlantic-ink transition-colors hover:bg-atlantic-bright"
+      >
+        Back to home
+      </a>
+      <a
+        href="/flights"
+        class="rounded-full border border-atlantic/40 px-7 py-3 text-sm font-semibold uppercase tracking-[0.15em] text-atlantic transition-colors hover:bg-atlantic hover:text-atlantic-ink"
+      >
+        Today's flights
+      </a>
+    </div>
+  </section>
+</BaseLayout>

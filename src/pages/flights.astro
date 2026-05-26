@@ -1,0 +1,26 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const title = "Flights · Donegal Airport";
+const description = "Live arrivals and departures, full timetable, carrier information and check-in for Donegal Airport (CFN).";
+---
+
+<BaseLayout title={title} description={description} pageTheme="ops-theme">
+  <section class="mx-auto max-w-7xl px-6 pb-24 pt-40">
+    <p class="text-xs uppercase tracking-[0.28em] text-atlantic">Flights</p>
+    <h1 class="mt-3 max-w-3xl font-display text-5xl leading-[1.05] sm:text-6xl">
+      Live arrivals & departures.
+    </h1>
+    <p class="mt-6 max-w-2xl text-base leading-relaxed text-mute sm:text-lg">
+      Aer Lingus Regional to Dublin · Loganair to Glasgow (weekends).
+      Full timetable, baggage allowances and gate cut-offs.
+    </p>
+
+    <div data-animate="fade-up" class="mt-12 rounded-2xl border border-dashed border-line bg-surface-hi p-10 text-center">
+      <p class="font-mono text-xs uppercase tracking-[0.22em] text-mute">Coming next</p>
+      <p class="mt-3 text-base text-ink">
+        Live board, timetable by carrier, baggage rules, student fare.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

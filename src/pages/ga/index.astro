@@ -1,0 +1,33 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const title = "Aerfort Dhún na nGall · Á dhearadh";
+const description = "Tá leagan Gaeilge den suíomh á chruthú againn faoi láthair.";
+---
+
+<BaseLayout title={title} description={description}>
+  <section class="mx-auto flex min-h-[calc(100vh-var(--header-h))] max-w-3xl flex-col items-center justify-center px-6 py-32 text-center">
+    <p class="font-mono text-xs uppercase tracking-[0.3em] text-sand">
+      Gaeilge · Coming soon
+    </p>
+    <h1 class="mt-6 font-display text-5xl leading-[1.05] sm:text-6xl">
+      Fáilte. Á dhearadh.
+    </h1>
+    <p class="mt-6 max-w-xl text-base text-mute">
+      Tá leagan iomlán Gaeilge de shuíomh Aerfort Dhún na nGall á dhearadh
+      againn. Idir an dá linn, féach an leagan Béarla.
+    </p>
+    <p class="mt-2 max-w-xl text-base text-mute">
+      We're building the full Irish-language version of the Donegal Airport
+      site. In the meantime, browse the English version.
+    </p>
+    <div class="mt-10">
+      <a
+        href="/"
+        class="rounded-full bg-atlantic px-7 py-3 text-sm font-semibold uppercase tracking-[0.15em] text-atlantic-ink transition-colors hover:bg-atlantic-bright"
+      >
+        English version
+      </a>
+    </div>
+  </section>
+</BaseLayout>

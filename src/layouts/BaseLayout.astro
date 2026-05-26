@@ -1,0 +1,164 @@
+---
+import "../styles/global.css";
+import { ClientRouter } from "astro:transitions";
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { getLocale, altLocalePath, t, type Locale } from "../i18n";
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Optional theme class for <html>, e.g. "ops-theme" for /flights. */
+  pageTheme?: string;
+  /** Path (relative to /public) of the Open Graph image. */
+  ogImage?: string;
+}
+
+const {
+  title,
+  description = "",
+  pageTheme = "",
+  ogImage = "/og-default.png",
+} = Astro.props;
+
+const locale: Locale = getLocale(Astro.url.pathname);
+const altPath = altLocalePath(Astro.url.pathname, locale);
+const altLocale: Locale = locale === "en" ? "ga" : "en";
+
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const ogImageUrl = new URL(ogImage, Astro.site).href;
+const isHome = Astro.url.pathname === "/" || Astro.url.pathname === "/ga/";
+
+const siteName = t("site.name", locale);
+const siteDescription = description || t("site.description", locale);
+
+// JSON-LD: Airport schema on every page, plus a WebSite block on
+// the home page so Google can show CFN in its knowledge panel.
+// Geo and ICAO/IATA from the airport's published Aerodrome Manual.
+const airportSchema = {
+  "@context": "https://schema.org",
+  "@type": "Airport",
+  name: siteName,
+  alternateName: "Carrickfinn Airport",
+  iataCode: "CFN",
+  icaoCode: "EIDL",
+  url: Astro.site?.href ?? "https://donegal-airport.vercel.app/",
+  logo: new URL("/favicon.png", Astro.site).href,
+  image: ogImageUrl,
+  description: siteDescription,
+  telephone: "+353749548284",
+  email: "info@donegalairport.ie",
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "Carrickfinn, Kincasslagh",
+    addressLocality: "Letterkenny",
+    addressRegion: "Co. Donegal",
+    postalCode: "F94 X2RH",
+    addressCountry: "IE",
+  },
+  geo: {
+    "@type": "GeoCoordinates",
+    latitude: 55.044192,
+    longitude: -8.340833,
+  },
+  sameAs: [
+    "https://www.facebook.com/donegalairport",
+    "https://www.instagram.com/donegalairport",
+    "https://twitter.com/DonegalA",
+    "https://www.linkedin.com/company/donegal-airport",
+    "https://www.youtube.com/@donegalairport89",
+    "https://www.tiktok.com/@donegalairport",
+  ],
+};
+
+// Map our internal locale codes to the BCP 47 codes browsers and
+// search engines expect in hreflang / og:locale.
+const localeTag: Record<Locale, string> = {
+  en: "en-IE",
+  ga: "ga-IE",
+};
+---
+
+<!doctype html>
+<html lang={locale === "ga" ? "ga" : "en"} class={pageTheme}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    {siteDescription && <meta name="description" content={siteDescription} />}
+    <link rel="canonical" href={canonical} />
+
+    {/* hreflang pairs so Google knows the two language versions are
+        equivalents of each other. */}
+    <link
+      rel="alternate"
+      hreflang="en-IE"
+      href={new URL(locale === "en" ? Astro.url.pathname : altPath, Astro.site).href}
+    />
+    <link
+      rel="alternate"
+      hreflang="ga-IE"
+      href={new URL(locale === "ga" ? Astro.url.pathname : altPath, Astro.site).href}
+    />
+    <link rel="alternate" hreflang="x-default" href={Astro.site?.href ?? "/"} />
+
+    {/* PITCH-PREVIEW: block indexing while the site lives on the
+        vercel.app domain so it doesn't compete in Google with the
+        real airport site (donegalairport.ie). Pair with the
+        `Disallow: /` in public/robots.txt. Remove this tag AND
+        update robots.txt the day we move to the real domain. */}
+    <meta name="robots" content="noindex, nofollow" />
+
+    {/* Open Graph — used by WhatsApp, Facebook, LinkedIn, iMessage */}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={siteName} />
+    <meta property="og:title" content={title} />
+    {siteDescription && <meta property="og:description" content={siteDescription} />}
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:locale" content={localeTag[locale]} />
+    <meta property="og:locale:alternate" content={localeTag[altLocale]} />
+
+    {/* Twitter / X */}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    {siteDescription && <meta name="twitter:description" content={siteDescription} />}
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    {/* Structured data for Google */}
+    <script type="application/ld+json" set:html={JSON.stringify(airportSchema)} />
+    {
+      isHome && (
+        <script
+          type="application/ld+json"
+          set:html={JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            url: Astro.site?.href ?? "https://donegal-airport.vercel.app/",
+            name: siteName,
+            inLanguage: localeTag[locale],
+          })}
+        />
+      )
+    }
+
+    {/* No-JS fallback: undo the [data-animate] opacity:0 from
+        global.css so users without JavaScript still see content. */}
+    <noscript>
+      <style>[data-animate] { opacity: 1 !important; }</style>
+    </noscript>
+    <ClientRouter />
+  </head>
+  <body class="flex min-h-screen flex-col bg-surface text-ink">
+    <Header locale={locale} />
+    <main class="flex-1">
+      <slot />
+    </main>
+    <Footer locale={locale} />
+    <script>
+      import "../scripts/animations.ts";
+    </script>
+  </body>
+</html>

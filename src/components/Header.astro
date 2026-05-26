@@ -1,0 +1,128 @@
+---
+import { getLocale, altLocalePath, t, type Locale } from "../i18n";
+
+interface Props {
+  locale?: Locale;
+}
+
+const locale: Locale = Astro.props.locale ?? getLocale(Astro.url.pathname);
+const altPath = altLocalePath(Astro.url.pathname, locale);
+const prefix = locale === "ga" ? "/ga" : "";
+
+const nav = [
+  { key: "home", href: `${prefix || "/"}` },
+  { key: "flights", href: `${prefix}/flights` },
+  { key: "plan", href: `${prefix}/plan` },
+  { key: "discover", href: `${prefix}/discover` },
+  { key: "about", href: `${prefix}/about` },
+  { key: "pilots", href: `${prefix}/pilots` },
+  { key: "contact", href: `${prefix}/contact` },
+] as const;
+
+const { pathname } = Astro.url;
+const normalise = (p: string) => (p.endsWith("/") && p.length > 1 ? p.slice(0, -1) : p);
+const isActive = (href: string) => {
+  const a = normalise(href);
+  const b = normalise(pathname);
+  if (a === "/" || a === "/ga") return b === a;
+  return b.startsWith(a);
+};
+
+const switchToLabel = t("languageToggle.switchTo", locale);
+---
+
+<header
+  data-header
+  class="fixed inset-x-0 top-0 z-50 transition-colors duration-300"
+>
+  <div
+    class="mx-auto flex h-[var(--header-h)] max-w-7xl items-center justify-between px-6"
+  >
+    <a href={prefix || "/"} class="relative z-50 flex flex-col leading-none">
+      <span class="font-display text-2xl font-semibold text-ink">
+        {t("site.name", locale)}
+      </span>
+      <span class="mt-1 text-[0.62rem] uppercase tracking-[0.26em] text-atlantic">
+        CFN · Carrickfinn · Co. Donegal
+      </span>
+    </a>
+
+    <nav class="hidden items-center gap-6 lg:flex">
+      {
+        nav.map((item) => (
+          <a
+            href={item.href}
+            class:list={[
+              "text-sm tracking-wide transition-colors duration-200 hover:text-atlantic",
+              isActive(item.href) ? "text-atlantic" : "text-ink/75",
+            ]}
+          >
+            {t(`nav.${item.key}` as any, locale)}
+          </a>
+        ))
+      }
+    </nav>
+
+    <div class="hidden items-center gap-3 lg:flex">
+      <a
+        href={altPath}
+        data-lang-toggle
+        class="rounded-full border border-atlantic/40 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-atlantic transition-all duration-200 hover:bg-atlantic hover:text-atlantic-ink"
+        aria-label={`Switch to ${switchToLabel}`}
+      >
+        {switchToLabel}
+      </a>
+    </div>
+
+    <button
+      data-nav-toggle
+      type="button"
+      aria-expanded="false"
+      aria-controls="mobile-nav"
+      aria-label="Open menu"
+      class="relative z-50 text-ink lg:hidden"
+    >
+      <svg
+        width="30"
+        height="30"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.6"
+        stroke-linecap="round"
+      >
+        <line x1="3" y1="7" x2="21" y2="7"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="17" x2="21" y2="17"></line>
+      </svg>
+    </button>
+  </div>
+
+  <div
+    id="mobile-nav"
+    data-mobile-nav
+    class="fixed inset-0 z-40 translate-x-full bg-surface transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:hidden"
+  >
+    <nav class="flex h-full flex-col items-center justify-center gap-5">
+      {
+        nav.map((item) => (
+          <a
+            href={item.href}
+            class:list={[
+              "font-display text-3xl transition-colors hover:text-atlantic",
+              isActive(item.href) ? "text-atlantic" : "text-ink",
+            ]}
+          >
+            {t(`nav.${item.key}` as any, locale)}
+          </a>
+        ))
+      }
+      <a
+        href={altPath}
+        class="mt-4 rounded-full border border-atlantic/40 px-6 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-atlantic"
+      >
+        {switchToLabel}
+      </a>
+    </nav>
+  </div>
+</header>

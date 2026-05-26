@@ -1,0 +1,143 @@
+---
+import { t, type Locale, getLocale } from "../i18n";
+
+interface Props {
+  locale?: Locale;
+}
+
+const locale: Locale = Astro.props.locale ?? getLocale(Astro.url.pathname);
+const prefix = locale === "ga" ? "/ga" : "";
+const year = new Date().getFullYear();
+
+const nav = [
+  { key: "home", href: `${prefix || "/"}` },
+  { key: "flights", href: `${prefix}/flights` },
+  { key: "plan", href: `${prefix}/plan` },
+  { key: "discover", href: `${prefix}/discover` },
+  { key: "about", href: `${prefix}/about` },
+  { key: "pilots", href: `${prefix}/pilots` },
+  { key: "contact", href: `${prefix}/contact` },
+] as const;
+
+const socials = [
+  { label: "Facebook", href: "https://www.facebook.com/donegalairport" },
+  { label: "Instagram", href: "https://www.instagram.com/donegalairport" },
+  { label: "X · @DonegalA", href: "https://twitter.com/DonegalA" },
+  { label: "LinkedIn", href: "https://www.linkedin.com/company/donegal-airport" },
+  { label: "YouTube", href: "https://www.youtube.com/@donegalairport89" },
+  { label: "TikTok", href: "https://www.tiktok.com/@donegalairport" },
+];
+---
+
+<footer
+  data-footer
+  class="border-t border-line bg-surface text-ink"
+>
+  <div class="mx-auto max-w-7xl px-6 py-20">
+    <div class="grid gap-12 md:grid-cols-4">
+      <div data-animate="fade-up" class="md:col-span-2">
+        <p class="font-display text-3xl">
+          {t("site.name", locale)}
+        </p>
+        <p class="mt-4 max-w-md text-sm leading-relaxed text-mute">
+          {t("site.description", locale)}
+        </p>
+        <p class="mt-6 text-[0.7rem] uppercase tracking-[0.22em] text-sand">
+          IATA · CFN &nbsp;·&nbsp; ICAO · EIDL
+        </p>
+      </div>
+
+      <div data-animate="fade-up" data-animate-delay="0.1">
+        <p class="text-xs uppercase tracking-[0.24em] text-sand">
+          {t("footer.visit", locale)}
+        </p>
+        <address class="mt-4 text-sm not-italic leading-relaxed text-mute">
+          Carrickfinn, Kincasslagh<br />
+          Letterkenny, Co. Donegal<br />
+          F94 X2RH, Ireland
+        </address>
+        <p class="mt-4 text-sm">
+          <a
+            href="tel:+353749548284"
+            class="text-ink transition-colors hover:text-sand"
+          >
+            +353 (0)74 9548284
+          </a>
+        </p>
+        <p class="mt-1 text-sm">
+          <a
+            href="mailto:info@donegalairport.ie"
+            class="text-ink transition-colors hover:text-sand"
+          >
+            info@donegalairport.ie
+          </a>
+        </p>
+      </div>
+
+      <div data-animate="fade-up" data-animate-delay="0.2">
+        <p class="text-xs uppercase tracking-[0.24em] text-sand">
+          {t("footer.explore", locale)}
+        </p>
+        <ul class="mt-4 space-y-2.5 text-sm">
+          {
+            nav.map((item) => (
+              <li>
+                <a
+                  href={item.href}
+                  class="text-mute transition-colors hover:text-sand"
+                >
+                  {t(`nav.${item.key}` as any, locale)}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-14 grid gap-6 border-t border-line pt-8 sm:grid-cols-2">
+      <div>
+        <p class="text-xs uppercase tracking-[0.24em] text-sand">
+          {t("footer.follow", locale)}
+        </p>
+        <ul class="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs">
+          {
+            socials.map((s) => (
+              <li>
+                <a
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener"
+                  class="text-mute transition-colors hover:text-sand"
+                >
+                  {s.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+
+      <div class="sm:text-right">
+        <p class="text-xs uppercase tracking-[0.24em] text-sand">
+          {t("footer.policies", locale)}
+        </p>
+        <ul class="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs sm:justify-end">
+          <li><a href="#" class="text-mute hover:text-sand">Privacy</a></li>
+          <li><a href="#" class="text-mute hover:text-sand">Quality (ISO 9001)</a></li>
+          <li><a href="#" class="text-mute hover:text-sand">Safety</a></li>
+          <li><a href="#" class="text-mute hover:text-sand">Security</a></li>
+          <li><a href="#" class="text-mute hover:text-sand">Environmental</a></li>
+          <li><a href="#" class="text-mute hover:text-sand">Ráiteas Beartas Teanga</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div
+      class="mt-10 flex flex-col gap-2 text-xs text-mute sm:flex-row sm:items-center sm:justify-between"
+    >
+      <p>© {year} Donegal Airport. {t("footer.rights", locale)}</p>
+      <p>Carrickfinn · Co. Donegal · Ireland</p>
+    </div>
+  </div>
+</footer>

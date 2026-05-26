@@ -1,0 +1,25 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const title = "Plan your journey · Donegal Airport";
+const description = "Getting here, parking, car hire, taxis, accessibility (PRM) and security at Donegal Airport (CFN).";
+---
+
+<BaseLayout title={title} description={description}>
+  <section class="mx-auto max-w-7xl px-6 pb-24 pt-40">
+    <p class="text-xs uppercase tracking-[0.28em] text-atlantic">Plan your journey</p>
+    <h1 class="mt-3 max-w-3xl font-display text-5xl leading-[1.05] sm:text-6xl">
+      Everything you need before you fly.
+    </h1>
+    <p class="mt-6 max-w-2xl text-base leading-relaxed text-mute sm:text-lg">
+      Getting here, parking, transport, special assistance and security in one place.
+    </p>
+
+    <div data-animate="fade-up" class="mt-12 rounded-2xl border border-dashed border-line bg-surface-hi p-10 text-center">
+      <p class="font-mono text-xs uppercase tracking-[0.22em] text-mute">Coming next</p>
+      <p class="mt-3 text-base text-ink">
+        Anchored sections: Getting here · Parking · Car hire · Taxis · PRM · Security · At the airport.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

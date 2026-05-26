@@ -1,0 +1,26 @@
+{
+  "site": {
+    "name": "Aerfort Dhún na nGall",
+    "tagline": "An rúidbhealach is suaithinsí ar domhan",
+    "description": "Aerfort Dhún na nGall (CFN) — an doras isteach go Bealach Fhiáin an Atlantaigh."
+  },
+  "nav": {
+    "home": "Baile",
+    "flights": "Eitiltí",
+    "plan": "Pleanáil do thuras",
+    "discover": "Faigh amach Dún na nGall",
+    "about": "Eolas",
+    "pilots": "Píolótaí & ATC",
+    "contact": "Teagmháil"
+  },
+  "footer": {
+    "visit": "Tar ar cuairt",
+    "explore": "Iniúch",
+    "follow": "Lean muid",
+    "rights": "Gach ceart ar cosaint.",
+    "policies": "Beartais"
+  },
+  "languageToggle": {
+    "switchTo": "English"
+  }
+}

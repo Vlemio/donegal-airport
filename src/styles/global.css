@@ -1,0 +1,189 @@
+@import "tailwindcss";
+@import "@fontsource-variable/fraunces";
+@import "@fontsource-variable/inter";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+@import "@fontsource/ibm-plex-mono/600.css";
+
+/*
+  ============================================================
+  THEME — "Atlantic Daylight"
+  Donegal Airport (CFN). Light, editorial, photo-friendly.
+  Deep atlantic blue accent + sand-gold highlight on a warm
+  cream/bone base. Carbon body text for clean WCAG contrast.
+  ============================================================
+*/
+@theme {
+  /* Typefaces */
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Fraunces Variable", ui-serif, Georgia, serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* Surfaces — cream / bone, lightest to slightly deeper */
+  --color-surface: #f6f1e7;
+  --color-surface-hi: #ffffff;
+  --color-surface-lo: #ece4d2;
+
+  /* Text — carbon on cream, ample contrast */
+  --color-ink: #11202d;
+  --color-mute: #4a5560;
+
+  /* Accent — deep atlantic blue (brand) */
+  --color-atlantic: #1e3a5f;
+  --color-atlantic-bright: #2a5380;
+  --color-atlantic-ink: #f6f1e7;
+
+  /* Highlight — sand gold for marker accents, awards, beach */
+  --color-sand: #c9a66b;
+  --color-sand-bright: #d8b67c;
+  --color-sand-ink: #1c1208;
+
+  /* Hairlines and borders */
+  --color-line: rgba(17, 32, 45, 0.12);
+
+  /* Status badges (flights live board) — calm, not loud */
+  --color-status-ontime: #2f6b3a;
+  --color-status-delay: #b87333;
+  --color-status-cancel: #983a2c;
+
+  /* Layout — fixed header height. Sections that must fill exactly
+     one screen below the header use calc(100vh - var(--header-h)). */
+  --header-h: 5.5rem;
+}
+
+@layer base {
+  /* Lenis drives smooth scrolling, so native smooth scroll is off.
+     overflow-anchor: none stops the browser's scroll-anchoring from
+     fighting Lenis when above-the-viewport content finishes loading
+     (the "scroll jumps back" stutter on cold loads). */
+  html {
+    scroll-behavior: auto;
+    overflow-anchor: none;
+    background-color: var(--color-surface);
+  }
+
+  body {
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    line-height: 1.08;
+    letter-spacing: -0.01em;
+  }
+
+  ::selection {
+    background-color: var(--color-atlantic);
+    color: var(--color-atlantic-ink);
+  }
+
+  /* Lenis required styles */
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+  .lenis.lenis-stopped {
+    overflow: clip;
+  }
+}
+
+/*
+  Scroll-reveal: elements with [data-animate] start hidden and are
+  revealed by GSAP. No selector dependency on a runtime-added class
+  so view-transition navigations cannot leave the new page rendered
+  at the to-state for a frame and produce the "snap down then up"
+  stutter. A <noscript> in BaseLayout restores visibility for users
+  without JavaScript.
+*/
+@media (prefers-reduced-motion: no-preference) {
+  [data-animate] {
+    opacity: 0;
+  }
+}
+
+/*
+  ---- Component states that utility classes can't express ----
+*/
+[data-header].is-scrolled {
+  background-color: rgba(246, 241, 231, 0.88);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--color-line);
+}
+
+/* Header AND footer use a deeper "operations" surface regardless of
+   the page tone — keeps the chrome consistent against the editorial
+   body. Setting tokens on these elements wins over any page-level
+   theme override because custom properties cascade by element. */
+[data-footer] {
+  --color-surface: #11202d;
+  --color-surface-hi: #1a2d3d;
+  --color-surface-lo: #0a1620;
+  --color-ink: #f6f1e7;
+  --color-mute: rgba(246, 241, 231, 0.72);
+  --color-line: rgba(246, 241, 231, 0.14);
+}
+
+@keyframes scroll-hint {
+  0%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translateY(7px);
+    opacity: 1;
+  }
+}
+.scroll-hint {
+  animation: scroll-hint 1.9s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-hint {
+    animation: none;
+  }
+}
+
+/* Hero scrub video fades in over the poster image once it is ready. */
+[data-scrub-video] {
+  opacity: 0;
+  transition: opacity 1s ease;
+}
+[data-scrub-video].is-playing {
+  opacity: 1;
+}
+
+/*
+  ---- Flights live board: dense, mono, technical ----
+  A page that opts in with pageTheme="ops-theme" — used on /flights —
+  swaps the surface to a near-white with mono numerals dominating.
+  Just tokens, no layout reshuffle; cards reuse the same components.
+*/
+html.ops-theme {
+  --color-surface: #fbf9f4;
+  --color-surface-hi: #ffffff;
+  --color-surface-lo: #efeadd;
+}
+
+/* Hero overlays a photo, so inside the hero we want inverse tokens
+   (light text on a dark photo) regardless of the page tone. Same
+   trick as [data-footer]: set tokens on a wrapper and they cascade
+   to descendants. Used by every page's hero block. */
+.cfn-hero-content {
+  --color-surface: #11202d;
+  --color-surface-hi: #1a2d3d;
+  --color-ink: #f6f1e7;
+  --color-mute: rgba(246, 241, 231, 0.92);
+  --color-line: rgba(246, 241, 231, 0.18);
+}
