@@ -1,309 +1,215 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { Image } from "astro:assets";
 import { t } from "../i18n";
 
-import sunrise from "../assets/images/about/sunrise.jpg";
-import earlydays from "../assets/images/about/earlydays.jpg";
-import oldbuild from "../assets/images/about/oldbuild.jpg";
-import oldbuild2 from "../assets/images/about/oldbuild2.jpg";
-import oldbuild3 from "../assets/images/about/oldbuild3.jpg";
-import anthony from "../assets/images/about/anthony.jpg";
-import anthonyMary from "../assets/images/about/anthony+maryr.jpg";
-import bowser from "../assets/images/about/bowser.jpg";
-import aeroclub from "../assets/images/about/aeroclub.jpg";
-import privateac from "../assets/images/about/privateac.jpg";
-import ryanair from "../assets/images/about/ryanair.jpg";
-import loganair from "../assets/images/about/loganair4.jpg";
-import shorts1993 from "../assets/images/about/shorts360-jetstream41-1993.jpg";
-import tory1 from "../assets/images/about/tory1.jpg";
-import tory2 from "../assets/images/about/tory2.jpg";
-import newrunway from "../assets/images/about/newrunway.jpg";
-import aerarann from "../assets/images/about/aerarann1.jpg";
-import irelandair from "../assets/images/about/irelandair.jpg";
-import eiTakeoff from "../assets/images/about/ei-takeoff-errigal.jpg";
-import terryFriel from "../assets/images/about/terry-friel-drone.jpg";
-import aerLingusEmerald from "../assets/images/about/aerlingus-emerald.jpeg";
-import tower1 from "../assets/images/about/tower1.jpg";
-import tower2 from "../assets/images/about/tower2.jpg";
-
-const title = "Forty years on the beach · Donegal Airport";
+const locale = "en";
+const title = `${t("site.name", locale)} · The story`;
 const description =
   "From a 610-metre grass strip in 1978 and a £85 ticket on Christmas Eve 1985 to the world's most scenic runway and Ireland's first ACA Level 4 carbon-accredited airport. The story of CFN.";
 
-// Editorial timeline. Each chapter has a year tag, headline, prose,
-// photo, and a `side` that flips the grid layout left/right. Photos
-// use astro:assets <Image>, which spits out WebP at multiple widths.
+// Each chapter is data-driven so the layout repeats consistently
+// and adding photos later is a single insert per chapter. `lead`
+// is the opening paragraph (bigger, lighter); `body` is the array
+// of standard paragraphs that follow.
 const chapters = [
   {
     year: "1978",
-    range: "1978 – 1985",
-    title: "Before the airport, a grass strip on the dunes.",
-    side: "right" as const,
-    photo: earlydays,
-    photoAlt:
-      "Early aerial view of the original grass airstrip at Carrickfinn, late 1970s.",
+    range: "Before the airport",
+    title: "A grass strip on the dunes.",
+    lead:
+      "In the mid-1970s the IDA was trying to keep the west of Ireland alive with industrial estates. The one at Annagry needed an air link. In March 1978, on a sandbar between the Atlantic and Mount Errigal, a 610-metre grass runway opened.",
     body: [
-      "The IDA needed an air link for the new industrial estate at Annagry. In March 1978 they opened a 610-metre grass strip at Carrickfinn, hugging the Atlantic between Mount Errigal and the sea. Pilots called it dramatic. The locals called it convenient.",
-      "For seven years nothing commercial flew from it. A handful of private aircraft, the odd connecting hop to Derry, and a runway that disappeared under blown sand every winter.",
+      "For seven years no scheduled flight took off from it. A handful of private aircraft, the odd connection to Derry, and a runway that disappeared under blown sand every winter.",
+      "By the mid-1980s the grass was replaced with a hard surface and a temporary prefab terminal went up. Donegal had an aerodrome. It just didn't have an airline yet.",
     ],
   },
   {
     year: "24.12.1985",
-    range: "1985 – 1987",
+    range: "Christmas Eve",
     title: "A lawyer, an Islander, and an eighty-five-pound ticket.",
-    side: "left" as const,
-    photo: oldbuild,
-    photoAlt:
-      "The original temporary terminal building at Donegal Airport, mid-1980s.",
+    lead:
+      "On Christmas Eve 1985 Frank Cannon — a Glasgow solicitor with a father from Ardara and a mother from Ranafast — flew the first commercial service himself. A nine-seat Britten-Norman Islander, fifty-five minutes to Glasgow, £85 one way.",
     body: [
-      'On Christmas Eve 1985, Frank Cannon — a Glasgow solicitor with a father from Ardara and a mother from Ranafast — piloted the first commercial flight himself. A nine-seat Britten-Norman Islander. £85 one-way. Fifty-five minutes to Glasgow. The idea had been hatched over dinner with Danny "Minnie" O\'Brien, a restaurateur in Annagry who thought the place needed a way out.',
-      "The airline was called Malinair. By the summer of 1986 it was running ten rotations a day from six in the morning, on Dorniers now, with Edinburgh and Manchester added. By 1987 it was bankrupt. Air Ecosse picked up the route, briefly.",
+      "The idea had been hatched over dinner with Danny \"Minnie\" O'Brien, a restaurateur in Annagry. The airline was Malinair. By the summer of 1986 it was running ten rotations a day from six in the morning, the Islanders had been replaced by Dorniers, and Edinburgh and Manchester were on the timetable. By 1987 Malinair was bankrupt and Air Ecosse stepped in for a few weeks. The dream was over. The aerodrome had become an airport.",
     ],
   },
   {
-    year: "1988 – 1995",
-    range: "1988 – 1995",
-    title: "Loganair returns. Ryanair has a go and is gone in three months.",
-    side: "right" as const,
-    photo: loganair,
-    photoAlt:
-      "A Loganair aircraft on the apron at Donegal Airport, late 1980s.",
+    year: "1988 – 1997",
+    range: "The Loganair years",
+    title: "Loganair returns. The runway grows. Ryanair tries Luton.",
+    lead:
+      "In 1988 Loganair came back to Glasgow and stayed for a decade. The runway was extended at the end of the eighties to 1,450 metres so it could take bigger turboprops, and again in 1992–93 to 1,500 metres. In 1990 Ryanair launched a service to London Luton.",
     body: [
-      "In 1988 Loganair restored the Glasgow service and stayed for a decade. In March 1989 RTÉ's Tommie Gorman flew in to interview Anthony Gillespie, the airport's Secretary. Údarás na Gaeltachta owned 40 % of the shares; the Faulkner brothers — Paddy and Willie — held the rest.",
-      "Ryanair tried London Luton in 1990. It lasted until January 1991. The runway was extended to 1,450 m that same year and stretched again to 1,500 m by 1993.",
+      "And in the winter of 1994 the storms ran for weeks. The ferry to Tory Island couldn't sail. The Irish Air Corps moved their helicopters to Carrickfinn and ran supplies — bread, post, prescriptions, schoolchildren — out to the island until the sea calmed down. The pattern stuck. For decades after, the helicopter to Tory would route through CFN whenever the weather closed in on Magheroarty.",
     ],
   },
   {
-    year: "03.02.1993",
-    range: "A morning in 1993",
-    title: "Shorts 360 and Jetstream 41, same apron, same day.",
-    side: "left" as const,
-    photo: shorts1993,
-    photoAlt:
-      "A Shorts 360 and a Jetstream 41 parked side by side at Donegal Airport on 3 February 1993.",
+    year: "·",
+    range: "Of the people who built it",
+    title: "Anthony Gillespie.",
+    lead:
+      "Every small airport has a handful of names without whom it would never have lasted. At Donegal, Anthony Gillespie is one of them.",
     body: [
-      "Whoever took this photograph knew exactly what was happening: two of the workhorses of regional Atlantic aviation, parked next to each other on the Donegal apron on the third of February 1993. Both gone from the skies long ago.",
-      "We are showing it here as much for what it is as for what it shows.",
+      "An early shareholder of the project, a promoter, and the public face of the airport through much of its formative period — his work runs from the consolidation of the commercial service in the late eighties through the establishment of the Dublin PSO in the nineties. The people who were here in those years remember his role well beyond what the public record bothered to write down.",
     ],
   },
   {
-    year: "1994",
-    range: "Winter 1994",
-    title: "A storm cuts Tory Island off. CFN becomes a lifeline.",
-    side: "right" as const,
-    photo: tory1,
-    photoAlt:
-      "An Irish Air Corps helicopter operating between Donegal Airport and Tory Island, mid-1990s.",
+    year: "1996 – 2008",
+    range: "The PSO years",
+    title: "Dublin every day. A team that stayed.",
+    lead:
+      "In August 1996 the Donegal–Dublin PSO was awarded for the first time, one of the very first PSO routes in Ireland. Ireland Airways flew it, then Aer Arann from 1998, then Euroceltic, then Aer Arann again. By 2008 the airport was carrying 65,539 passengers — the all-time record.",
     body: [
-      "In the winter of 1994 the storms ran for weeks. The ferry to Tory Island couldn't sail. The Irish Air Corps moved their helicopters to Carrickfinn and started running supplies — bread, post, prescriptions, schoolchildren — out to the island until the sea calmed down.",
-      "The pattern stuck. For decades after, the helicopter service to Tory Island would route through CFN whenever the weather closed in on Magheroarty pier.",
-    ],
-  },
-  {
-    year: "1996",
-    range: "1996 – 2008",
-    title: "The lifeline becomes a route map. Dublin every day.",
-    side: "left" as const,
-    photo: aerarann,
-    photoAlt: "An Aer Arann aircraft taxiing at Donegal Airport, early 2000s.",
-    body: [
-      "In August 1996 the Donegal–Dublin PSO was awarded for the first time. Ireland Airways flew it, then Aer Arann from 1998, then Euroceltic, then Aer Arann again. By 2008 the airport was carrying 65,539 passengers — the all-time record.",
       "Anne Bonner had been at the airport since the very beginning, working in customer services. In 2002 she was named Managing Director, a role she would hold for two decades.",
     ],
   },
   {
-    year: "2018 · 2019 · 2020",
-    range: "Three years on top",
-    title: "The world's most scenic runway. Three years running.",
-    side: "right" as const,
-    photo: eiTakeoff,
-    photoAlt:
-      "An Aer Lingus Regional ATR climbing out from Donegal with Mount Errigal in the distance.",
+    year: "2001 – 2010",
+    range: "Helicopters out west",
+    title: "The Atlantic margin runs on Donegal fuel.",
+    lead:
+      "For a stretch of about a decade Donegal was something else entirely: the closest paved runway with refuelling to the offshore oil and gas exploration in the Atlantic margin. Bristow Helicopters ran the shuttle.",
     body: [
-      'PrivateFly, the global private-jet broker, asks pilots and travellers every year to name the airport with the best approach in the world. In 2016 Donegal landed at number seven. In April 2018 it went straight to number one. Adam Twidell, the CEO of PrivateFly, called it "extraordinarily beautiful and deservedly in the top spot."',
+      "Two basins drove the traffic. The Slyne-Erris Trough off Mayo, where the Corrib gas field had been discovered in 1996, and the deeper Rockall Trough where in 2002 Enterprise (about to be absorbed by Shell) drilled the Dooish well — 125 kilometres northwest of Donegal, 1,478 metres of water under the rig. Both campaigns needed crews changed every couple of weeks and a fuel stop that wasn't four hundred miles away.",
+      "Passenger numbers at CFN went from 11,566 in 2000 to 42,675 in 2004. The Irish economy doesn't account for that jump on its own. The helicopters do.",
+      "After the oil-price crash of 2014, the appraisal flights tapered. Corrib went into onshore production in 2015. In 2017 the Druid/Drombeg exploration well off Cork came up dry, and west-of-Ireland exploration quietly closed for the foreseeable future. The hangar at CFN went back to scheduled traffic and the occasional Air Corps movement.",
+    ],
+  },
+  {
+    year: "2018 · 2019 · 2020",
+    range: "Three years in a row",
+    title: "The world's most scenic runway.",
+    lead:
+      "PrivateFly, the global private-jet broker, asks pilots and travellers every year to name the airport with the best approach in the world. In April 2018 Donegal went straight to number one. Adam Twidell, the CEO of PrivateFly, called it \"extraordinarily beautiful and deservedly in the top spot.\"",
+    body: [
       "It came first again in 2019. And in 2020. Three years in a row — a result no other airport on the list has ever managed.",
     ],
   },
   {
     year: "2025",
     range: "Today",
-    title: "Greener than Dublin. Twice a day to the capital. Weekends to Glasgow.",
-    side: "left" as const,
-    photo: aerLingusEmerald,
-    photoAlt:
-      "An Aer Lingus Regional ATR 72 operated by Emerald Airlines on the Donegal apron at golden hour.",
+    title: "Greener than Dublin.",
+    lead:
+      "In January 2025 Donegal became the first airport on the island of Ireland to reach Airport Carbon Accreditation Level 4 \"Transformation\" — ahead of Dublin, Cork and Shannon.",
     body: [
-      "Emerald Airlines, flying under the Aer Lingus Regional brand, took over the Dublin PSO in 2022 with twice-daily ATR 72 service. Loganair came back to Glasgow in July 2023 and is now year-round. The airport carried 50,530 passengers in 2024.",
-      "In January 2025 Donegal became the first airport on the island of Ireland to reach Airport Carbon Accreditation Level 4 'Transformation' — ahead of Dublin, Cork and Shannon. Solar on the hangar roof, MVHR through the terminal, a roadmap to Net Zero by 2050.",
-      "Today the airport is run by Eilís Docherty as Managing Director and Garry Martin as Chairman, with around thirty staff. Most have been here longer than the airlines.",
+      "Solar on the hangar roof. MVHR through the terminal. LED everything. Four 22-kilowatt EV chargers in the car park. The road to a seventy-per-cent reduction in scope-1 and scope-2 emissions by 2030, and Net Zero by 2050.",
+      "Emerald Airlines flies Dublin twice a day under the Aer Lingus Regional brand. Loganair is year-round to Glasgow. The airport carried 50,530 passengers in 2024, up twenty-one per cent.",
     ],
   },
+];
+
+// Airlines that have served CFN, in order of arrival. Year column
+// kept terse — the editorial paragraphs above carry the story.
+const airlines = [
+  { name: "Malinair", route: "Glasgow / Manchester / Edinburgh", years: "1985 – 1987" },
+  { name: "Air Ecosse", route: "Glasgow", years: "1987" },
+  { name: "Loganair", route: "Glasgow", years: "1988 – 1997" },
+  { name: "Ryanair", route: "London Luton", years: "from 1990" },
+  { name: "Macair", route: "—", years: "1995" },
+  { name: "Gill Airways", route: "Glasgow Prestwick", years: "1996 –" },
+  { name: "Ireland Airways", route: "Dublin PSO", years: "1996 – 1998" },
+  { name: "Bright Air", route: "Glasgow", years: "1997/98 –" },
+  { name: "Aer Arann", route: "Dublin · Cork · Glasgow Intl.", years: "1998 – 2015" },
+  { name: "Euroceltic", route: "Dublin PSO", years: "2001 – 2003" },
+  { name: "Loganair / Flybe", route: "Dublin", years: "2012 – 2015" },
+  { name: "Stobart Air (Aer Lingus Regional)", route: "Dublin PSO", years: "2015 – 2021" },
+  { name: "Amapola Flyg", route: "Dublin PSO (interim)", years: "2021 – 2022" },
+  { name: "Emerald Airlines (Aer Lingus Regional)", route: "Dublin PSO · 2× daily", years: "2022 – today" },
+  { name: "Loganair (relaunch)", route: "Glasgow · year-round", years: "2023 – today" },
 ] as const;
-
-// Awards list — editorial, no cards. Big year, claim, source.
-const awards = [
-  {
-    year: "2025",
-    title: "First ACA Level 4 'Transformation' on the island of Ireland",
-    detail: "Airport Carbon Accreditation — ahead of Dublin, Cork and Shannon.",
-    source: "ACI Europe",
-  },
-  {
-    year: "2018 · 2019 · 2020",
-    title: "World's most scenic airport",
-    detail: "Three consecutive years at number one — a result no other airport has matched.",
-    source: "PrivateFly",
-  },
-  {
-    year: "2016",
-    title: "Top-10 most scenic airports in the world",
-    detail: "Number seven from a global panel of one hundred and fifteen.",
-    source: "PrivateFly",
-  },
-];
-
-// Team — current people running CFN, with a tail of veterans whose
-// faces show up across the timeline. Order: leadership first, then
-// long-tenured staff alphabetically. */
-const team = [
-  { name: "Eilís Docherty", role: "Managing Director" },
-  { name: "Garry Martin", role: "Chairman" },
-  { name: "Brendan Ó'Baoill", role: "Senior ATC" },
-  { name: "Eamon Freel", role: "Fire, Safety & Maintenance" },
-  { name: "Kevin Gillespie", role: "Operations" },
-  { name: "Jason O'Donnell", role: "Operations" },
-  { name: "Pauline Sweeney", role: "Marketing" },
-  { name: "Eimear Walsh", role: "Marketing" },
-];
-
-const news = [
-  {
-    date: "08.05.2026",
-    kind: "Operations",
-    title: "Dublin midday service restored after spring negotiations.",
-  },
-  {
-    date: "20.01.2025",
-    kind: "Sustainability",
-    title: "First airport on the island of Ireland at ACA Level 4 'Transformation'.",
-  },
-  {
-    date: "01.07.2023",
-    kind: "Routes",
-    title: "Loganair returns to Glasgow after a decade away.",
-  },
-];
 ---
 
 <BaseLayout title={title} description={description}>
-  {/* ---------- HERO — shorter than the home, photo-anchored ---------- */}
+  {/* ---------- HERO — text only. Photo will replace the cream
+       backdrop once we choose one. ---------- */}
   <section
-    class="relative isolate flex min-h-[80vh] w-full items-end overflow-hidden border-b border-line"
+    class="relative isolate flex min-h-[78vh] w-full items-end border-b border-line bg-surface-lo/40"
   >
-    <Image
-      src={sunrise}
-      alt="Sunrise over Carrickfinn airfield, the dunes and the Atlantic beyond."
-      widths={[800, 1400, 2000]}
-      sizes="100vw"
-      loading="eager"
-      class="absolute inset-0 -z-20 h-full w-full object-cover"
-      data-ken-burns
-      data-ken-burns-duration="22"
-    />
-    <div
-      class="absolute inset-0 -z-10 bg-gradient-to-t from-ink/80 via-ink/30 to-transparent"
-      aria-hidden="true"
-    >
-    </div>
-
-    <div
-      class="cfn-hero-content mx-auto w-full max-w-7xl px-6 pb-20 pt-32 sm:pb-32"
-    >
+    <div class="mx-auto w-full max-w-7xl px-6 pb-20 pt-44 sm:pb-32">
       <p
         data-animate="fade-up"
-        class="font-mono text-[0.7rem] uppercase tracking-[0.32em] text-sand"
+        class="font-mono text-[0.7rem] uppercase tracking-[0.32em] text-atlantic"
       >
         About · An scéal
       </p>
       <h1
         data-split
         data-split-delay="0.1"
-        class="mt-7 max-w-5xl font-display text-[clamp(2.5rem,6.5vw,6.5rem)] font-normal leading-[0.96] text-ink"
+        class="mt-8 max-w-5xl font-display text-[clamp(2.75rem,7vw,7.5rem)] font-light leading-[0.95] text-ink"
       >
         Forty years on the beach.
       </h1>
       <p
         data-animate="fade-up"
         data-animate-delay="0.35"
-        class="mt-8 max-w-2xl text-base leading-relaxed text-mute sm:text-lg"
+        class="mt-10 max-w-2xl text-base leading-relaxed text-mute sm:text-lg"
       >
-        From a 610-metre grass strip in 1978 and a Christmas-Eve ticket
-        in 1985 to the world's most scenic runway and Ireland's
-        greenest airport. The story of CFN — in pieces, with the
-        photographs that survive.
+        From a 610-metre grass strip in 1978 and a Christmas-Eve
+        ticket in 1985 to the world's most scenic runway and
+        Ireland's greenest airport. The story of CFN — told in
+        pieces.
       </p>
+
+      <div
+        data-animate="fade-up"
+        data-animate-delay="0.5"
+        class="mt-14 flex items-center gap-3 text-mute"
+        aria-hidden="true"
+      >
+        <span class="scroll-hint font-mono text-[0.65rem] uppercase tracking-[0.24em]">
+          Scroll
+        </span>
+        <span class="scroll-hint text-base">↓</span>
+      </div>
     </div>
   </section>
 
-  {/* ---------- TIMELINE — chapters alternating left/right ---------- */}
-  <section class="border-b border-line">
-    <div class="mx-auto max-w-7xl px-6 py-16 sm:py-24">
-      <ol class="space-y-28 sm:space-y-40">
+  {/* ---------- TIMELINE ---------- */}
+  <section>
+    <div class="mx-auto max-w-3xl px-6 py-24 sm:py-32">
+      <ol class="space-y-24 sm:space-y-32">
         {
-          chapters.map((c) => (
-            <li class="grid items-center gap-10 md:grid-cols-12 md:gap-14">
-              {/* Photo: swaps grid column based on side, full-bleed
-                  within its track on mobile. */}
-              <figure
-                data-photo
-                class:list={[
-                  "md:col-span-7",
-                  c.side === "right" ? "md:order-1" : "md:order-2",
-                ]}
-              >
-                <div class="relative overflow-hidden">
-                  <Image
-                    src={c.photo}
-                    alt={c.photoAlt}
-                    widths={[600, 1000, 1400]}
-                    sizes="(min-width: 768px) 60vw, 100vw"
-                    class="block h-auto w-full"
-                    data-ken-burns
-                    data-ken-burns-duration="22"
-                  />
-                </div>
-                <figcaption class="mt-3 font-mono text-[0.66rem] uppercase tracking-[0.22em] text-mute">
-                  {c.photoAlt}
-                </figcaption>
-              </figure>
+          chapters.map((c, i) => (
+            <li class="relative">
+              {/* Decorative chapter index — small, mono, far left */}
+              <p class="absolute -left-2 top-1 hidden font-mono text-[0.66rem] uppercase tracking-[0.22em] text-mute sm:block sm:-left-20">
+                {`0${i + 1}`.slice(-2)}
+              </p>
 
-              {/* Copy: year tag, headline (split-text), prose */}
-              <div
-                class:list={[
-                  "md:col-span-5",
-                  c.side === "right" ? "md:order-2" : "md:order-1",
-                ]}
+              <p
+                data-animate="fade-up"
+                class="font-mono text-[0.72rem] uppercase tracking-[0.3em] text-sand"
               >
-                <p class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-sand">
-                  {c.year}
-                </p>
-                <h2
-                  data-split
-                  class="mt-4 font-display text-[clamp(1.85rem,3.4vw,3.2rem)] font-normal leading-[1.03] text-ink"
+                <span>{c.range}</span>
+                {c.year !== "·" && (
+                  <span class="ml-3 text-atlantic">{c.year}</span>
+                )}
+              </p>
+
+              <h2
+                data-split
+                class="mt-5 font-display text-[clamp(2rem,4.5vw,3.8rem)] font-light leading-[1.02] text-ink"
+              >
+                {c.title}
+              </h2>
+
+              <p
+                data-animate="fade-up"
+                data-animate-delay="0.15"
+                class="mt-7 text-[1.05rem] leading-[1.7] text-ink sm:text-[1.15rem]"
+              >
+                {c.lead}
+              </p>
+
+              {c.body.map((para, j) => (
+                <p
+                  data-animate="fade-up"
+                  data-animate-delay={`${0.2 + (j + 1) * 0.05}`}
+                  class="mt-5 text-base leading-[1.75] text-mute"
                 >
-                  {c.title}
-                </h2>
-                {c.body.map((para, i) => (
-                  <p
-                    data-animate="fade-up"
-                    data-animate-delay={`${0.1 + i * 0.06}`}
-                    class="mt-5 text-base leading-relaxed text-mute"
-                  >
-                    {para}
-                  </p>
-                ))}
-              </div>
+                  {para}
+                </p>
+              ))}
             </li>
           ))
         }
@@ -311,282 +217,106 @@ const news = [
     </div>
   </section>
 
-  {/* ---------- INTERLUDE — small grid of incidental photographs ---------- */}
-  <section class="border-b border-line bg-surface-lo/60">
-    <div class="mx-auto max-w-7xl px-6 py-24">
+  {/* ---------- AIRLINES TABLE ---------- */}
+  <section class="border-t border-line bg-surface-lo/60">
+    <div class="mx-auto max-w-5xl px-6 py-24">
       <p
         data-animate="fade-up"
-        class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic"
+        class="font-mono text-[0.7rem] uppercase tracking-[0.3em] text-atlantic"
       >
-        Fragments
+        Operators
       </p>
       <h2
         data-split
-        class="mt-3 max-w-3xl font-display text-[clamp(2rem,4vw,3.4rem)] font-normal leading-[1.04]"
+        class="mt-3 max-w-3xl font-display text-[clamp(2rem,4vw,3.4rem)] font-light leading-[1.04]"
       >
-        Things that lived at the airport for a while.
+        Every airline that has flown to Donegal.
       </h2>
 
-      <div class="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-        {[
-          { src: ryanair, alt: "A Ryanair aircraft at Donegal during the brief London Luton service of 1990–91.", cap: "Ryanair · London Luton · 1990–91" },
-          { src: irelandair, alt: "An Ireland Airways aircraft, the first operator of the Donegal–Dublin PSO route in 1996.", cap: "Ireland Airways · Dublin PSO · 1996" },
-          { src: bowser, alt: "The airport fuel bowser — a small operation in the early years.", cap: "Fuel bowser · early years" },
-          { src: aeroclub, alt: "A private aircraft from the local flying club at Carrickfinn.", cap: "Aero club" },
-          { src: privateac, alt: "Private general aviation parked at Donegal.", cap: "General aviation" },
-          { src: anthony, alt: "Anthony Gillespie, the airport's Secretary, photographed in the 1980s — the man behind a 1989 RTÉ News piece on Carrickfinn.", cap: "Anthony Gillespie · Secretary, 1989" },
-          { src: anthonyMary, alt: "Anthony Gillespie with a colleague from the early days of the airport.", cap: "Anthony Gillespie and a colleague" },
-          { src: oldbuild2, alt: "An interior view of the original temporary terminal at Carrickfinn.", cap: "Old terminal · interior" },
-          { src: oldbuild3, alt: "The terminal apron in the mid-1980s.", cap: "Terminal apron · mid-1980s" },
-          { src: tory2, alt: "Tory Island helicopter operations from Donegal Airport.", cap: "Tory Island helicopter" },
-          { src: newrunway, alt: "The runway after one of the 1989 or 1992-93 extensions.", cap: "Runway extension" },
-          { src: terryFriel, alt: "Aerial photograph of CFN by Terry Friel — the runway, the dunes and the bay.", cap: "Photograph · Terry Friel" },
-        ].map((p, i) => (
-          <figure
-            data-photo
-            data-animate="fade-up"
-            data-animate-delay={`${0.04 + (i % 3) * 0.06}`}
-            class="break-inside-avoid"
-          >
-            <Image
-              src={p.src}
-              alt={p.alt}
-              widths={[400, 700]}
-              sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
-              class="block h-auto w-full"
-            />
-            <figcaption class="mt-3 font-mono text-[0.66rem] uppercase tracking-[0.22em] text-mute">
-              {p.cap}
-            </figcaption>
-          </figure>
-        ))}
+      <div data-animate="fade-up" class="mt-12 overflow-x-auto">
+        <table class="w-full min-w-[560px] border-collapse text-left">
+          <thead>
+            <tr class="border-y border-line text-[0.66rem] uppercase tracking-[0.18em] text-mute">
+              <th class="py-3 pr-6 font-medium">Airline</th>
+              <th class="py-3 pr-6 font-medium">Route</th>
+              <th class="py-3 font-medium">Years</th>
+            </tr>
+          </thead>
+          <tbody class="font-mono text-sm">
+            {
+              airlines.map((a) => (
+                <tr class="border-b border-line/60">
+                  <td class="py-4 pr-6 text-ink">{a.name}</td>
+                  <td class="py-4 pr-6 text-mute">{a.route}</td>
+                  <td class="py-4 tabular-nums text-mute">{a.years}</td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
       </div>
     </div>
   </section>
 
-  {/* ---------- AWARDS — editorial list, year + claim + source ---------- */}
-  <section class="border-b border-line">
-    <div class="mx-auto max-w-7xl px-6 py-28">
+  {/* ---------- CHARACTERS — text only, no photos yet ---------- */}
+  <section class="border-t border-line">
+    <div class="mx-auto max-w-5xl px-6 py-24">
       <p
         data-animate="fade-up"
-        class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic"
+        class="font-mono text-[0.7rem] uppercase tracking-[0.3em] text-atlantic"
       >
-        Recognition
+        The people behind it
       </p>
       <h2
         data-split
-        class="mt-3 max-w-4xl font-display text-[clamp(2.25rem,5vw,5rem)] font-normal leading-[0.98]"
+        class="mt-3 max-w-3xl font-display text-[clamp(2rem,4vw,3.4rem)] font-light leading-[1.04]"
       >
-        A small airport with a long shelf of awards.
+        Four names without which none of this happens.
       </h2>
 
-      <ul class="mt-16 divide-y divide-line">
+      <ul class="mt-14 grid gap-12 sm:grid-cols-2">
         {
-          awards.map((award, i) => (
-            <li
-              data-animate="fade-up"
-              data-animate-delay={`${0.05 + i * 0.06}`}
-              class="grid items-baseline gap-6 py-10 md:grid-cols-[10rem_1fr_auto] md:gap-12"
-            >
-              <p class="font-display text-4xl text-sand md:text-5xl">
-                {award.year}
-              </p>
-              <div>
-                <h3 class="font-display text-2xl leading-tight text-ink md:text-3xl">
-                  {award.title}
-                </h3>
-                <p class="mt-2 text-base leading-relaxed text-mute">
-                  {award.detail}
-                </p>
-              </div>
-              <p class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-mute md:text-right">
-                {award.source}
-              </p>
-            </li>
-          ))
-        }
-      </ul>
-    </div>
-  </section>
-
-  {/* ---------- SUSTAINABILITY — brief, links to fuller policy ---------- */}
-  <section class="border-b border-line bg-surface-lo/60">
-    <div class="mx-auto grid max-w-7xl gap-12 px-6 py-24 lg:grid-cols-12 lg:gap-16">
-      <div class="lg:col-span-5">
-        <p
-          data-animate="fade-up"
-          class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic"
-        >
-          Sustainability
-        </p>
-        <h2
-          data-split
-          class="mt-3 font-display text-[clamp(2rem,3.8vw,3.2rem)] font-normal leading-[1.02]"
-        >
-          The greenest small airport on the island.
-        </h2>
-      </div>
-      <div
-        class="space-y-5 text-base leading-relaxed text-mute lg:col-span-7"
-      >
-        <p data-animate="fade-up">
-          In January 2025 Donegal Airport became the first airport in
-          Ireland — north or south — to reach Airport Carbon
-          Accreditation Level 4 "Transformation", the second-highest
-          ACI rung. It got there ahead of Dublin, Cork, Shannon and
-          every other airport on the island.
-        </p>
-        <p data-animate="fade-up" data-animate-delay="0.08">
-          The work is unglamorous and continuous. Photovoltaic panels
-          on the hangar roof. Mechanical ventilation with heat
-          recovery through the terminal. LED everything. Four 22 kW EV
-          chargers in the car park. The road to a 70 % reduction in
-          scope-1 and scope-2 emissions by 2030, and Net Zero by 2050.
-        </p>
-        <p data-animate="fade-up" data-animate-delay="0.16">
-          <a
-            href="#"
-            class="border-b border-ink/50 pb-0.5 transition-colors hover:border-sand hover:text-sand"
-          >
-            The full environmental policy →
-          </a>
-        </p>
-      </div>
-    </div>
-  </section>
-
-  {/* ---------- THE TOWER — internal teaser to /pilots ---------- */}
-  <section class="border-b border-line">
-    <div class="mx-auto grid max-w-7xl gap-10 px-6 py-24 lg:grid-cols-12">
-      <figure data-photo class="lg:col-span-7">
-        <Image
-          src={tower1}
-          alt="The ATC tower at Donegal Airport, with the runway and dunes beyond."
-          widths={[600, 1000, 1400]}
-          sizes="(min-width: 1024px) 60vw, 100vw"
-          class="block h-auto w-full"
-          data-ken-burns
-          data-ken-burns-duration="26"
-        />
-        <figcaption class="mt-3 font-mono text-[0.66rem] uppercase tracking-[0.22em] text-mute">
-          The tower · 129.805 Tower · 129.930 ATIS
-        </figcaption>
-      </figure>
-      <div class="lg:col-span-5 lg:self-center">
-        <p class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic">
-          Operations
-        </p>
-        <h2 class="mt-3 font-display text-[clamp(2rem,3.6vw,3rem)] font-normal leading-[1.03]">
-          The smallest tower on the country's most photogenic runway.
-        </h2>
-        <p class="mt-6 text-base leading-relaxed text-mute">
-          Tower frequency 129.805. ATIS on 129.930. Runway designators
-          changed from 03/21 to 02/20 in June 2025 — magnetic
-          variation, finally caught up with.
-        </p>
-        <a
-          href="/pilots"
-          class="mt-8 inline-block border-b border-ink/60 pb-1 font-mono text-xs uppercase tracking-[0.22em] text-ink transition-colors hover:border-sand hover:text-sand"
-        >
-          Pilots & ATC information →
-        </a>
-      </div>
-    </div>
-  </section>
-
-  {/* ---------- TEAM — quote + list ---------- */}
-  <section class="border-b border-line bg-surface-lo/60">
-    <div class="mx-auto max-w-7xl px-6 py-24">
-      <p
-        data-animate="fade-up"
-        class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic"
-      >
-        Team
-      </p>
-      <h2
-        data-split
-        class="mt-3 max-w-4xl font-display text-[clamp(2rem,4vw,3.6rem)] font-normal leading-[1.02]"
-      >
-        Most of them have been here longer than the airlines.
-      </h2>
-
-      <blockquote
-        data-animate="fade-up"
-        data-animate-delay="0.15"
-        class="mt-12 max-w-4xl font-display text-[clamp(1.5rem,2.5vw,2.4rem)] font-light italic leading-snug text-ink"
-      >
-        "Teamwork, tenacity and clear skies ahead."
-        <cite
-          class="mt-4 block font-sans text-[0.7rem] not-italic uppercase tracking-[0.24em] text-mute"
-        >
-          — The Irish Times, 2019
-        </cite>
-      </blockquote>
-
-      <ul
-        class="mt-14 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4"
-      >
-        {
-          team.map((person, i) => (
-            <li
-              data-animate="fade-up"
-              data-animate-delay={`${0.04 + i * 0.04}`}
-              class="border-t border-line pt-5"
-            >
-              <p class="font-display text-xl text-ink">{person.name}</p>
-              <p class="mt-1 font-mono text-[0.7rem] uppercase tracking-[0.22em] text-mute">
-                {person.role}
-              </p>
-            </li>
-          ))
-        }
-      </ul>
-    </div>
-  </section>
-
-  {/* ---------- NEWS — DD.MM.YYYY editorial list ---------- */}
-  <section id="news" class="border-b border-line">
-    <div class="mx-auto max-w-7xl px-6 py-24">
-      <p
-        data-animate="fade-up"
-        class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic"
-      >
-        Recent
-      </p>
-      <h2
-        data-animate="fade-up"
-        data-animate-delay="0.1"
-        class="mt-3 font-display text-[clamp(2rem,4vw,3.4rem)] font-normal leading-[1.04]"
-      >
-        From the airport.
-      </h2>
-
-      <ul class="mt-10 divide-y divide-line">
-        {
-          news.map((item, i) => (
+          [
+            {
+              name: "Frank Cannon",
+              role: "Founder of Malinair",
+              years: "1985 – 1987",
+              body: "Glasgow solicitor, private pilot. Father from Ardara, mother from Ranafast. Flew the first commercial service from Donegal himself, Christmas Eve 1985.",
+            },
+            {
+              name: 'Daniel "Minnie" O\'Brien',
+              role: "The dinner that started it",
+              years: "1985",
+              body: "Restaurateur in Annagry. The conversation with him is what convinced Cannon the place needed — and could sustain — a way out.",
+            },
+            {
+              name: "Anthony Gillespie",
+              role: "Shareholder · promoter · public face",
+              years: "Late 1980s onwards",
+              body: "An early shareholder and one of the most active promoters of the airport through the late eighties and the nineties. The people who were there in those years remember his role well beyond what the public record bothered to write down.",
+            },
+            {
+              name: "Anne Bonner",
+              role: "Managing Director",
+              years: "2002 – ~2023",
+              body: "Joined in customer services on day one. Twenty years as Managing Director took the airport through the years that built it: the PSO, the helicopters, the awards.",
+            },
+          ].map((p, i) => (
             <li
               data-animate="fade-up"
               data-animate-delay={`${0.05 + i * 0.05}`}
+              class="border-t border-line pt-6"
             >
-              <a
-                href="#"
-                class="group grid items-baseline gap-4 py-8 md:grid-cols-[7rem_8rem_1fr_2rem]"
-              >
-                <p class="font-mono text-[0.78rem] tabular-nums text-mute">
-                  {item.date}
-                </p>
-                <p class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-sand">
-                  {item.kind}
-                </p>
-                <p class="font-display text-xl leading-snug text-ink md:text-2xl">
-                  {item.title}
-                </p>
-                <span
-                  class="hidden font-mono text-xs text-mute transition-transform group-hover:translate-x-1 md:block md:text-right"
-                >
-                  →
-                </span>
-              </a>
+              <p class="font-mono text-[0.7rem] uppercase tracking-[0.24em] text-sand">
+                {p.years}
+              </p>
+              <p class="mt-4 font-display text-2xl text-ink sm:text-3xl">
+                {p.name}
+              </p>
+              <p class="mt-2 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-mute">
+                {p.role}
+              </p>
+              <p class="mt-5 text-base leading-[1.7] text-mute">{p.body}</p>
             </li>
           ))
         }
@@ -595,24 +325,24 @@ const news = [
   </section>
 
   {/* ---------- CTA CLOSER ---------- */}
-  <section>
-    <div class="mx-auto max-w-5xl px-6 py-28 text-center">
+  <section class="border-t border-line bg-surface-lo/40">
+    <div class="mx-auto max-w-4xl px-6 py-32 text-center">
       <p
         data-animate="fade-up"
-        class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic"
+        class="font-mono text-[0.7rem] uppercase tracking-[0.3em] text-atlantic"
       >
         Come and see
       </p>
       <h2
         data-split
-        class="mt-4 font-display text-[clamp(2rem,5vw,4.8rem)] font-normal leading-[1]"
+        class="mt-4 font-display text-[clamp(2rem,5vw,4.8rem)] font-light leading-[1]"
       >
-        The runway is on a beach. Bring a camera.
+        The runway is on a beach.<br />Bring a camera.
       </h2>
       <div
         data-animate="fade-up"
         data-animate-delay="0.3"
-        class="mt-12 flex flex-wrap justify-center gap-6"
+        class="mt-14 flex flex-wrap justify-center gap-6"
       >
         <a
           href="/flights"
