@@ -331,6 +331,22 @@
   will-change: transform;
 }
 
+/* Horizontal-scroll progress dots — the year-strip that floats
+   inside the pinned panel. The active dot expands its bullet and
+   tints the year label atlantic. */
+[data-h-dot] > span:first-child {
+  transition:
+    width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.35s ease;
+}
+[data-h-dot].is-active {
+  color: var(--color-atlantic);
+}
+[data-h-dot].is-active > span:first-child {
+  width: 1.5rem;
+  background-color: var(--color-atlantic);
+}
+
 /* Editorial text colour helpers — used by big poetic headlines
    that want to fade their tail into the page. */
 .text-fade {

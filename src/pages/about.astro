@@ -7,50 +7,46 @@ const title = `${t("site.name", locale)} · The story`;
 const description =
   "From a 610-metre grass strip in 1978 and a £85 ticket on Christmas Eve 1985 to the world's most scenic approach and Ireland's first ACA Level 4 carbon-accredited airport. The story of CFN.";
 
-// Each chapter is data-driven so the layout repeats consistently
-// and adding photos later is a single insert per chapter. `lead`
-// is the opening paragraph (bigger, lighter); `body` is the array
-// of standard paragraphs that follow.
-//
-// People (Anthony Gillespie, Anne Bonner) and the PrivateFly awards
-// chapter were lifted out of the timeline in v3 — the client wants
-// the story to read as how the airport itself grew, with named
-// people handled in their own page later.
+// 6 chapters, presented as horizontal panels on desktop (sticky
+// horizontal scroll cabled in animations.ts via [data-horizontal])
+// and as a vertical stack on mobile. Each panel carries the year as
+// the dominant visual element. The text columns are intentionally
+// narrow within the panel so the year breathes.
 const chapters = [
   {
     year: "1978",
     range: "Before the airport",
     title: "A grass strip on the dunes.",
     lead:
-      "In the mid-1970s the IDA was trying to keep the west of Ireland alive with industrial estates. The one at Annagry needed an air link. In March 1978, on a sandbar between the Atlantic and Mount Errigal, a 610-metre grass runway opened.",
+      "The IDA needed an air link for the new industrial estate at Annagry. In March 1978, on a sandbar between the Atlantic and Mount Errigal, a 610-metre grass runway opened.",
     body: [
       "For seven years no scheduled flight took off from it. A handful of private aircraft, the odd connection to Derry, and a runway that disappeared under blown sand every winter.",
       "By the mid-1980s the grass was replaced with a hard surface and a temporary prefab terminal went up. Donegal had an aerodrome. It just didn't have an airline yet.",
     ],
   },
   {
-    year: "24.12.1985",
+    year: "1985",
     range: "Christmas Eve",
-    title: "A lawyer, an Islander, and an eighty-five-pound ticket.",
+    title: "A lawyer, an Islander, an eighty-five-pound ticket.",
     lead:
       "On Christmas Eve 1985 Frank Cannon — a Glasgow solicitor with a father from Ardara and a mother from Ranafast — flew the first commercial service himself. A nine-seat Britten-Norman Islander, fifty-five minutes to Glasgow, £85 one way.",
     body: [
-      "The idea had been hatched over dinner with Danny \"Minnie\" O'Brien, a restaurateur in Annagry. The airline was Malinair. By the summer of 1986 it was running ten rotations a day from six in the morning, the Islanders had been replaced by Dorniers, and Edinburgh and Manchester were on the timetable.",
+      "The idea had been hatched over dinner with Danny \"Minnie\" O'Brien in Annagry. The airline was Malinair. By the summer of 1986 it was running ten rotations a day from six in the morning, the Islanders had been replaced by Dorniers, and Edinburgh and Manchester were on the timetable.",
       "By 1987 Malinair was bankrupt and Air Ecosse stepped in for a few weeks. The airline went under. The airport carried on.",
     ],
   },
   {
-    year: "1988 – 1997",
+    year: "1988",
     range: "The Loganair years",
     title: "Loganair returns. Ryanair tries Luton.",
     lead:
-      "In 1988 Loganair came back with a regular service to Glasgow, and stayed for a decade. The runway was extended at the end of the eighties to 1,450 metres so it could take bigger turboprops, and again in 1992–93 to 1,500 metres. In 1990 Ryanair launched a service to London Luton.",
+      "In 1988 Loganair came back with a regular service to Glasgow and stayed for a decade. The runway was extended at the end of the eighties to 1,450 metres, and again in 1992–93 to 1,500 metres. In 1990 Ryanair launched a service to London Luton.",
     body: [
       "In the winter of 1994 a storm ran for weeks. The ferry to Tory Island couldn't sail. The Irish Air Corps moved their helicopters to Carrickfinn and ran supplies — bread, post, prescriptions, schoolchildren — out to the island until the sea calmed down. The pattern stuck: for decades after, the helicopter to Tory would route through CFN whenever the weather closed in on Magheroarty.",
     ],
   },
   {
-    year: "1996 – 2008",
+    year: "1996",
     range: "The PSO years",
     title: "Dublin every day.",
     lead:
@@ -60,13 +56,13 @@ const chapters = [
     ],
   },
   {
-    year: "2001 – 2010",
+    year: "2001",
     range: "Helicopters out west",
     title: "The Atlantic margin runs on Donegal fuel.",
     lead:
       "For a stretch of about a decade Donegal was something else entirely: the closest paved runway with refuelling to the offshore oil and gas exploration in the Atlantic margin. Bristow Helicopters ran the shuttle.",
     body: [
-      "Two basins drove the traffic. The Slyne-Erris Trough off Mayo, where the Corrib gas field had been discovered in 1996, and the deeper Rockall Trough where in 2002 Enterprise (about to be absorbed by Shell) drilled the Dooish well — 125 kilometres northwest of Donegal, 1,478 metres of water under the rig. Both campaigns needed crews changed every couple of weeks and a fuel stop that wasn't four hundred miles away.",
+      "Two basins drove the traffic. The Slyne-Erris Trough off Mayo, where the Corrib gas field had been discovered in 1996, and the deeper Rockall Trough where in 2002 Enterprise drilled the Dooish well — 125 kilometres northwest of Donegal, 1,478 metres of water under the rig. Both campaigns needed crews changed every couple of weeks and a fuel stop that wasn't four hundred miles away.",
     ],
   },
   {
@@ -82,8 +78,6 @@ const chapters = [
   },
 ];
 
-// Airlines that have served CFN, in order of arrival. Year column
-// kept terse — the editorial paragraphs above carry the story.
 const airlines = [
   { name: "Malinair", route: "Glasgow / Manchester / Edinburgh", years: "1985 – 1987" },
   { name: "Air Ecosse", route: "Glasgow", years: "1987" },
@@ -104,12 +98,11 @@ const airlines = [
 ---
 
 <BaseLayout title={title} description={description}>
-  {/* ---------- HERO — text only. Photo will replace the cream
-       backdrop once we choose one. ---------- */}
+  {/* ---------- HERO — text only, kept short ---------- */}
   <section
-    class="relative isolate flex min-h-[78vh] w-full items-end border-b border-line bg-surface-lo/40"
+    class="relative isolate flex min-h-[72vh] w-full items-end border-b border-line bg-surface-lo/40"
   >
-    <div class="mx-auto w-full max-w-7xl px-6 pb-20 pt-44 sm:pb-32">
+    <div class="mx-auto w-full max-w-7xl px-6 pb-16 pt-40 sm:pb-24">
       <p
         data-animate="fade-up"
         class="font-mono text-[0.7rem] uppercase tracking-[0.32em] text-atlantic"
@@ -128,69 +121,204 @@ const airlines = [
         data-animate-delay="0.35"
         class="mt-10 max-w-2xl text-base leading-relaxed text-mute sm:text-lg"
       >
-        From a 610-metre grass strip in 1978 and a Christmas-Eve
-        ticket in 1985 to the world's most scenic approach and
-        Ireland's greenest airport. The story of CFN — told in
-        pieces.
+        Six chapters · 1978 to 2025. Scroll right to travel
+        forward through the airport's life.
       </p>
 
       <div
         data-animate="fade-up"
         data-animate-delay="0.5"
-        class="mt-14 flex items-center gap-3 text-mute"
+        class="mt-12 flex items-center gap-3 text-mute"
         aria-hidden="true"
       >
         <span class="scroll-hint font-mono text-[0.65rem] uppercase tracking-[0.24em]">
           Scroll
         </span>
-        <span class="scroll-hint text-base">↓</span>
+        <span class="scroll-hint text-base">→</span>
       </div>
     </div>
   </section>
 
-  {/* ---------- TIMELINE ---------- */}
-  <section>
-    <div class="mx-auto max-w-3xl px-6 py-24 sm:py-32">
-      <ol class="space-y-24 sm:space-y-32">
+  {/* ---------- HORIZONTAL TIMELINE — desktop only ----------
+       The wrapper is tall (one viewport per panel of vertical
+       scroll distance). h-pin sticks to viewport; h-track
+       translates -X as the user scrolls down. animations.ts wires
+       this up via [data-horizontal]. */}
+  <section
+    data-horizontal
+    class="h-wrapper relative hidden bg-surface lg:block"
+    style={`height: ${(chapters.length + 0.5) * 100}vh;`}
+  >
+    <div class="h-pin">
+      {/* Floating progress strip — dots with year labels */}
+      <nav
+        aria-label="Chapter progress"
+        class="absolute left-1/2 top-10 z-20 -translate-x-1/2"
+      >
+        <ol
+          data-h-progress
+          class="flex items-center gap-5 rounded-full border border-line/80 bg-surface-hi/85 px-5 py-2.5 font-mono text-[0.66rem] uppercase tracking-[0.2em] text-mute shadow-[0_8px_24px_-18px_rgba(17,32,45,0.25)] backdrop-blur"
+        >
+          {
+            chapters.map((c, i) => (
+              <li>
+                <a
+                  href={`#chapter-${i}`}
+                  data-h-dot
+                  data-index={i}
+                  class="group inline-flex items-center gap-2 transition-colors hover:text-atlantic"
+                >
+                  <span
+                    class="inline-block h-1.5 w-1.5 rounded-full bg-mute transition-all duration-300 group-hover:bg-atlantic"
+                  />
+                  <span class="tabular-nums">{c.year}</span>
+                </a>
+              </li>
+            ))
+          }
+        </ol>
+      </nav>
+
+      {/* The horizontal track of chapter panels */}
+      <div class="h-track items-stretch py-12">
+        {/* Intro panel — eyebrow / instructions */}
+        <article
+          class="flex h-[calc(100vh-6rem)] w-[40rem] shrink-0 flex-col justify-center pl-[clamp(1.5rem,6vw,6rem)] pr-12"
+        >
+          <p class="font-mono text-[0.7rem] uppercase tracking-[0.3em] text-atlantic">
+            The timeline
+          </p>
+          <h2
+            class="mt-5 max-w-md font-display text-[clamp(2.5rem,4.5vw,4.5rem)] font-light leading-[1]"
+          >
+            Six chapters, one runway.
+          </h2>
+          <p class="mt-7 max-w-sm text-base leading-relaxed text-mute">
+            From a grass strip with no airline in 1978 to Ireland's
+            greenest small airport in 2025. The story moves to the
+            right — like the runway itself.
+          </p>
+          <p
+            class="mt-10 inline-flex items-center gap-3 font-mono text-[0.65rem] uppercase tracking-[0.24em] text-sand"
+            aria-hidden="true"
+          >
+            <span>Scroll to begin</span>
+            <span class="text-base">→</span>
+          </p>
+        </article>
+
+        {/* The six story panels */}
+        {
+          chapters.map((c, i) => (
+            <article
+              id={`chapter-${i}`}
+              data-h-panel
+              data-index={i}
+              class="relative flex h-[calc(100vh-6rem)] w-[58rem] shrink-0 items-stretch"
+            >
+              {/* Big year as architectural background */}
+              <span
+                aria-hidden="true"
+                class="pointer-events-none absolute -left-4 top-1/2 -z-10 -translate-y-1/2 select-none font-display font-light leading-none text-sand/15"
+                style="font-size: clamp(12rem, 32vh, 28rem);"
+              >
+                {c.year}
+              </span>
+
+              {/* Text column */}
+              <div class="relative z-10 flex w-full flex-col justify-center pl-[clamp(2rem,6vw,8rem)] pr-12">
+                <p
+                  data-animate="fade-up"
+                  class="font-mono text-[0.72rem] uppercase tracking-[0.3em] text-sand"
+                >
+                  <span>{`0${i + 1}`.slice(-2)} · {c.range}</span>
+                  <span class="ml-3 text-atlantic">{c.year}</span>
+                </p>
+
+                <h2
+                  data-split
+                  class="mt-5 max-w-2xl font-display text-[clamp(2rem,4vw,4rem)] font-light leading-[1.02] text-ink"
+                >
+                  {c.title}
+                </h2>
+
+                <p
+                  data-animate="fade-up"
+                  data-animate-delay="0.18"
+                  class="mt-7 max-w-xl text-[1.05rem] leading-[1.7] text-ink sm:text-[1.12rem]"
+                >
+                  {c.lead}
+                </p>
+
+                {c.body.map((para, j) => (
+                  <p
+                    data-animate="fade-up"
+                    data-animate-delay={`${0.25 + j * 0.06}`}
+                    class="mt-5 max-w-xl text-base leading-[1.7] text-mute"
+                  >
+                    {para}
+                  </p>
+                ))}
+              </div>
+            </article>
+          ))
+        }
+
+        {/* Outro panel — handoff to the operators table */}
+        <article
+          class="flex h-[calc(100vh-6rem)] w-[32rem] shrink-0 flex-col justify-center px-12"
+        >
+          <p class="font-mono text-[0.7rem] uppercase tracking-[0.3em] text-atlantic">
+            Continues below
+          </p>
+          <h2
+            class="mt-4 max-w-md font-display text-[clamp(2rem,3.6vw,3.4rem)] font-light leading-[1]"
+          >
+            Every airline that has ever flown here.
+          </h2>
+          <p
+            class="mt-8 inline-flex items-center gap-3 font-mono text-[0.65rem] uppercase tracking-[0.24em] text-sand"
+            aria-hidden="true"
+          >
+            <span>Scroll down</span>
+            <span class="text-base">↓</span>
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  {/* ---------- VERTICAL TIMELINE — mobile fallback ---------- */}
+  <section class="border-y border-line lg:hidden">
+    <div class="mx-auto max-w-2xl px-6 py-20">
+      <ol class="space-y-20">
         {
           chapters.map((c, i) => (
             <li class="relative">
-              {/* Decorative chapter index — small, mono, far left */}
-              <p class="absolute -left-2 top-1 hidden font-mono text-[0.66rem] uppercase tracking-[0.22em] text-mute sm:block sm:-left-20">
-                {`0${i + 1}`.slice(-2)}
-              </p>
-
+              <span
+                aria-hidden="true"
+                class="pointer-events-none absolute -left-2 -top-6 -z-10 select-none font-display text-7xl font-light leading-none text-sand/20"
+              >
+                {c.year}
+              </span>
               <p
                 data-animate="fade-up"
-                class="font-mono text-[0.72rem] uppercase tracking-[0.3em] text-sand"
+                class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-sand"
               >
-                <span>{c.range}</span>
-                <span class="ml-3 text-atlantic">{c.year}</span>
+                {`0${i + 1}`.slice(-2)} · {c.range}{" "}
+                <span class="text-atlantic">{c.year}</span>
               </p>
-
               <h2
                 data-split
-                class="mt-5 font-display text-[clamp(2rem,4.5vw,3.8rem)] font-light leading-[1.02] text-ink"
+                class="mt-3 font-display text-3xl font-light leading-[1.05] text-ink"
               >
                 {c.title}
               </h2>
-
-              <p
-                data-animate="fade-up"
-                data-animate-delay="0.15"
-                class="mt-7 text-[1.05rem] leading-[1.7] text-ink sm:text-[1.15rem]"
-              >
+              <p class="mt-5 text-[1.05rem] leading-[1.65] text-ink">
                 {c.lead}
               </p>
-
-              {c.body.map((para, j) => (
-                <p
-                  data-animate="fade-up"
-                  data-animate-delay={`${0.2 + (j + 1) * 0.05}`}
-                  class="mt-5 text-base leading-[1.75] text-mute"
-                >
-                  {para}
-                </p>
+              {c.body.map((para) => (
+                <p class="mt-4 text-base leading-[1.7] text-mute">{para}</p>
               ))}
             </li>
           ))

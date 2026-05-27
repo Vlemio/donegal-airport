@@ -346,10 +346,15 @@ function setupScrubVideo(): void {
 
 /* ---------- Sticky horizontal scroll ----------
    The wrapper provides vertical scroll distance; the inner .h-track
-   translates -X as the user scrolls down. Used by the
-   "Destinations from CFN" section. Disabled on small viewports
-   because horizontal-scroll-on-vertical-scroll is unintuitive on
-   touch. */
+   translates -X as the user scrolls down. Disabled on small
+   viewports because horizontal-scroll-on-vertical-scroll is
+   unintuitive on touch.
+
+   Also wires:
+   - [data-h-progress] / [data-h-dot]: the year-dot strip that
+     marks the currently-centered panel and accepts click-to-jump.
+   - [data-h-panel]: a panel within the track that the progress
+     watcher uses as a checkpoint. */
 function setupStickyHorizontal(): void {
   if (prefersReducedMotion()) return;
   if (!window.matchMedia("(min-width: 1024px)").matches) return;
@@ -362,18 +367,92 @@ function setupStickyHorizontal(): void {
       const distance = track.scrollWidth - window.innerWidth;
       if (distance <= 0) return;
 
-      gsap.to(track, {
+      const pinEl = wrapper.querySelector<HTMLElement>(".h-pin");
+
+      // Track translation tied to scroll
+      const trackTween = gsap.to(track, {
         x: -distance,
         ease: "none",
         scrollTrigger: {
           trigger: wrapper,
           start: "top top",
           end: () => `+=${distance}`,
-          pin: wrapper.querySelector<HTMLElement>(".h-pin"),
+          pin: pinEl,
           scrub: 0.4,
           invalidateOnRefresh: true,
         },
       });
+
+      // ---- Progress dots ----
+      const panels = Array.from(
+        track.querySelectorAll<HTMLElement>("[data-h-panel]"),
+      );
+      const dots = Array.from(
+        document.querySelectorAll<HTMLElement>("[data-h-dot]"),
+      );
+      if (!panels.length || !dots.length) return;
+
+      // For each panel, compute the vertical scrollY where its
+      // centre crosses the viewport centre during the horizontal
+      // animation, and create a ScrollTrigger that toggles the
+      // matching dot active in a small range around it.
+      const computeTargets = (): number[] => {
+        const wrapperTop = wrapper.getBoundingClientRect().top + window.scrollY;
+        const verticalDistance = distance; // pinned + scrub means 1:1
+        return panels.map((panel) => {
+          const panelCentre = panel.offsetLeft + panel.offsetWidth / 2;
+          const progress = (panelCentre - window.innerWidth / 2) / distance;
+          const clamped = Math.max(0, Math.min(1, progress));
+          return wrapperTop + clamped * verticalDistance;
+        });
+      };
+
+      let targets = computeTargets();
+      const setActive = (i: number): void => {
+        dots.forEach((d, di) => d.classList.toggle("is-active", di === i));
+      };
+
+      // One ScrollTrigger per panel that flips the active dot when
+      // the user is within a quarter-viewport of the panel centre.
+      const triggers = panels.map((_, i) =>
+        ScrollTrigger.create({
+          start: () => targets[i] - window.innerHeight / 4,
+          end: () => targets[i] + window.innerHeight / 4,
+          onToggle: (self) => {
+            if (self.isActive) setActive(i);
+          },
+        }),
+      );
+
+      // Recompute on resize so dots stay accurate on viewport change.
+      ScrollTrigger.addEventListener("refreshInit", () => {
+        targets = computeTargets();
+      });
+
+      // Click-to-jump on dots — uses Lenis if available, else native.
+      dots.forEach((dot, i) => {
+        dot.addEventListener("click", (event) => {
+          event.preventDefault();
+          targets = computeTargets();
+          const y = targets[i];
+          if (lenis) {
+            lenis.scrollTo(y, { duration: 1.2 });
+          } else {
+            window.scrollTo({ top: y, behavior: "smooth" });
+          }
+        });
+      });
+
+      // First-paint sync
+      setTimeout(() => {
+        targets = computeTargets();
+        ScrollTrigger.refresh();
+      }, 30);
+
+      // Suppress noisy unused-variable warnings — these are kept for
+      // future debugging/teardown.
+      void trackTween;
+      void triggers;
     });
 }
 
