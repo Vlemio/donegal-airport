@@ -7,33 +7,68 @@ const description = "Reach Donegal Airport (CFN). Phone, email, address, opening
 
 <BaseLayout title={title} description={description}>
   <section class="mx-auto max-w-7xl px-6 pb-24 pt-40">
-    <p class="text-xs uppercase tracking-[0.28em] text-atlantic">Contact</p>
-    <h1 class="mt-3 max-w-3xl font-display text-5xl leading-[1.05] sm:text-6xl">
+    <p class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic">
+      Contact
+    </p>
+    <h1
+      data-split
+      class="mt-4 max-w-4xl font-display text-[clamp(2.5rem,6vw,5.5rem)] font-normal leading-[0.98]"
+    >
       Talk to us.
     </h1>
-    <p class="mt-6 max-w-2xl text-base leading-relaxed text-mute sm:text-lg">
-      General enquiries, lost & found, press, ATC. We answer fast — it's a small team.
+    <p class="mt-7 max-w-2xl text-base leading-relaxed text-mute sm:text-lg">
+      General enquiries, lost & found, press, ATC. We answer fast —
+      it's a small team.
     </p>
 
-    <div data-animate="fade-up" class="mt-12 grid gap-6 md:grid-cols-2">
-      <div class="rounded-2xl border border-line bg-surface-hi p-7">
-        <p class="text-xs uppercase tracking-[0.22em] text-sand">General</p>
-        <p class="mt-4 text-sm text-mute">Carrickfinn, Kincasslagh, Letterkenny, Co. Donegal · F94 X2RH</p>
-        <p class="mt-4"><a href="tel:+353749548284" class="text-ink hover:text-atlantic">+353 (0)74 9548284</a></p>
-        <p class="mt-1"><a href="mailto:info@donegalairport.ie" class="text-ink hover:text-atlantic">info@donegalairport.ie</a></p>
+    <div
+      data-animate="fade-up"
+      class="mt-16 grid divide-y divide-line border-y border-line md:grid-cols-2 md:divide-x md:divide-y-0"
+    >
+      <div class="px-2 py-10 sm:px-6">
+        <p class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-sand">
+          General
+        </p>
+        <p class="mt-4 max-w-xs text-sm text-mute">
+          Carrickfinn, Kincasslagh, Letterkenny, Co. Donegal · F94 X2RH
+        </p>
+        <p class="mt-5 font-display text-2xl">
+          <a href="tel:+353749548284" class="text-ink transition-colors hover:text-sand">
+            +353 (0)74 9548284
+          </a>
+        </p>
+        <p class="mt-1 text-sm">
+          <a href="mailto:info@donegalairport.ie" class="text-ink transition-colors hover:text-sand">
+            info@donegalairport.ie
+          </a>
+        </p>
       </div>
-      <div class="rounded-2xl border border-line bg-surface-hi p-7">
-        <p class="text-xs uppercase tracking-[0.22em] text-sand">Air Traffic Control</p>
-        <p class="mt-4 text-sm text-mute">For PPR, drone operations and aerodrome enquiries.</p>
-        <p class="mt-4"><a href="tel:+353749548604" class="text-ink hover:text-atlantic">+353 (0)74 9548604</a></p>
-        <p class="mt-1"><a href="mailto:atc@donegalairport.ie" class="text-ink hover:text-atlantic">atc@donegalairport.ie</a></p>
+      <div class="px-2 py-10 sm:px-6">
+        <p class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-sand">
+          Air Traffic Control
+        </p>
+        <p class="mt-4 max-w-xs text-sm text-mute">
+          For PPR, drone operations and aerodrome enquiries.
+        </p>
+        <p class="mt-5 font-display text-2xl">
+          <a href="tel:+353749548604" class="text-ink transition-colors hover:text-sand">
+            +353 (0)74 9548604
+          </a>
+        </p>
+        <p class="mt-1 text-sm">
+          <a href="mailto:atc@donegalairport.ie" class="text-ink transition-colors hover:text-sand">
+            atc@donegalairport.ie
+          </a>
+        </p>
       </div>
     </div>
 
-    <div data-animate="fade-up" class="mt-10 rounded-2xl border border-dashed border-line bg-surface-hi p-10 text-center">
-      <p class="font-mono text-xs uppercase tracking-[0.22em] text-mute">Coming next</p>
-      <p class="mt-3 text-base text-ink">
-        Contact form (Web3Forms post-firma) · mini Leaflet · opening hours · lost & found · press contact.
+    <div data-animate="fade-up" class="mt-14 border-t border-line pt-10">
+      <p class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-mute">
+        Coming next
+      </p>
+      <p class="mt-4 max-w-2xl font-display text-2xl leading-snug text-ink">
+        Contact form · mini Leaflet · opening hours · lost & found · press contact.
       </p>
     </div>
   </section>

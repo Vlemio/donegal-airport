@@ -7,38 +7,60 @@ const description = "Aerodrome reference data, ATC frequencies, PPR, drone opera
 
 <BaseLayout title={title} description={description}>
   <section class="mx-auto max-w-7xl px-6 pb-24 pt-40">
-    <p class="text-xs uppercase tracking-[0.28em] text-atlantic">Pilots & ATC</p>
-    <h1 class="mt-3 max-w-3xl font-display text-5xl leading-[1.05] sm:text-6xl">
+    <p class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic">
+      Pilots & ATC
+    </p>
+    <h1
+      data-split
+      class="mt-4 max-w-4xl font-display text-[clamp(2.5rem,6vw,5.5rem)] font-normal leading-[0.98]"
+    >
       Operations at CFN.
     </h1>
-    <p class="mt-6 max-w-2xl text-base leading-relaxed text-mute sm:text-lg">
+    <p class="mt-7 max-w-2xl text-base leading-relaxed text-mute sm:text-lg">
       Aerodrome data, frequencies, PPR procedure, drone operations
       and the beach-landing approach — straight from the tower.
     </p>
 
-    <div data-animate="fade-up" class="mt-12 grid gap-4 font-mono text-sm sm:grid-cols-2">
-      <div class="rounded-xl border border-line bg-surface-hi p-5">
-        <p class="text-xs uppercase tracking-[0.2em] text-sand">IATA</p>
-        <p class="mt-2 font-display text-3xl text-ink">CFN</p>
+    <dl
+      data-animate="fade-up"
+      class="mt-16 grid divide-y divide-line border-y border-line text-sm sm:grid-cols-2 sm:divide-x sm:divide-y-0"
+    >
+      <div class="px-2 py-7 sm:px-6">
+        <dt class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-sand">
+          IATA
+        </dt>
+        <dd class="mt-2 font-display text-4xl leading-none text-ink">CFN</dd>
       </div>
-      <div class="rounded-xl border border-line bg-surface-hi p-5">
-        <p class="text-xs uppercase tracking-[0.2em] text-sand">ICAO</p>
-        <p class="mt-2 font-display text-3xl text-ink">EIDL</p>
+      <div class="px-2 py-7 sm:px-6">
+        <dt class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-sand">
+          ICAO
+        </dt>
+        <dd class="mt-2 font-display text-4xl leading-none text-ink">EIDL</dd>
       </div>
-      <div class="rounded-xl border border-line bg-surface-hi p-5">
-        <p class="text-xs uppercase tracking-[0.2em] text-sand">Runway</p>
-        <p class="mt-2 font-display text-2xl text-ink">02/20 · 1 495 × 30 m</p>
+      <div class="px-2 py-7 sm:px-6">
+        <dt class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-sand">
+          Runway
+        </dt>
+        <dd class="mt-2 font-display text-3xl leading-none text-ink">
+          02/20 · 1 495 × 30 m
+        </dd>
       </div>
-      <div class="rounded-xl border border-line bg-surface-hi p-5">
-        <p class="text-xs uppercase tracking-[0.2em] text-sand">Tower / ATIS</p>
-        <p class="mt-2 font-display text-2xl text-ink">129.805 / 129.930</p>
+      <div class="px-2 py-7 sm:px-6">
+        <dt class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-sand">
+          Tower / ATIS
+        </dt>
+        <dd class="mt-2 font-display text-3xl leading-none text-ink">
+          129.805 / 129.930
+        </dd>
       </div>
-    </div>
+    </dl>
 
-    <div data-animate="fade-up" class="mt-10 rounded-2xl border border-dashed border-line bg-surface-hi p-10 text-center">
-      <p class="font-mono text-xs uppercase tracking-[0.22em] text-mute">Coming next</p>
-      <p class="mt-3 text-base text-ink">
-        PPR online form · CTR drone map · approach types · AIP link · beach-landing operations notes.
+    <div data-animate="fade-up" class="mt-14 border-t border-line pt-10">
+      <p class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-mute">
+        Coming next
+      </p>
+      <p class="mt-4 max-w-2xl font-display text-2xl leading-snug text-ink">
+        PPR online form · CTR drone map · approach types · AIP link · beach-landing operations.
       </p>
     </div>
   </section>

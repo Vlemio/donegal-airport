@@ -6,238 +6,563 @@ const locale = "en";
 const title = `${t("site.name", locale)} · ${t("site.tagline", locale)}`;
 const description = t("site.description", locale);
 
-// Awards rendered both in the home carousel and on /about. Sourced
-// from CFN press history; verify dates against the airport's own
-// records before going live.
+// Live-flight placeholder (option A from discovery: "fake-live for
+// pitch, swap for real data post-firma"). Status pill colours come
+// from --color-status-* tokens.
+const flightsToday = [
+  { time: "08:25", flight: "EI 3680", to: "Dublin", dir: "DEP", status: "On time", tone: "ontime" },
+  { time: "09:55", flight: "EI 3681", to: "from Dublin", dir: "ARR", status: "On time", tone: "ontime" },
+  { time: "17:30", flight: "EI 3684", to: "Dublin", dir: "DEP", status: "On time", tone: "ontime" },
+  { time: "19:00", flight: "EI 3685", to: "from Dublin", dir: "ARR", status: "On time", tone: "ontime" },
+] as const;
+
+// Destinations — horizontal-scroll panels. Each panel is one viewport
+// wide on desktop; on mobile they stack vertically. Photo URL is a
+// placeholder gradient until Jose Manuel's photography lands. */
+const destinations = [
+  {
+    code: "DUB",
+    city: "Dublin",
+    country: "Ireland",
+    duration: "55 min",
+    schedule: "Daily · 2× return",
+    carrier: "Aer Lingus Regional",
+    hero: "linear-gradient(135deg, #1e3a5f 0%, #2a5380 60%, #c9a66b 100%)",
+    caption: "An overnight bag and you're halfway to the city by lunch.",
+  },
+  {
+    code: "GLA",
+    city: "Glasgow",
+    country: "Scotland",
+    duration: "1 h 5 min",
+    schedule: "Friday & Sunday",
+    carrier: "Loganair",
+    hero: "linear-gradient(135deg, #11202d 0%, #1e3a5f 50%, #2a5380 100%)",
+    caption: "Weekend in the Highlands. Home before bedtime.",
+  },
+] as const;
+
+// Awards — editorial blocks, not cards. Big year, big claim, no
+// bounded rectangles. Sourced from CFN press history (verify dates).
 const awards = [
   {
     year: "2024",
-    title: "ACA Level 4 'Transformation'",
-    detail: "First airport on the island of Ireland to reach Airport Carbon Accreditation Level 4.",
+    title: "First airport on the island of Ireland",
+    detail: "to reach Airport Carbon Accreditation Level 4 'Transformation'.",
+    source: "ACA · Airports Council International",
   },
   {
     year: "2018",
     title: "World's most stunning runway",
     detail: "Voted #1 by PrivateFly's global panel of pilots and travellers.",
+    source: "PrivateFly",
   },
   {
     year: "2016",
     title: "Top-10 scenic landings",
     detail: "PrivateFly worldwide shortlist — Carrickfinn beach approach with Mt Errigal in frame.",
+    source: "PrivateFly",
   },
 ];
 
-// Placeholder live board. Populated from a typed JSON in a follow-up
-// commit. Today this is the "fake-live for pitch" plan agreed in
-// discovery — same visual treatment as the real thing.
-const flightsToday = [
-  { time: "08:25", flight: "EI 3680", carrier: "Aer Lingus Regional", route: "Dublin (DUB)", direction: "Departure", status: "On time" },
-  { time: "09:55", flight: "EI 3681", carrier: "Aer Lingus Regional", route: "Dublin (DUB)", direction: "Arrival", status: "On time" },
-  { time: "17:30", flight: "EI 3684", carrier: "Aer Lingus Regional", route: "Dublin (DUB)", direction: "Departure", status: "On time" },
-  { time: "19:00", flight: "EI 3685", carrier: "Aer Lingus Regional", route: "Dublin (DUB)", direction: "Arrival", status: "On time" },
+// News — DD.MM.YYYY format throughout, Vágar style. Most-recent
+// first. Move to a typed JSON in src/data/ when we get past 3-4.
+const news = [
+  {
+    date: "08.05.2026",
+    kind: "Operations",
+    title: "Dublin route restored to twice-daily service.",
+  },
+  {
+    date: "21.04.2026",
+    kind: "Sustainability",
+    title: "ACA Level 4 'Transformation' confirmed — a first for Ireland.",
+  },
+  {
+    date: "03.03.2026",
+    kind: "Community",
+    title: "Scoil Gheimhridh winter school returns for a 17th year.",
+  },
 ];
 ---
 
 <BaseLayout title={title} description={description}>
-  {/* ---------- HERO ---------- */}
+  {/* ---------- HERO ----------
+      Full-screen, video-scrub-ready. The drone clip will live in
+      /public/video/hero.mp4 once generated in Higgsfield (Kling 3.0):
+      keyframe 1 = clouds blanketing the camera, keyframe 2 = clouds
+      parting laterally to reveal the airport. Encode with
+      `ffmpeg -i in.mp4 -c:v libx264 -g 1 -keyint_min 1
+      -sc_threshold 0 -movflags +faststart -an out.mp4` or the scrub
+      stutters. Until then, a gradient placeholder holds the layout. */}
   <section
-    class="relative isolate flex min-h-screen w-full items-end overflow-hidden"
+    data-scrub-trigger
+    data-hero-scroll
+    class="relative isolate h-[200vh] w-full"
   >
-    {/* Photograph goes here once we wire Jose Manuel's beach-landing
-        shot. Placeholder gradient keeps the layout shape stable. */}
-    <div
-      class="absolute inset-0 -z-10 bg-gradient-to-b from-atlantic via-atlantic-bright to-ink"
-    >
-    </div>
-    <div
-      class="absolute inset-0 -z-10 bg-gradient-to-t from-ink/85 via-ink/40 to-transparent"
-    >
-    </div>
+    <div class="sticky top-0 flex h-screen w-full items-end overflow-hidden">
+      {/* Placeholder gradient — replace with the drone scrub video.
+          When the .mp4 is dropped at /video/hero.mp4 the <video>
+          below picks it up via data-src. */}
+      <div
+        data-ken-burns
+        aria-hidden="true"
+        class="absolute inset-0 -z-20 bg-gradient-to-b from-atlantic via-atlantic-bright to-ink"
+      >
+      </div>
 
-    <div class="cfn-hero-content mx-auto w-full max-w-7xl px-6 pb-20 pt-32 sm:pb-32">
-      <p
-        data-animate="fade-up"
-        class="text-xs uppercase tracking-[0.32em] text-sand"
+      <video
+        data-scrub-video
+        data-src="/video/hero.mp4"
+        data-scrub-start="top top"
+        data-scrub-end="bottom bottom"
+        muted
+        playsinline
+        preload="metadata"
+        class="absolute inset-0 -z-10 hidden h-full w-full object-cover md:block"
+        aria-hidden="true"
       >
-        Donegal · Ireland · CFN
-      </p>
-      <h1
-        data-animate="fade-up"
-        data-animate-delay="0.1"
-        class="mt-6 max-w-4xl font-display text-5xl leading-[1.04] text-ink sm:text-7xl lg:text-[5.5rem]"
+      </video>
+
+      {/* Bottom gradient so headline stays readable over any frame */}
+      <div
+        class="absolute inset-0 -z-10 bg-gradient-to-t from-ink/85 via-ink/35 to-transparent"
+        aria-hidden="true"
       >
-        World's most scenic runway.<br />
-        <span class="text-sand">Carrickfinn beach. Mount Errigal.</span>
-      </h1>
-      <p
-        data-animate="fade-up"
-        data-animate-delay="0.2"
-        class="mt-7 max-w-2xl text-base leading-relaxed text-mute sm:text-lg"
-      >
-        Your gateway to the Wild Atlantic Way. Daily flights to Dublin with
-        Aer Lingus Regional. Weekend service to Glasgow with Loganair.
-      </p>
+      </div>
 
       <div
-        data-animate="fade-up"
-        data-animate-delay="0.3"
-        class="mt-10 flex flex-wrap gap-3"
+        class="cfn-hero-content mx-auto w-full max-w-7xl px-6 pb-24 pt-32 sm:pb-32"
       >
-        <a
-          href="/flights"
-          class="rounded-full bg-sand px-7 py-3 text-sm font-semibold uppercase tracking-[0.15em] text-sand-ink transition-all hover:bg-sand-bright"
+        <p
+          data-animate="fade-up"
+          class="font-mono text-[0.7rem] uppercase tracking-[0.32em] text-sand"
         >
-          Today's flights
-        </a>
-        <a
-          href="/plan#parking"
-          class="rounded-full border border-ink/30 px-7 py-3 text-sm font-semibold uppercase tracking-[0.15em] text-ink transition-all hover:bg-ink/10"
+          Donegal · Ireland · 55.04°N 8.34°W
+        </p>
+
+        <h1
+          data-split
+          data-split-delay="0.15"
+          class="mt-7 max-w-5xl font-display text-[clamp(2.75rem,7.5vw,7rem)] font-normal leading-[0.95] text-ink"
         >
-          Parking & getting here
-        </a>
+          The world's most scenic runway, between the mountain and the sea.
+        </h1>
+
+        <div
+          data-animate="fade-up"
+          data-animate-delay="0.4"
+          class="mt-10 flex flex-wrap items-center gap-x-10 gap-y-3 text-mute"
+        >
+          <p class="max-w-lg text-base leading-relaxed sm:text-lg">
+            Daily to Dublin. Weekend to Glasgow. A blue-flag beach for a runway.
+          </p>
+        </div>
+
+        <div
+          data-animate="fade-up"
+          data-animate-delay="0.5"
+          class="mt-12 flex flex-wrap items-center gap-6"
+        >
+          <a
+            href="/flights"
+            class="border-b border-ink/60 pb-1 font-mono text-xs uppercase tracking-[0.22em] text-ink transition-colors hover:border-sand hover:text-sand"
+          >
+            Today's flights →
+          </a>
+          <a
+            href="/plan#parking"
+            class="border-b border-transparent pb-1 font-mono text-xs uppercase tracking-[0.22em] text-mute transition-colors hover:border-sand hover:text-sand"
+          >
+            Parking & getting here →
+          </a>
+        </div>
+
+        <div
+          class="mt-20 flex items-center gap-3 text-mute sm:mt-28"
+          aria-hidden="true"
+        >
+          <span class="scroll-hint scroll-hint--light font-mono text-[0.65rem] uppercase tracking-[0.24em]">
+            Scroll to reveal
+          </span>
+          <span class="scroll-hint scroll-hint--light text-base">↓</span>
+        </div>
       </div>
     </div>
   </section>
 
-  {/* ---------- LIVE BOARD STUB ---------- */}
-  <section class="border-y border-line bg-surface-hi">
-    <div class="mx-auto max-w-7xl px-6 py-16 sm:py-20">
-      <div class="flex items-baseline justify-between gap-6">
-        <div>
-          <p class="text-xs uppercase tracking-[0.28em] text-atlantic">
-            Today at CFN
+  {/* ---------- EDITORIAL INTRO ----------
+      The "Carrickfinn is a place" paragraph. Heavy display weight,
+      photo to the right on desktop, stacked on mobile. */}
+  <section class="border-t border-line">
+    <div class="mx-auto grid max-w-7xl gap-12 px-6 py-28 lg:grid-cols-12 lg:gap-16">
+      <div class="lg:col-span-7">
+        <p
+          data-animate="fade-up"
+          class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic"
+        >
+          Carraig Fhinn · Co. Donegal
+        </p>
+        <p
+          data-split
+          class="mt-8 max-w-3xl font-display text-[clamp(2rem,4vw,3.6rem)] font-normal leading-[1.02] text-ink"
+        >
+          We are the smallest international airport in the country, and the
+          one with the best view.
+        </p>
+        <div
+          data-animate="fade-up"
+          data-animate-delay="0.25"
+          class="mt-8 max-w-xl text-base leading-relaxed text-mute"
+        >
+          <p>
+            Carrickfinn sits on a sandbar between the Atlantic and Mount
+            Errigal. The runway runs straight along the beach. Pilots queue
+            for a slot here just to log the approach. Passengers walk to
+            arrivals in under a minute.
           </p>
-          <h2 class="mt-2 font-display text-3xl sm:text-4xl">
-            Flight information
+          <p class="mt-5">
+            <a
+              href="/about"
+              class="border-b border-ink/40 pb-0.5 transition-colors hover:border-sand hover:text-sand"
+            >
+              The full story — Malinair to today →
+            </a>
+          </p>
+        </div>
+      </div>
+
+      <figure
+        data-photo
+        class="relative lg:col-span-5"
+      >
+        <div
+          data-ken-burns
+          data-ken-burns-duration="22"
+          class="aspect-[3/4] w-full rounded-none bg-gradient-to-br from-sand via-atlantic-bright to-ink"
+          aria-hidden="true"
+        >
+        </div>
+        <figcaption
+          class="mt-4 font-mono text-[0.66rem] uppercase tracking-[0.22em] text-mute"
+        >
+          Photograph · Carrickfinn beach approach
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  {/* ---------- TODAY'S FLIGHTS — minimal mono table ---------- */}
+  <section class="border-t border-line bg-surface-lo/60">
+    <div class="mx-auto max-w-7xl px-6 py-24">
+      <div class="flex items-end justify-between gap-6">
+        <div>
+          <p
+            data-animate="fade-up"
+            class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic"
+          >
+            Today
+          </p>
+          <h2
+            data-split
+            class="mt-3 font-display text-[clamp(2rem,4vw,3.4rem)] font-normal leading-[1.04]"
+          >
+            Live arrivals and departures.
           </h2>
         </div>
-        <p class="font-mono text-xs text-mute">
+        <p class="hidden font-mono text-[0.66rem] uppercase tracking-[0.22em] text-mute sm:block">
           Last updated · placeholder
         </p>
       </div>
 
-      <div
-        data-animate="fade-up"
-        class="mt-8 overflow-x-auto rounded-2xl border border-line bg-surface-hi"
-      >
-        <table class="w-full min-w-[640px] font-mono text-sm">
-          <thead>
-            <tr class="border-b border-line bg-surface-lo/50 text-left text-[0.7rem] uppercase tracking-[0.18em] text-mute">
-              <th class="px-5 py-3 font-semibold">Time</th>
-              <th class="px-5 py-3 font-semibold">Flight</th>
-              <th class="px-5 py-3 font-semibold">Route</th>
-              <th class="px-5 py-3 font-semibold">Direction</th>
-              <th class="px-5 py-3 font-semibold">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {
-              flightsToday.map((f) => (
-                <tr class="border-b border-line last:border-0">
-                  <td class="px-5 py-3.5 font-semibold tabular-nums">{f.time}</td>
-                  <td class="px-5 py-3.5 tabular-nums">{f.flight}</td>
-                  <td class="px-5 py-3.5 text-mute">{f.route}</td>
-                  <td class="px-5 py-3.5 text-mute">{f.direction}</td>
-                  <td class="px-5 py-3.5">
-                    <span class="rounded-full bg-[--color-status-ontime]/10 px-3 py-1 text-[0.7rem] font-semibold uppercase tracking-[0.14em] text-[--color-status-ontime]">
-                      {f.status}
-                    </span>
-                  </td>
-                </tr>
-              ))
-            }
-          </tbody>
-        </table>
-      </div>
-
-      <a
-        href="/flights"
-        class="mt-8 inline-flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.15em] text-atlantic hover:text-atlantic-bright"
-      >
-        Full timetable & live status
-        <span aria-hidden="true">→</span>
-      </a>
-    </div>
-  </section>
-
-  {/* ---------- AWARDS CAROUSEL STUB ---------- */}
-  <section class="mx-auto max-w-7xl px-6 py-20 sm:py-28">
-    <p
-      data-animate="fade-up"
-      class="text-xs uppercase tracking-[0.28em] text-atlantic"
-    >
-      Recognition
-    </p>
-    <h2
-      data-animate="fade-up"
-      data-animate-delay="0.1"
-      class="mt-2 max-w-3xl font-display text-4xl sm:text-5xl"
-    >
-      A small airport with a long shelf of awards.
-    </h2>
-
-    <div class="mt-12 grid gap-6 md:grid-cols-3">
-      {
-        awards.map((award, i) => (
-          <article
-            data-animate="fade-up"
-            data-animate-delay={`${0.1 + i * 0.08}`}
-            class="rounded-2xl border border-line bg-surface-hi p-7 shadow-[0_1px_0_rgba(17,32,45,0.04)]"
+      <div data-animate="fade-up" class="mt-10">
+        <ul class="divide-y divide-line font-mono text-sm">
+          <li
+            class="grid grid-cols-[5rem_5.5rem_1fr_4rem_auto] items-center gap-6 py-2 text-[0.66rem] uppercase tracking-[0.18em] text-mute"
           >
-            <p class="font-mono text-xs uppercase tracking-[0.22em] text-sand">
-              {award.year}
-            </p>
-            <h3 class="mt-4 font-display text-2xl leading-tight text-ink">
-              {award.title}
-            </h3>
-            <p class="mt-3 text-sm leading-relaxed text-mute">
-              {award.detail}
-            </p>
-          </article>
-        ))
-      }
+            <span>Time</span><span>Flight</span><span>Route</span>
+            <span>Dir</span><span class="justify-self-end">Status</span>
+          </li>
+          {flightsToday.map((f) => (
+            <li
+              class="grid grid-cols-[5rem_5.5rem_1fr_4rem_auto] items-center gap-6 py-4 text-ink"
+            >
+              <span class="tabular-nums font-medium">{f.time}</span>
+              <span class="tabular-nums">{f.flight}</span>
+              <span class="truncate text-mute">{f.to}</span>
+              <span class="text-[0.66rem] uppercase tracking-[0.18em] text-mute">
+                {f.dir}
+              </span>
+              <span
+                class="justify-self-end text-[0.66rem] uppercase tracking-[0.18em]"
+                style={`color: var(--color-status-${f.tone})`}
+              >
+                {f.status}
+              </span>
+            </li>
+          ))}
+        </ul>
+
+        <a
+          href="/flights"
+          class="mt-10 inline-block border-b border-ink/60 pb-1 font-mono text-xs uppercase tracking-[0.22em] text-ink transition-colors hover:border-sand hover:text-sand"
+        >
+          Full timetable & live status →
+        </a>
+      </div>
     </div>
   </section>
 
-  {/* ---------- QUICK CARDS ---------- */}
-  <section class="border-t border-line bg-surface-lo">
-    <div class="mx-auto max-w-7xl px-6 py-20 sm:py-28">
+  {/* ---------- DESTINATIONS — sticky horizontal scroll ----------
+      On desktop, the section pins for ~2 viewports of scroll while
+      the inner track translates left through the destination panels.
+      On smaller screens, the panels stack vertically and the wrapper
+      attributes are ignored by animations.ts. */}
+  <section
+    data-horizontal
+    class="h-wrapper relative hidden lg:block"
+    style={`height: ${100 + destinations.length * 100}vh;`}
+  >
+    <div class="h-pin">
+      <div class="h-track">
+        <div
+          class="flex h-[80vh] w-[28rem] shrink-0 flex-col justify-between px-2 py-10"
+        >
+          <p class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic">
+            Routes
+          </p>
+          <h2
+            data-split
+            class="font-display text-[clamp(2rem,4vw,4rem)] font-normal leading-[0.98]"
+          >
+            Two flights, two cities.<br />Both arrive in time for dinner.
+          </h2>
+          <p class="max-w-xs text-sm leading-relaxed text-mute">
+            CFN's whole route map fits in one breath. That's the point.
+          </p>
+        </div>
+
+        {destinations.map((d) => (
+          <article
+            data-photo
+            class="relative flex h-[80vh] w-[44rem] shrink-0 flex-col justify-end overflow-hidden"
+            style={`background: ${d.hero}`}
+          >
+            <div
+              class="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/25 to-transparent"
+              aria-hidden="true"
+            >
+            </div>
+            <div class="cfn-hero-content relative z-10 p-10">
+              <p class="font-mono text-[0.72rem] uppercase tracking-[0.3em] text-sand">
+                {d.code} · {d.country}
+              </p>
+              <h3 class="mt-3 font-display text-[clamp(2.5rem,5vw,5rem)] font-normal leading-[0.95] text-ink">
+                {d.city}
+              </h3>
+              <p class="mt-4 max-w-md text-base text-mute">{d.caption}</p>
+              <dl class="mt-8 grid grid-cols-3 gap-6 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-mute">
+                <div>
+                  <dt class="text-sand">Duration</dt>
+                  <dd class="mt-1 text-ink">{d.duration}</dd>
+                </div>
+                <div>
+                  <dt class="text-sand">Schedule</dt>
+                  <dd class="mt-1 text-ink">{d.schedule}</dd>
+                </div>
+                <div>
+                  <dt class="text-sand">Carrier</dt>
+                  <dd class="mt-1 text-ink">{d.carrier}</dd>
+                </div>
+              </dl>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {/* Mobile fallback for destinations — stacked, full-width photos */}
+  <section class="border-t border-line lg:hidden">
+    <div class="mx-auto max-w-3xl px-6 py-20">
       <p
         data-animate="fade-up"
-        class="text-xs uppercase tracking-[0.28em] text-atlantic"
+        class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic"
       >
-        Plan your journey
+        Routes
       </p>
       <h2
         data-animate="fade-up"
         data-animate-delay="0.1"
-        class="mt-2 max-w-3xl font-display text-4xl sm:text-5xl"
+        class="mt-3 font-display text-4xl leading-[1.02]"
       >
-        Everything you need before you fly.
+        Two flights, two cities.
+      </h2>
+      <div class="mt-10 space-y-12">
+        {destinations.map((d, i) => (
+          <article
+            data-animate="fade-up"
+            data-animate-delay={`${0.05 + i * 0.08}`}
+            class="relative overflow-hidden"
+          >
+            <div
+              class="relative aspect-[4/5] w-full"
+              style={`background: ${d.hero}`}
+            >
+              <div
+                class="absolute inset-0 bg-gradient-to-t from-ink/80 to-transparent"
+                aria-hidden="true"
+              >
+              </div>
+              <div class="cfn-hero-content absolute inset-x-0 bottom-0 p-6">
+                <p class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-sand">
+                  {d.code} · {d.country}
+                </p>
+                <h3 class="mt-2 font-display text-4xl leading-[0.95] text-ink">
+                  {d.city}
+                </h3>
+                <p class="mt-3 text-sm text-mute">{d.caption}</p>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {/* ---------- AWARDS — editorial, no cards ---------- */}
+  <section class="border-t border-line">
+    <div class="mx-auto max-w-7xl px-6 py-28">
+      <p
+        data-animate="fade-up"
+        class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic"
+      >
+        Recognition
+      </p>
+      <h2
+        data-split
+        class="mt-3 max-w-4xl font-display text-[clamp(2.25rem,5vw,5rem)] font-normal leading-[0.98]"
+      >
+        A small airport with a long shelf of awards.
       </h2>
 
-      <div class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {
-          [
-            { title: "Parking", body: "2 hours free pick-up & drop-off. Contactless payment. 4 × 22 kW EV.", href: "/plan#parking" },
-            { title: "Getting here", body: "F94 X2RH. Local Link 966 & 992. Driving directions.", href: "/plan#getting-here" },
-            { title: "Special assistance", body: "Free PRM service · 48-hour notice via the PRM Assist app.", href: "/plan#prm" },
-            { title: "Discover Donegal", body: "Wild Atlantic Way · Carrickfinn beach · golf · the Gaeltacht.", href: "/discover" },
-          ].map((card, i) => (
-            <a
-              data-animate="fade-up"
-              data-animate-delay={`${0.1 + i * 0.06}`}
-              href={card.href}
-              class="group flex h-full flex-col rounded-2xl border border-line bg-surface-hi p-7 transition-all hover:border-atlantic hover:shadow-[0_8px_24px_-12px_rgba(30,58,95,0.25)]"
+      <ul class="mt-16 divide-y divide-line">
+        {awards.map((award, i) => (
+          <li
+            data-animate="fade-up"
+            data-animate-delay={`${0.05 + i * 0.06}`}
+            class="grid items-baseline gap-6 py-10 md:grid-cols-[7rem_1fr_auto] md:gap-12"
+          >
+            <p class="font-display text-5xl text-sand md:text-6xl">{award.year}</p>
+            <div>
+              <h3 class="font-display text-2xl leading-tight text-ink md:text-3xl">
+                {award.title}
+              </h3>
+              <p class="mt-2 text-base leading-relaxed text-mute">
+                {award.detail}
+              </p>
+            </div>
+            <p
+              class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-mute md:text-right"
             >
-              <h3 class="font-display text-2xl text-ink">{card.title}</h3>
-              <p class="mt-3 flex-1 text-sm leading-relaxed text-mute">{card.body}</p>
-              <span class="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-atlantic group-hover:text-atlantic-bright">
-                Read more →
+              {award.source}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  {/* ---------- NEWS — DD.MM.YYYY editorial list ---------- */}
+  <section class="border-t border-line bg-surface-lo/60">
+    <div class="mx-auto max-w-7xl px-6 py-24">
+      <div class="flex items-end justify-between gap-6">
+        <div>
+          <p
+            data-animate="fade-up"
+            class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic"
+          >
+            Recent
+          </p>
+          <h2
+            data-animate="fade-up"
+            data-animate-delay="0.1"
+            class="mt-3 font-display text-[clamp(2rem,4vw,3.4rem)] font-normal leading-[1.04]"
+          >
+            From the airport.
+          </h2>
+        </div>
+        <a
+          href="/about#news"
+          class="hidden border-b border-ink/60 pb-1 font-mono text-xs uppercase tracking-[0.22em] text-ink transition-colors hover:border-sand hover:text-sand sm:inline-block"
+        >
+          All news →
+        </a>
+      </div>
+
+      <ul class="mt-10 divide-y divide-line">
+        {news.map((item, i) => (
+          <li
+            data-animate="fade-up"
+            data-animate-delay={`${0.05 + i * 0.05}`}
+          >
+            <a
+              href="/about#news"
+              class="group grid items-baseline gap-4 py-8 transition-colors md:grid-cols-[7rem_8rem_1fr_2rem]"
+            >
+              <p class="font-mono text-[0.78rem] tabular-nums text-mute">
+                {item.date}
+              </p>
+              <p class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-sand">
+                {item.kind}
+              </p>
+              <p class="font-display text-xl leading-snug text-ink md:text-2xl">
+                {item.title}
+              </p>
+              <span
+                class="hidden font-mono text-xs text-mute transition-transform group-hover:translate-x-1 md:block md:text-right"
+              >
+                →
               </span>
             </a>
-          ))
-        }
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  {/* ---------- INQUIRY CTA — clean editorial closer ---------- */}
+  <section class="border-t border-line">
+    <div class="mx-auto max-w-5xl px-6 py-32 text-center">
+      <p
+        data-animate="fade-up"
+        class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic"
+      >
+        Plan your visit
+      </p>
+      <h2
+        data-split
+        class="mt-4 font-display text-[clamp(2.25rem,5.5vw,5.5rem)] font-normal leading-[0.98]"
+      >
+        Fly in. Drive ten minutes.<br />You're on the Wild Atlantic Way.
+      </h2>
+      <div
+        data-animate="fade-up"
+        data-animate-delay="0.35"
+        class="mt-12 flex flex-wrap justify-center gap-6"
+      >
+        <a
+          href="/discover"
+          class="border-b border-ink/60 pb-1 font-mono text-xs uppercase tracking-[0.22em] text-ink transition-colors hover:border-sand hover:text-sand"
+        >
+          Discover Donegal →
+        </a>
+        <a
+          href="/contact"
+          class="border-b border-transparent pb-1 font-mono text-xs uppercase tracking-[0.22em] text-mute transition-colors hover:border-sand hover:text-sand"
+        >
+          Talk to us →
+        </a>
       </div>
     </div>
   </section>

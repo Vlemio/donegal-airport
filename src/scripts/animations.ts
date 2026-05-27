@@ -17,10 +17,10 @@ function initSmoothScroll(): void {
   lenis = new Lenis({ duration: 1.1, smoothWheel: true });
   lenis.on("scroll", () => ScrollTrigger.update());
 
-  // gsap.ticker is global to the page; only add the lenis.raf
-  // callback once across the session. Without this, every view-
-  // transition rebuild would queue another callback and lenis would
-  // run multiple times per frame.
+  // gsap.ticker is global to the page; only add the lenis.raf callback
+  // once across the session. Without this, every view-transition rebuild
+  // would queue another callback and lenis would run multiple times per
+  // frame.
   if (!lenisTickerAdded) {
     gsap.ticker.add((time: number) => lenis?.raf(time * 1000));
     gsap.ticker.lagSmoothing(0);
@@ -28,9 +28,7 @@ function initSmoothScroll(): void {
   }
 }
 
-/* ---------- Scroll-reveal (IntersectionObserver) ----------
-   IntersectionObserver fires for elements already on screen at
-   load time, so above-the-fold content reveals correctly too. */
+/* ---------- Scroll-reveal (IntersectionObserver) ---------- */
 function revealTween(type: string): { from: gsap.TweenVars; to: gsap.TweenVars } {
   switch (type) {
     case "fade":
@@ -47,11 +45,6 @@ function revealTween(type: string): { from: gsap.TweenVars; to: gsap.TweenVars }
 }
 
 let revealObserver: IntersectionObserver | null = null;
-// Tracks elements whose reveal tween has already fired. Prevents the
-// callback from animating the same element twice when a fast scroll
-// crosses several thresholds in a single frame — that would call
-// fromTo() again, snap the element back to its hidden start and
-// re-animate (the visible "jump back and replay" stutter).
 const animatedReveals = new WeakSet<Element>();
 
 function setupReveals(): void {
@@ -68,8 +61,6 @@ function setupReveals(): void {
       entries.forEach((entry) => {
         const el = entry.target as HTMLElement;
         if (animatedReveals.has(el)) return;
-        // Big full-bleed panels set data-animate-at so they reveal
-        // once properly on screen, not when they first peek in.
         const minRatio = parseFloat(el.dataset.animateAt ?? "0.1");
         if (!entry.isIntersecting || entry.intersectionRatio < minRatio) return;
         animatedReveals.add(el);
@@ -87,12 +78,69 @@ function setupReveals(): void {
   );
 
   els.forEach((el) => {
-    // Late-revealing elements are hidden up front so they don't
-    // flash visible before their animation has a chance to run.
     if (el.dataset.animateAt) {
       gsap.set(el, revealTween(el.dataset.animate || "fade-up").from);
     }
     revealObserver?.observe(el);
+  });
+}
+
+/* ---------- Split-text reveal ----------
+   Elements with [data-split] are split into word+char spans on
+   load and animated with a stagger when they cross the viewport.
+   This is the headline-construction pattern that breaks visually
+   from Errigal's flat fade-ups. */
+const splitObservers = new WeakSet<Element>();
+
+function splitIntoChars(el: HTMLElement): void {
+  if (splitObservers.has(el)) return;
+  splitObservers.add(el);
+  const text = el.textContent ?? "";
+  const words = text.split(/\s+/).filter(Boolean);
+  el.textContent = "";
+  el.setAttribute("aria-label", text);
+  words.forEach((word, wi) => {
+    const wordSpan = document.createElement("span");
+    wordSpan.style.display = "inline-block";
+    wordSpan.setAttribute("aria-hidden", "true");
+    [...word].forEach((char) => {
+      const charSpan = document.createElement("span");
+      charSpan.style.display = "inline-block";
+      charSpan.style.willChange = "transform, opacity";
+      charSpan.textContent = char;
+      wordSpan.appendChild(charSpan);
+    });
+    el.appendChild(wordSpan);
+    if (wi < words.length - 1) el.appendChild(document.createTextNode(" "));
+  });
+}
+
+function setupSplitText(): void {
+  const els = gsap.utils.toArray<HTMLElement>("[data-split]");
+  if (!els.length) return;
+  if (prefersReducedMotion()) return;
+
+  els.forEach((el) => {
+    splitIntoChars(el);
+    const chars = el.querySelectorAll<HTMLElement>("span span");
+    if (!chars.length) return;
+    gsap.set(chars, { y: "0.9em", opacity: 0 });
+
+    ScrollTrigger.create({
+      trigger: el,
+      start: "top 85%",
+      once: true,
+      onEnter: () => {
+        gsap.to(chars, {
+          y: 0,
+          opacity: 1,
+          duration: 0.9,
+          ease: "power3.out",
+          stagger: 0.018,
+          delay: parseFloat(el.dataset.splitDelay ?? "0"),
+        });
+      },
+    });
   });
 }
 
@@ -119,21 +167,68 @@ function setupParallax(): void {
   });
 }
 
-/* ---------- Header background on scroll ---------- */
-function watchHeader(): void {
+/* ---------- Ken Burns ----------
+   Slow scale + slight pan on photos with [data-ken-burns]. Runs
+   forever, paused if user prefers reduced motion. Used on the
+   hero crossfade carousel and on big editorial photographs. */
+function setupKenBurns(): void {
+  if (prefersReducedMotion()) return;
+  gsap.utils.toArray<HTMLElement>("[data-ken-burns]").forEach((el) => {
+    const dur = parseFloat(el.dataset.kenBurnsDuration ?? "14");
+    gsap.fromTo(
+      el,
+      { scale: 1.0, xPercent: 0, yPercent: 0 },
+      {
+        scale: 1.09,
+        xPercent: -1.5,
+        yPercent: -1.5,
+        duration: dur,
+        ease: "sine.inOut",
+        repeat: -1,
+        yoyo: true,
+      },
+    );
+  });
+}
+
+/* ---------- Header reveal on scroll up ----------
+   The header starts off-screen above (CSS sets translateY(-100%)).
+   It reveals when:
+   (a) the user has scrolled past one viewport AND is scrolling up, or
+   (b) the user has reached very near the top of the page.
+   This is the deliberate break from Errigal's translucent fixed bar.
+*/
+function setupHeaderReveal(): void {
+  const header = document.querySelector<HTMLElement>("[data-header]");
+  if (!header) return;
+  let lastY = window.scrollY;
+  let ticking = false;
+
   const apply = (): void => {
-    const header = document.querySelector<HTMLElement>("[data-header]");
-    header?.classList.toggle("is-scrolled", window.scrollY > 90);
+    const y = window.scrollY;
+    const goingUp = y < lastY;
+    const nearTop = y < 40;
+    const pastHero = y > window.innerHeight * 0.85;
+    const shouldReveal = nearTop || (goingUp && pastHero);
+    header.classList.toggle("is-revealed", shouldReveal);
+    header.classList.toggle("is-scrolled", y > 80);
+    lastY = y;
+    ticking = false;
   };
-  window.addEventListener("scroll", apply, { passive: true });
+
+  const onScroll = (): void => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(apply);
+  };
+
+  window.addEventListener("scroll", onScroll, { passive: true });
   document.addEventListener("astro:page-load", apply);
+  apply();
 }
 
 /* ---------- Mobile navigation (event delegation) ---------- */
 function watchNav(): void {
-  // Centralised close so the aria state, body-scroll lock and the
-  // translate class always travel together. Used by the hamburger
-  // toggle, by link clicks inside the panel and by the Escape key.
   const closeMobileNav = (): void => {
     const panel = document.querySelector<HTMLElement>("[data-mobile-nav]");
     if (!panel || panel.classList.contains("translate-x-full")) return;
@@ -155,8 +250,6 @@ function watchNav(): void {
       panel.classList.toggle("translate-x-full", !willOpen);
       toggle.setAttribute("aria-expanded", String(willOpen));
       document.documentElement.classList.toggle("overflow-hidden", willOpen);
-      // Move focus inside the drawer for keyboard users when opening
-      // so Tab cycles through nav links instead of the page underneath.
       if (willOpen) panel.querySelector<HTMLElement>("a")?.focus();
       return;
     }
@@ -164,16 +257,18 @@ function watchNav(): void {
     if (target.closest("[data-mobile-nav] a")) closeMobileNav();
   });
 
-  // Escape closes the open drawer — minimum-viable modal a11y for
-  // a fullscreen overlay.
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closeMobileNav();
   });
 }
 
 /* ---------- Scroll-driven scrub videos (desktop only) ----------
-   Each video's currentTime is tied to scroll progress through its
-   nearest [data-scrub-trigger] ancestor. Mobile keeps the poster. */
+   The drone hero video lives here. Each video's currentTime is tied
+   to scroll progress through its nearest [data-scrub-trigger]
+   ancestor. The .mp4 must be encoded with a keyframe at every frame
+   (ffmpeg -g 1 -keyint_min 1 -sc_threshold 0 -movflags +faststart
+   -an) or the scrub stutters as the decoder reconstructs frames.
+   Mobile keeps the poster image; videos are never loaded there. */
 function setupScrubVideo(): void {
   const videos = document.querySelectorAll<HTMLVideoElement>("[data-scrub-video]");
   if (!videos.length) return;
@@ -195,9 +290,9 @@ function setupScrubVideo(): void {
       const duration = video.duration || 5;
       video.classList.add("is-playing");
 
-      // Coalesce seeks: never start a new seek while one is still in
-      // flight. Scrolling fast otherwise queues dozens of seeks and
-      // saturates the video decoder, which stutters the whole page.
+      // Coalesce seeks: never start a new seek while one is still
+      // in flight. Scrolling fast otherwise queues dozens of seeks
+      // and saturates the decoder, stuttering the whole page.
       let target = 0;
       let seeking = false;
       const applySeek = (): void => {
@@ -224,7 +319,6 @@ function setupScrubVideo(): void {
         },
       });
 
-      // Optional vertical pan in addition to the time scrub.
       const panRaw = parseFloat(video.dataset.scrubPan ?? "0");
       const pan = Math.min(0.5, Math.max(0, panRaw));
       if (pan > 0) {
@@ -250,20 +344,92 @@ function setupScrubVideo(): void {
   });
 }
 
-/* ---------- Language toggle hover preview ----------
-   No behaviour beyond the link itself; the toggle is a plain <a>
-   that the i18n helper has already pointed at the equivalent route.
-   This stub is here so future logic (cookie set, hreflang prefetch)
-   has an obvious home. */
-function watchLanguageToggle(): void {
-  // Intentionally empty. See comment above.
+/* ---------- Sticky horizontal scroll ----------
+   The wrapper provides vertical scroll distance; the inner .h-track
+   translates -X as the user scrolls down. Used by the
+   "Destinations from CFN" section. Disabled on small viewports
+   because horizontal-scroll-on-vertical-scroll is unintuitive on
+   touch. */
+function setupStickyHorizontal(): void {
+  if (prefersReducedMotion()) return;
+  if (!window.matchMedia("(min-width: 1024px)").matches) return;
+
+  document
+    .querySelectorAll<HTMLElement>("[data-horizontal]")
+    .forEach((wrapper) => {
+      const track = wrapper.querySelector<HTMLElement>(".h-track");
+      if (!track) return;
+      const distance = track.scrollWidth - window.innerWidth;
+      if (distance <= 0) return;
+
+      gsap.to(track, {
+        x: -distance,
+        ease: "none",
+        scrollTrigger: {
+          trigger: wrapper,
+          start: "top top",
+          end: () => `+=${distance}`,
+          pin: wrapper.querySelector<HTMLElement>(".h-pin"),
+          scrub: 0.4,
+          invalidateOnRefresh: true,
+        },
+      });
+    });
+}
+
+/* ---------- Custom cursor ----------
+   A small circle that follows the pointer; grows into a labelled
+   disc on hover over [data-photo]. Skipped on touch and on
+   prefers-reduced-motion. Lives in a single DOM node attached
+   to <body> on first init. */
+let cursorEl: HTMLElement | null = null;
+
+function setupCursor(): void {
+  if (window.matchMedia("(pointer: coarse)").matches) return;
+  if (prefersReducedMotion()) return;
+
+  if (!cursorEl) {
+    cursorEl = document.createElement("div");
+    cursorEl.className = "cfn-cursor";
+    cursorEl.textContent = "VIEW";
+    document.body.appendChild(cursorEl);
+  }
+
+  let mouseX = 0;
+  let mouseY = 0;
+  let frameRequested = false;
+  const apply = (): void => {
+    if (!cursorEl) return;
+    cursorEl.style.transform = `translate(${mouseX}px, ${mouseY}px)`;
+    frameRequested = false;
+  };
+
+  window.addEventListener("mousemove", (e: MouseEvent) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+    if (frameRequested) return;
+    frameRequested = true;
+    requestAnimationFrame(apply);
+  });
+
+  document.addEventListener("mouseover", (e) => {
+    if (!cursorEl) return;
+    const target = e.target as HTMLElement;
+    cursorEl.classList.toggle(
+      "is-photo",
+      Boolean(target.closest("[data-photo]")),
+    );
+  });
 }
 
 /* ---------- Lifecycle ---------- */
 function build(): void {
   setupReveals();
+  setupSplitText();
   setupParallax();
+  setupKenBurns();
   setupScrubVideo();
+  setupStickyHorizontal();
   ScrollTrigger.refresh();
 }
 
@@ -272,44 +438,31 @@ function destroy(): void {
   revealObserver = null;
   ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
   // Tear Lenis down so the new page gets a fresh instance with
-  // accurate scroll bounds. Keeping Lenis alive across view
-  // transitions was hanging on to the previous page's height and
-  // caused the "scroll snaps back to the start" stutter on the
-  // first scroll after navigating.
+  // accurate scroll bounds.
   lenis?.destroy();
   lenis = null;
-  // Reset any body locks left by an open mobile drawer or modal so
-  // the next page doesn't load with scroll disabled.
   document.documentElement.classList.remove("overflow-hidden");
 }
 
 // Registered once.
 watchNav();
-watchHeader();
-watchLanguageToggle();
+setupHeaderReveal();
+setupCursor();
 
 // First load and every View Transitions navigation.
 document.addEventListener("astro:page-load", () => {
-  // Defensive scroll reset BEFORE Lenis is created. On slow swaps
-  // the new Lenis instance would otherwise read a non-zero scrollY
-  // in its constructor and "travel" there, leaving the user mid-
-  // page on the new route.
+  // Triple-reset of scroll: defensive against the "land mid-page"
+  // bug that bit Errigal. window.scrollTo before Lenis exists;
+  // Lenis constructor reads scrollY; then immediate lenis.scrollTo
+  // pins it at 0 in case anything intermediate moved it.
   window.scrollTo(0, 0);
   initSmoothScroll();
-  // Pin Lenis's internal target to 0 too, in case its proxy read
-  // an intermediate scrollY between the reset above and the
-  // constructor call. Three-layer reset.
   lenis?.scrollTo(0, { immediate: true, force: true });
   build();
 });
 
-// Clean up before navigating away.
 document.addEventListener("astro:before-swap", destroy);
 
-// Early scroll reset — runs the instant the new page's DOM lands,
-// before page-load fires. Pairs with the page-load reset so neither
-// a slow page-load nor a fast first paint can leave the user on the
-// previous page's scroll Y.
 document.addEventListener("astro:after-swap", () => {
   window.scrollTo(0, 0);
 });

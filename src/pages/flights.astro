@@ -7,19 +7,26 @@ const description = "Live arrivals and departures, full timetable, carrier infor
 
 <BaseLayout title={title} description={description} pageTheme="ops-theme">
   <section class="mx-auto max-w-7xl px-6 pb-24 pt-40">
-    <p class="text-xs uppercase tracking-[0.28em] text-atlantic">Flights</p>
-    <h1 class="mt-3 max-w-3xl font-display text-5xl leading-[1.05] sm:text-6xl">
-      Live arrivals & departures.
+    <p class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic">
+      Flights
+    </p>
+    <h1
+      data-split
+      class="mt-4 max-w-4xl font-display text-[clamp(2.5rem,6vw,5.5rem)] font-normal leading-[0.98]"
+    >
+      Live arrivals and departures.
     </h1>
-    <p class="mt-6 max-w-2xl text-base leading-relaxed text-mute sm:text-lg">
+    <p class="mt-7 max-w-2xl text-base leading-relaxed text-mute sm:text-lg">
       Aer Lingus Regional to Dublin · Loganair to Glasgow (weekends).
-      Full timetable, baggage allowances and gate cut-offs.
+      Full timetable, baggage allowances, cut-offs.
     </p>
 
-    <div data-animate="fade-up" class="mt-12 rounded-2xl border border-dashed border-line bg-surface-hi p-10 text-center">
-      <p class="font-mono text-xs uppercase tracking-[0.22em] text-mute">Coming next</p>
-      <p class="mt-3 text-base text-ink">
-        Live board, timetable by carrier, baggage rules, student fare.
+    <div data-animate="fade-up" class="mt-16 border-t border-line pt-10">
+      <p class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-mute">
+        Coming next
+      </p>
+      <p class="mt-4 max-w-2xl font-display text-2xl leading-snug text-ink">
+        Live board · timetable by carrier · baggage rules · student fare.
       </p>
     </div>
   </section>

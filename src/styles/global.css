@@ -1,28 +1,73 @@
 @import "tailwindcss";
-@import "@fontsource-variable/fraunces";
+@import "@fontsource-variable/bricolage-grotesque";
 @import "@fontsource-variable/inter";
-@import "@fontsource/ibm-plex-mono/400.css";
-@import "@fontsource/ibm-plex-mono/500.css";
-@import "@fontsource/ibm-plex-mono/600.css";
+
+/* Switzer — humanist sans body face. Served from Fontshare CDN.
+   Swap to a self-hosted @font-face block post-firma; see README in
+   /public/fonts/. */
+@import url("https://api.fontshare.com/v2/css?f[]=switzer@200,300,400,500,600,700,800,900&display=swap");
+
+/*
+  PP Editorial New — display face. Personal-use free, paid for
+  commercial. Files must be dropped into /public/fonts/ — see the
+  README there. Until they are, the cascade below falls through to
+  Bricolage Grotesque so the site looks finished from the first
+  build.
+*/
+@font-face {
+  font-family: "PP Editorial New";
+  src: url("/fonts/PPEditorialNew-Ultralight.woff2") format("woff2");
+  font-weight: 200;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PP Editorial New";
+  src: url("/fonts/PPEditorialNew-UltralightItalic.woff2") format("woff2");
+  font-weight: 200;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PP Editorial New";
+  src: url("/fonts/PPEditorialNew-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "PP Editorial New";
+  src: url("/fonts/PPEditorialNew-Italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
 
 /*
   ============================================================
-  THEME — "Atlantic Daylight"
-  Donegal Airport (CFN). Light, editorial, photo-friendly.
-  Deep atlantic blue accent + sand-gold highlight on a warm
-  cream/bone base. Carbon body text for clean WCAG contrast.
+  THEME — "Atlantic Daylight" v2
+  Donegal Airport (CFN). Editorial-magazine character (Cereal /
+  Monocle), full-bleed photography, deliberate restraint on UI
+  chrome. Deeper atlantic blue + sand-gold highlight on a warm
+  cream base. Carbon body text for clean WCAG contrast.
   ============================================================
 */
 @theme {
-  /* Typefaces */
-  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Fraunces Variable", ui-serif, Georgia, serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  /* Typefaces — chosen explicitly to look NOTHING like the Errigal
+     site (Fraunces + Inter). PP Editorial New is the editorial
+     display face; Switzer is the warm humanist body. */
+  --font-display: "PP Editorial New", "Bricolage Grotesque Variable",
+    ui-serif, Georgia, serif;
+  --font-sans: "Switzer", "Inter Variable", ui-sans-serif, system-ui,
+    sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
 
-  /* Surfaces — cream / bone, lightest to slightly deeper */
-  --color-surface: #f6f1e7;
+  /* Surfaces — cream / bone, lightest to slightly deeper. Same
+     family as v1 but more saturation in the mid surface so cards-
+     without-borders read as cards via tone alone. */
+  --color-surface: #f4ede0;
   --color-surface-hi: #ffffff;
-  --color-surface-lo: #ece4d2;
+  --color-surface-lo: #e6dcc6;
 
   /* Text — carbon on cream, ample contrast */
   --color-ink: #11202d;
@@ -31,31 +76,29 @@
   /* Accent — deep atlantic blue (brand) */
   --color-atlantic: #1e3a5f;
   --color-atlantic-bright: #2a5380;
-  --color-atlantic-ink: #f6f1e7;
+  --color-atlantic-ink: #f4ede0;
 
   /* Highlight — sand gold for marker accents, awards, beach */
   --color-sand: #c9a66b;
   --color-sand-bright: #d8b67c;
   --color-sand-ink: #1c1208;
 
-  /* Hairlines and borders */
+  /* Hairlines and borders — used sparingly, mostly for the flap
+     marquee underlines. Editorial layouts hardly use boxes. */
   --color-line: rgba(17, 32, 45, 0.12);
 
-  /* Status badges (flights live board) — calm, not loud */
+  /* Status badges (flights live board) */
   --color-status-ontime: #2f6b3a;
   --color-status-delay: #b87333;
   --color-status-cancel: #983a2c;
 
-  /* Layout — fixed header height. Sections that must fill exactly
-     one screen below the header use calc(100vh - var(--header-h)). */
-  --header-h: 5.5rem;
+  /* Layout */
+  --header-h: 4.75rem;
 }
 
 @layer base {
   /* Lenis drives smooth scrolling, so native smooth scroll is off.
-     overflow-anchor: none stops the browser's scroll-anchoring from
-     fighting Lenis when above-the-viewport content finishes loading
-     (the "scroll jumps back" stutter on cold loads). */
+     overflow-anchor: none stops scroll-anchoring from fighting Lenis. */
   html {
     scroll-behavior: auto;
     overflow-anchor: none;
@@ -66,18 +109,22 @@
     background-color: var(--color-surface);
     color: var(--color-ink);
     font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv01";
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
 
+  /* Display headings use the editorial face. We lean on weight 400
+     (PP Editorial New Regular) for big headlines and weight 200
+     (Ultralight) for hero-scale poetic captions à la Cereal. */
   h1,
   h2,
   h3,
   h4 {
     font-family: var(--font-display);
-    font-weight: 600;
-    line-height: 1.08;
-    letter-spacing: -0.01em;
+    font-weight: 400;
+    line-height: 1.02;
+    letter-spacing: -0.018em;
   }
 
   ::selection {
@@ -100,11 +147,8 @@
 
 /*
   Scroll-reveal: elements with [data-animate] start hidden and are
-  revealed by GSAP. No selector dependency on a runtime-added class
-  so view-transition navigations cannot leave the new page rendered
-  at the to-state for a frame and produce the "snap down then up"
-  stutter. A <noscript> in BaseLayout restores visibility for users
-  without JavaScript.
+  revealed by GSAP. <noscript> in BaseLayout restores visibility
+  for users without JavaScript.
 */
 @media (prefers-reduced-motion: no-preference) {
   [data-animate] {
@@ -113,32 +157,35 @@
 }
 
 /*
-  ---- Component states that utility classes can't express ----
+  ============================================================
+  HEADER — appears on scroll up, not fixed from load. Deliberate
+  break from Errigal's translucent fixed bar. The user has to
+  scroll back up to see the menu, which keeps the hero
+  uncluttered while it does the cinematic work.
+  ============================================================
 */
+[data-header] {
+  transform: translateY(-100%);
+  transition:
+    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+[data-header].is-revealed {
+  transform: translateY(0);
+}
 [data-header].is-scrolled {
-  background-color: rgba(246, 241, 231, 0.88);
-  backdrop-filter: blur(14px);
+  background-color: rgba(244, 237, 224, 0.92);
+  backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--color-line);
 }
 
-/* Header AND footer use a deeper "operations" surface regardless of
-   the page tone — keeps the chrome consistent against the editorial
-   body. Setting tokens on these elements wins over any page-level
-   theme override because custom properties cascade by element. */
-[data-footer] {
-  --color-surface: #11202d;
-  --color-surface-hi: #1a2d3d;
-  --color-surface-lo: #0a1620;
-  --color-ink: #f6f1e7;
-  --color-mute: rgba(246, 241, 231, 0.72);
-  --color-line: rgba(246, 241, 231, 0.14);
-}
-
+/* Scroll hint at the bottom of the hero */
 @keyframes scroll-hint {
   0%,
   100% {
     transform: translateY(0);
-    opacity: 0.35;
+    opacity: 0.45;
   }
   50% {
     transform: translateY(7px);
@@ -155,7 +202,15 @@
   }
 }
 
-/* Hero scrub video fades in over the poster image once it is ready. */
+/*
+  ============================================================
+  HERO scrub video — the drone shot. Clouds open laterally as the
+  user scrolls and the airport reveals itself. Same scrub pattern
+  validated on Errigal but a much stronger narrative: a literal
+  "reveal" instead of "watch a beer fill". The DOM is cabled
+  here; the .mp4 lives in /public/video/ once generated.
+  ============================================================
+*/
 [data-scrub-video] {
   opacity: 0;
   transition: opacity 1s ease;
@@ -165,25 +220,155 @@
 }
 
 /*
-  ---- Flights live board: dense, mono, technical ----
-  A page that opts in with pageTheme="ops-theme" — used on /flights —
-  swaps the surface to a near-white with mono numerals dominating.
-  Just tokens, no layout reshuffle; cards reuse the same components.
-*/
-html.ops-theme {
-  --color-surface: #fbf9f4;
-  --color-surface-hi: #ffffff;
-  --color-surface-lo: #efeadd;
+  Cursor — custom circle that follows the pointer and grows into a
+  "VIEW" label when hovering [data-photo]. Position-fixed so it sits
+  above content. Hidden on touch (no fine pointer). */
+.cfn-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 32px;
+  height: 32px;
+  margin-left: -16px;
+  margin-top: -16px;
+  border: 1px solid var(--color-ink);
+  border-radius: 999px;
+  pointer-events: none;
+  z-index: 80;
+  mix-blend-mode: difference;
+  transform: translate(-100px, -100px);
+  transition:
+    width 0.3s ease,
+    height 0.3s ease,
+    margin 0.3s ease,
+    background-color 0.3s ease,
+    color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: transparent;
+  user-select: none;
+}
+.cfn-cursor.is-photo {
+  width: 96px;
+  height: 96px;
+  margin-left: -48px;
+  margin-top: -48px;
+  background-color: var(--color-atlantic);
+  color: var(--color-atlantic-ink);
+  border-color: var(--color-atlantic);
+}
+@media (pointer: coarse) {
+  .cfn-cursor {
+    display: none;
+  }
 }
 
-/* Hero overlays a photo, so inside the hero we want inverse tokens
-   (light text on a dark photo) regardless of the page tone. Same
-   trick as [data-footer]: set tokens on a wrapper and they cascade
-   to descendants. Used by every page's hero block. */
+/*
+  Marquee — flap-display style strip used in the footer.
+  Animation drives an inner -translate-x from 0 to -50% over a long
+  duration; the inner contains its content twice so the loop is
+  seamless. Pause on hover for accessibility.
+*/
+.marquee {
+  overflow: hidden;
+  position: relative;
+  width: 100%;
+}
+.marquee-track {
+  display: flex;
+  gap: 4rem;
+  width: max-content;
+  animation: marquee 38s linear infinite;
+  font-family: var(--font-mono);
+}
+.marquee:hover .marquee-track,
+.marquee-track:focus-within {
+  animation-play-state: paused;
+}
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
+
+/*
+  ============================================================
+  Sticky horizontal scroll — used by "Destinations from CFN".
+  The wrapper provides the vertical scroll distance (height = ~2x
+  viewport per panel + a buffer). The .h-track is pinned at top
+  and translates -X as the user scrolls down through the wrapper.
+  animations.ts wires up the ScrollTrigger.
+  ============================================================
+*/
+.h-wrapper {
+  position: relative;
+}
+.h-pin {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+.h-track {
+  display: flex;
+  gap: 3rem;
+  padding-inline: clamp(1.5rem, 6vw, 6rem);
+  will-change: transform;
+}
+
+/* Editorial text colour helpers — used by big poetic headlines
+   that want to fade their tail into the page. */
+.text-fade {
+  background: linear-gradient(
+    180deg,
+    var(--color-ink) 0%,
+    var(--color-ink) 60%,
+    rgba(17, 32, 45, 0.35) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Hero inverse-tokens wrapper — the hero overlays a video/photo
+   so inside the hero we want light text on dark imagery
+   regardless of the page tone. Custom properties cascade by
+   element distance, so setting them on the wrapper wins. */
 .cfn-hero-content {
   --color-surface: #11202d;
   --color-surface-hi: #1a2d3d;
-  --color-ink: #f6f1e7;
-  --color-mute: rgba(246, 241, 231, 0.92);
-  --color-line: rgba(246, 241, 231, 0.18);
+  --color-ink: #f4ede0;
+  --color-mute: rgba(244, 237, 224, 0.92);
+  --color-line: rgba(244, 237, 224, 0.18);
+}
+
+/* Footer inversion */
+[data-footer] {
+  --color-surface: #11202d;
+  --color-surface-hi: #1a2d3d;
+  --color-surface-lo: #0a1620;
+  --color-ink: #f4ede0;
+  --color-mute: rgba(244, 237, 224, 0.72);
+  --color-line: rgba(244, 237, 224, 0.18);
+}
+
+/* Light-text variant of the hero scroll hint, since the hero is
+   dark-on-photo. */
+.scroll-hint--light {
+  color: var(--color-mute);
 }

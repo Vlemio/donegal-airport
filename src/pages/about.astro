@@ -7,19 +7,25 @@ const description = "From the founding of Malinair in 1986 to becoming the first
 
 <BaseLayout title={title} description={description}>
   <section class="mx-auto max-w-7xl px-6 pb-24 pt-40">
-    <p class="text-xs uppercase tracking-[0.28em] text-atlantic">About</p>
-    <h1 class="mt-3 max-w-3xl font-display text-5xl leading-[1.05] sm:text-6xl">
+    <p class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic">
+      About
+    </p>
+    <h1
+      data-split
+      class="mt-4 max-w-4xl font-display text-[clamp(2.5rem,6vw,5.5rem)] font-normal leading-[0.98]"
+    >
       Forty years on the beach.
     </h1>
-    <p class="mt-6 max-w-2xl text-base leading-relaxed text-mute sm:text-lg">
+    <p class="mt-7 max-w-2xl text-base leading-relaxed text-mute sm:text-lg">
       Malinair · Shorts 360 & Jetstream 41 · Aer Arann · Loganair · today.
-      Awards, sustainability, the team behind CFN.
     </p>
 
-    <div data-animate="fade-up" class="mt-12 rounded-2xl border border-dashed border-line bg-surface-hi p-10 text-center">
-      <p class="font-mono text-xs uppercase tracking-[0.22em] text-mute">Coming next</p>
-      <p class="mt-3 text-base text-ink">
-        Editorial timeline (18 historical photos), awards page, sustainability section, team.
+    <div data-animate="fade-up" class="mt-16 border-t border-line pt-10">
+      <p class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-mute">
+        Coming next
+      </p>
+      <p class="mt-4 max-w-2xl font-display text-2xl leading-snug text-ink">
+        Editorial timeline · 18 historical photographs · awards · sustainability · team.
       </p>
     </div>
   </section>

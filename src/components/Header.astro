@@ -10,7 +10,6 @@ const altPath = altLocalePath(Astro.url.pathname, locale);
 const prefix = locale === "ga" ? "/ga" : "";
 
 const nav = [
-  { key: "home", href: `${prefix || "/"}` },
   { key: "flights", href: `${prefix}/flights` },
   { key: "plan", href: `${prefix}/plan` },
   { key: "discover", href: `${prefix}/discover` },
@@ -20,41 +19,50 @@ const nav = [
 ] as const;
 
 const { pathname } = Astro.url;
-const normalise = (p: string) => (p.endsWith("/") && p.length > 1 ? p.slice(0, -1) : p);
+const normalise = (p: string) =>
+  p.endsWith("/") && p.length > 1 ? p.slice(0, -1) : p;
 const isActive = (href: string) => {
   const a = normalise(href);
   const b = normalise(pathname);
-  if (a === "/" || a === "/ga") return b === a;
-  return b.startsWith(a);
+  return b.startsWith(a) && a !== "/" && a !== "/ga";
 };
 
 const switchToLabel = t("languageToggle.switchTo", locale);
 ---
 
+{/* The header starts off-screen above; animations.ts reveals it on
+    scroll-up (or near top). Deliberate break from Errigal's
+    translucent fixed bar. */}
 <header
   data-header
-  class="fixed inset-x-0 top-0 z-50 transition-colors duration-300"
+  class="fixed inset-x-0 top-0 z-50"
+  aria-label="Site navigation"
 >
   <div
     class="mx-auto flex h-[var(--header-h)] max-w-7xl items-center justify-between px-6"
   >
-    <a href={prefix || "/"} class="relative z-50 flex flex-col leading-none">
-      <span class="font-display text-2xl font-semibold text-ink">
+    <a
+      href={prefix || "/"}
+      class="relative z-50 flex items-baseline gap-3 leading-none"
+    >
+      <span class="font-display text-xl font-normal tracking-tight text-ink">
         {t("site.name", locale)}
       </span>
-      <span class="mt-1 text-[0.62rem] uppercase tracking-[0.26em] text-atlantic">
-        CFN · Carrickfinn · Co. Donegal
+      <span
+        class="hidden font-mono text-[0.6rem] uppercase tracking-[0.28em] text-mute sm:inline"
+      >
+        CFN · EIDL
       </span>
     </a>
 
-    <nav class="hidden items-center gap-6 lg:flex">
+    <nav class="hidden items-center gap-7 lg:flex">
       {
         nav.map((item) => (
           <a
             href={item.href}
             class:list={[
-              "text-sm tracking-wide transition-colors duration-200 hover:text-atlantic",
-              isActive(item.href) ? "text-atlantic" : "text-ink/75",
+              "text-[0.78rem] uppercase tracking-[0.18em] transition-colors duration-200 hover:text-atlantic",
+              isActive(item.href) ? "text-atlantic" : "text-ink/70",
             ]}
           >
             {t(`nav.${item.key}` as any, locale)}
@@ -67,7 +75,7 @@ const switchToLabel = t("languageToggle.switchTo", locale);
       <a
         href={altPath}
         data-lang-toggle
-        class="rounded-full border border-atlantic/40 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.15em] text-atlantic transition-all duration-200 hover:bg-atlantic hover:text-atlantic-ink"
+        class="font-mono text-[0.7rem] uppercase tracking-[0.22em] text-ink/70 transition-colors hover:text-atlantic"
         aria-label={`Switch to ${switchToLabel}`}
       >
         {switchToLabel}
@@ -83,17 +91,16 @@ const switchToLabel = t("languageToggle.switchTo", locale);
       class="relative z-50 text-ink lg:hidden"
     >
       <svg
-        width="30"
-        height="30"
+        width="28"
+        height="28"
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        stroke-width="1.6"
+        stroke-width="1.4"
         stroke-linecap="round"
       >
-        <line x1="3" y1="7" x2="21" y2="7"></line>
-        <line x1="3" y1="12" x2="21" y2="12"></line>
-        <line x1="3" y1="17" x2="21" y2="17"></line>
+        <line x1="3" y1="8" x2="21" y2="8"></line>
+        <line x1="3" y1="16" x2="21" y2="16"></line>
       </svg>
     </button>
   </div>
@@ -103,13 +110,13 @@ const switchToLabel = t("languageToggle.switchTo", locale);
     data-mobile-nav
     class="fixed inset-0 z-40 translate-x-full bg-surface transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:hidden"
   >
-    <nav class="flex h-full flex-col items-center justify-center gap-5">
+    <nav class="flex h-full flex-col items-center justify-center gap-4">
       {
         nav.map((item) => (
           <a
             href={item.href}
             class:list={[
-              "font-display text-3xl transition-colors hover:text-atlantic",
+              "font-display text-4xl transition-colors hover:text-atlantic",
               isActive(item.href) ? "text-atlantic" : "text-ink",
             ]}
           >
@@ -119,7 +126,7 @@ const switchToLabel = t("languageToggle.switchTo", locale);
       }
       <a
         href={altPath}
-        class="mt-4 rounded-full border border-atlantic/40 px-6 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-atlantic"
+        class="mt-6 font-mono text-xs uppercase tracking-[0.24em] text-ink/70"
       >
         {switchToLabel}
       </a>
