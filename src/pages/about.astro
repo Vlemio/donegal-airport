@@ -7,11 +7,13 @@ const title = `${t("site.name", locale)} · The story`;
 const description =
   "From a 610-metre grass strip in 1978 and a £85 ticket on Christmas Eve 1985 to the world's most scenic approach and Ireland's first ACA Level 4 carbon-accredited airport. The story of CFN.";
 
-// 6 chapters, presented as horizontal panels on desktop (sticky
-// horizontal scroll cabled in animations.ts via [data-horizontal])
-// and as a vertical stack on mobile. Each panel carries the year as
-// the dominant visual element. The text columns are intentionally
-// narrow within the panel so the year breathes.
+/*
+  Path-drawing story layout (v5).
+  Desktop: SVG curved path draws itself as the user scrolls. Six chapter
+  cards alternate left / right of the path. The GSAP + ScrollTrigger
+  wiring lives in animations.ts → setupStoryPath().
+  Mobile: single centred column, SVG hidden.
+*/
 const chapters = [
   {
     year: "1978",
@@ -40,7 +42,7 @@ const chapters = [
     range: "The Loganair years",
     title: "Loganair returns. Ryanair tries Luton.",
     lead:
-      "In 1988 Loganair came back with a regular service to Glasgow and stayed for a decade. The runway was extended at the end of the eighties to 1,450 metres, and again in 1992–93 to 1,500 metres. In 1990 Ryanair launched a service to London Luton.",
+      "In 1988 Loganair came back with a regular service to Glasgow and stayed for a decade. The runway was extended to 1,450 metres, and again in 1992–93 to 1,500 metres. In 1990 Ryanair launched a service to London Luton.",
     body: [
       "In the winter of 1994 a storm ran for weeks. The ferry to Tory Island couldn't sail. The Irish Air Corps moved their helicopters to Carrickfinn and ran supplies — bread, post, prescriptions, schoolchildren — out to the island until the sea calmed down. The pattern stuck: for decades after, the helicopter to Tory would route through CFN whenever the weather closed in on Magheroarty.",
     ],
@@ -98,7 +100,10 @@ const airlines = [
 ---
 
 <BaseLayout title={title} description={description}>
-  {/* ---------- HERO — text only, kept short ---------- */}
+
+  {/* ------------------------------------------------------------------ */}
+  {/* HERO — text only, short                                             */}
+  {/* ------------------------------------------------------------------ */}
   <section
     class="relative isolate flex min-h-[72vh] w-full items-end border-b border-line bg-surface-lo/40"
   >
@@ -121,8 +126,8 @@ const airlines = [
         data-animate-delay="0.35"
         class="mt-10 max-w-2xl text-base leading-relaxed text-mute sm:text-lg"
       >
-        Six chapters · 1978 to 2025. Scroll right to travel
-        forward through the airport's life.
+        Six chapters · 1978 to 2025. The story of a runway built on a
+        sandbar between the Atlantic and Errigal.
       </p>
 
       <div
@@ -134,200 +139,172 @@ const airlines = [
         <span class="scroll-hint font-mono text-[0.65rem] uppercase tracking-[0.24em]">
           Scroll
         </span>
-        <span class="scroll-hint text-base">→</span>
+        <span class="scroll-hint text-base">↓</span>
       </div>
     </div>
   </section>
 
-  {/* ---------- HORIZONTAL TIMELINE — desktop only ----------
-       The wrapper is tall (one viewport per panel of vertical
-       scroll distance). h-pin sticks to viewport; h-track
-       translates -X as the user scrolls down. animations.ts wires
-       this up via [data-horizontal]. */}
-  <section
-    data-horizontal
-    class="h-wrapper relative hidden bg-surface lg:block"
-    style={`height: ${(chapters.length + 0.5) * 100}vh;`}
-  >
-    <div class="h-pin">
-      {/* Floating progress strip — dots with year labels */}
-      <nav
-        aria-label="Chapter progress"
-        class="absolute left-1/2 top-10 z-20 -translate-x-1/2"
-      >
-        <ol
-          data-h-progress
-          class="flex items-center gap-5 rounded-full border border-line/80 bg-surface-hi/85 px-5 py-2.5 font-mono text-[0.66rem] uppercase tracking-[0.2em] text-mute shadow-[0_8px_24px_-18px_rgba(17,32,45,0.25)] backdrop-blur"
-        >
-          {
-            chapters.map((c, i) => (
-              <li>
-                <a
-                  href={`#chapter-${i}`}
-                  data-h-dot
-                  data-index={i}
-                  class="group inline-flex items-center gap-2 transition-colors hover:text-atlantic"
-                >
-                  <span
-                    class="inline-block h-1.5 w-1.5 rounded-full bg-mute transition-all duration-300 group-hover:bg-atlantic"
-                  />
-                  <span class="tabular-nums">{c.year}</span>
-                </a>
-              </li>
-            ))
-          }
-        </ol>
-      </nav>
+  {/* ------------------------------------------------------------------ */}
+  {/* STORY PATH — unified desktop + mobile layout                        */}
+  {/*                                                                     */}
+  {/* Desktop: SVG curved path draws as you scroll. Chapters alternate   */}
+  {/* left / right of the path. animations.ts → setupStoryPath() wires  */}
+  {/* the stroke-dashoffset animation.                                    */}
+  {/*                                                                     */}
+  {/* Mobile: single centred column, SVG hidden via CSS.                 */}
+  {/* ------------------------------------------------------------------ */}
+  <section data-story-section class="relative bg-surface">
 
-      {/* The horizontal track of chapter panels */}
-      <div class="h-track items-stretch py-12">
-        {/* Intro panel — eyebrow / instructions */}
-        <article
-          class="flex h-[calc(100vh-6rem)] w-[40rem] shrink-0 flex-col justify-center pl-[clamp(1.5rem,6vw,6rem)] pr-12"
-        >
-          <p class="font-mono text-[0.7rem] uppercase tracking-[0.3em] text-atlantic">
-            The timeline
-          </p>
-          <h2
-            class="mt-5 max-w-md font-display text-[clamp(2.5rem,4.5vw,4.5rem)] font-light leading-[1]"
-          >
-            Six chapters, one runway.
-          </h2>
-          <p class="mt-7 max-w-sm text-base leading-relaxed text-mute">
-            From a grass strip with no airline in 1978 to Ireland's
-            greenest small airport in 2025. The story moves to the
-            right — like the runway itself.
-          </p>
-          <p
-            class="mt-10 inline-flex items-center gap-3 font-mono text-[0.65rem] uppercase tracking-[0.24em] text-sand"
-            aria-hidden="true"
-          >
-            <span>Scroll to begin</span>
-            <span class="text-base">→</span>
-          </p>
-        </article>
+    {/* SVG canvas — absolute, inset-0, sized to section by JS */}
+    <svg
+      data-story-svg
+      class="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden="true"
+      preserveAspectRatio="none"
+    >
+      {/* Faint guide track — always visible on desktop, shows where the path will go */}
+      <path
+        data-story-track
+        fill="none"
+        stroke="var(--color-sand)"
+        stroke-width="1"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        opacity="0.12"
+      />
+      {/* Animated drawing path */}
+      <path
+        data-story-path
+        fill="none"
+        stroke="var(--color-sand)"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        opacity="0.8"
+      />
+    </svg>
 
-        {/* The six story panels */}
-        {
-          chapters.map((c, i) => (
-            <article
-              id={`chapter-${i}`}
-              data-h-panel
-              data-index={i}
-              class="relative flex h-[calc(100vh-6rem)] w-[58rem] shrink-0 items-stretch"
+    {/* ---- INTRO ---- */}
+    <div class="relative z-10 flex min-h-[28vh] items-center justify-center px-6 py-20">
+      <div class="text-center">
+        <p
+          data-animate="fade-up"
+          class="font-mono text-[0.7rem] uppercase tracking-[0.3em] text-atlantic"
+        >
+          The timeline
+        </p>
+        <h2
+          data-split
+          data-split-delay="0.05"
+          class="mt-5 font-display text-[clamp(2.4rem,4.5vw,4.5rem)] font-light leading-[1]"
+        >
+          Six chapters, one runway.
+        </h2>
+        <p
+          data-animate="fade-up"
+          data-animate-delay="0.2"
+          class="mx-auto mt-6 max-w-sm text-base leading-relaxed text-mute"
+        >
+          From a grass strip with no airline in 1978 to Ireland's
+          greenest small airport in 2025.
+        </p>
+      </div>
+    </div>
+
+    {/* ---- CHAPTER PANELS ---- */}
+    {
+      chapters.map((c, i) => {
+        const side = i % 2 === 0 ? "right" : "left";
+        return (
+          <div
+            class="story-chapter relative flex min-h-[75vh] items-center py-16"
+            data-story-chapter
+            data-side={side}
+          >
+            {/*
+              Waypoint marker — invisible 0×0 span used ONLY for path
+              calculation. JS reads getBoundingClientRect() to find
+              where to thread the SVG curve.
+              Positioned at the inner edge of the content card:
+                right chapters → left: 65% of section width
+                left  chapters → left: 35% of section width
+            */}
+            <span
+              class="story-waypoint"
+              data-waypoint
+              aria-hidden="true"
+            />
+
+            {/* Large year as architectural background — opposite side from card */}
+            <span
+              aria-hidden="true"
+              class={`story-year-bg ${side === "right" ? "story-year-bg--l" : "story-year-bg--r"}`}
             >
-              {/* Big year as architectural background */}
-              <span
-                aria-hidden="true"
-                class="pointer-events-none absolute -left-4 top-1/2 -z-10 -translate-y-1/2 select-none font-display font-light leading-none text-sand/15"
-                style="font-size: clamp(12rem, 32vh, 28rem);"
-              >
-                {c.year}
-              </span>
+              {c.year}
+            </span>
 
-              {/* Text column */}
-              <div class="relative z-10 flex w-full flex-col justify-center pl-[clamp(2rem,6vw,8rem)] pr-12">
-                <p
-                  data-animate="fade-up"
-                  class="font-mono text-[0.72rem] uppercase tracking-[0.3em] text-sand"
-                >
-                  <span>{`0${i + 1}`.slice(-2)} · {c.range}</span>
-                  <span class="ml-3 text-atlantic">{c.year}</span>
-                </p>
-
-                <h2
-                  data-split
-                  class="mt-5 max-w-2xl font-display text-[clamp(2rem,4vw,4rem)] font-light leading-[1.02] text-ink"
-                >
-                  {c.title}
-                </h2>
-
-                <p
-                  data-animate="fade-up"
-                  data-animate-delay="0.18"
-                  class="mt-7 max-w-xl text-[1.05rem] leading-[1.7] text-ink sm:text-[1.12rem]"
-                >
-                  {c.lead}
-                </p>
-
-                {c.body.map((para, j) => (
-                  <p
-                    data-animate="fade-up"
-                    data-animate-delay={`${0.25 + j * 0.06}`}
-                    class="mt-5 max-w-xl text-base leading-[1.7] text-mute"
-                  >
-                    {para}
-                  </p>
-                ))}
-              </div>
-            </article>
-          ))
-        }
-
-        {/* Outro panel — handoff to the operators table */}
-        <article
-          class="flex h-[calc(100vh-6rem)] w-[32rem] shrink-0 flex-col justify-center px-12"
-        >
-          <p class="font-mono text-[0.7rem] uppercase tracking-[0.3em] text-atlantic">
-            Continues below
-          </p>
-          <h2
-            class="mt-4 max-w-md font-display text-[clamp(2rem,3.6vw,3.4rem)] font-light leading-[1]"
-          >
-            Every airline that has ever flown here.
-          </h2>
-          <p
-            class="mt-8 inline-flex items-center gap-3 font-mono text-[0.65rem] uppercase tracking-[0.24em] text-sand"
-            aria-hidden="true"
-          >
-            <span>Scroll down</span>
-            <span class="text-base">↓</span>
-          </p>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  {/* ---------- VERTICAL TIMELINE — mobile fallback ---------- */}
-  <section class="border-y border-line lg:hidden">
-    <div class="mx-auto max-w-2xl px-6 py-20">
-      <ol class="space-y-20">
-        {
-          chapters.map((c, i) => (
-            <li class="relative">
-              <span
-                aria-hidden="true"
-                class="pointer-events-none absolute -left-2 -top-6 -z-10 select-none font-display text-7xl font-light leading-none text-sand/20"
-              >
-                {c.year}
-              </span>
-              <p
-                data-animate="fade-up"
-                class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-sand"
-              >
-                {`0${i + 1}`.slice(-2)} · {c.range}{" "}
-                <span class="text-atlantic">{c.year}</span>
+            {/* Content card */}
+            <div class="story-card relative z-10">
+              <p class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-sand">
+                <span>{`0${i + 1}`.slice(-2)} · {c.range}</span>
+                <span class="ml-3 text-atlantic">{c.year}</span>
               </p>
+
               <h2
                 data-split
-                class="mt-3 font-display text-3xl font-light leading-[1.05] text-ink"
+                class="mt-5 font-display text-[clamp(1.75rem,2.8vw,3rem)] font-light leading-[1.04]"
               >
                 {c.title}
               </h2>
-              <p class="mt-5 text-[1.05rem] leading-[1.65] text-ink">
+
+              <p class="mt-6 text-[1rem] leading-[1.72] text-ink sm:text-[1.06rem]">
                 {c.lead}
               </p>
+
               {c.body.map((para) => (
-                <p class="mt-4 text-base leading-[1.7] text-mute">{para}</p>
+                <p class="mt-4 text-[0.95rem] leading-[1.72] text-mute">
+                  {para}
+                </p>
               ))}
-            </li>
-          ))
-        }
-      </ol>
+
+              {/* Photo slot — drop image here once available */}
+              {/* <figure class="story-photo mt-8 aspect-[4/3] overflow-hidden rounded-sm bg-surface-lo" data-photo>
+                <img src="" alt="" class="h-full w-full object-cover" data-ken-burns />
+              </figure> */}
+            </div>
+          </div>
+        );
+      })
+    }
+
+    {/* ---- OUTRO ---- */}
+    <div
+      class="relative z-10 flex min-h-[24vh] items-center justify-center px-6 py-16 text-center"
+    >
+      <div>
+        <p class="font-mono text-[0.7rem] uppercase tracking-[0.3em] text-atlantic">
+          Continues below
+        </p>
+        <h2
+          class="mt-3 font-display text-[clamp(1.8rem,3.2vw,3rem)] font-light leading-[1.06]"
+        >
+          Every airline that has ever flown here.
+        </h2>
+        <p
+          class="mt-8 inline-flex items-center gap-3 font-mono text-[0.65rem] uppercase tracking-[0.24em] text-sand"
+          aria-hidden="true"
+        >
+          <span>Scroll down</span>
+          <span class="text-base">↓</span>
+        </p>
+      </div>
     </div>
+
   </section>
 
-  {/* ---------- AIRLINES TABLE ---------- */}
+  {/* ------------------------------------------------------------------ */}
+  {/* AIRLINES TABLE                                                       */}
+  {/* ------------------------------------------------------------------ */}
   <section class="border-t border-line bg-surface-lo/60">
     <div class="mx-auto max-w-5xl px-6 py-24">
       <p
@@ -346,7 +323,9 @@ const airlines = [
       <div data-animate="fade-up" class="mt-12 overflow-x-auto">
         <table class="w-full min-w-[560px] border-collapse text-left">
           <thead>
-            <tr class="border-y border-line text-[0.66rem] uppercase tracking-[0.18em] text-mute">
+            <tr
+              class="border-y border-line text-[0.66rem] uppercase tracking-[0.18em] text-mute"
+            >
               <th class="py-3 pr-6 font-medium">Airline</th>
               <th class="py-3 pr-6 font-medium">Route</th>
               <th class="py-3 font-medium">Years</th>
@@ -367,4 +346,5 @@ const airlines = [
       </div>
     </div>
   </section>
+
 </BaseLayout>

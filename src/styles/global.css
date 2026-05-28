@@ -388,3 +388,98 @@
 .scroll-hint--light {
   color: var(--color-mute);
 }
+
+/*
+  ============================================================
+  STORY PATH — /about page curved-path timeline (v5)
+  Desktop: SVG path draws itself on scroll (animations.ts →
+  setupStoryPath). Chapters alternate left / right.
+  Mobile: single centred column, SVG canvas hidden.
+  ============================================================
+*/
+
+/* SVG canvas — hidden on mobile, shown on desktop */
+[data-story-svg] {
+  display: none;
+}
+@media (min-width: 1024px) {
+  [data-story-svg] {
+    display: block;
+    z-index: 0;
+  }
+}
+
+/* Waypoint marker — 0×0 invisible anchor on mobile, small atlantic
+   dot on desktop. JS reads getBoundingClientRect() to build the path
+   through these positions. */
+.story-waypoint {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .story-waypoint {
+    display: block;
+    position: absolute;
+    top: 50%;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: var(--color-atlantic);
+    transform: translate(-50%, -50%);
+    z-index: 4;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-atlantic) 15%, transparent);
+  }
+  [data-story-chapter][data-side="right"] .story-waypoint {
+    left: 65%;
+  }
+  [data-story-chapter][data-side="left"] .story-waypoint {
+    left: 35%;
+  }
+}
+
+/* Content card — mobile: full-width centred column */
+.story-card {
+  width: min(36rem, 90%);
+  margin-inline: auto;
+}
+
+/* Desktop: card pushed to its side; path runs on the other side */
+@media (min-width: 1024px) {
+  [data-story-chapter][data-side="right"] .story-card {
+    margin-left: 67%;
+    margin-right: 2%;
+    width: auto;
+  }
+  [data-story-chapter][data-side="left"] .story-card {
+    margin-left: 2%;
+    margin-right: 67%;
+    width: auto;
+  }
+}
+
+/* Large year as architectural background watermark.
+   Anchored opposite the card so it fills the empty half. */
+.story-year-bg {
+  position: absolute;
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 0.85;
+  color: var(--color-sand);
+  opacity: 0.07;
+  pointer-events: none;
+  user-select: none;
+  bottom: -0.05em;
+  z-index: 0;
+}
+/* Mobile: anchor right, smaller */
+.story-year-bg {
+  font-size: clamp(5rem, 15vh, 11rem);
+  right: -0.08em;
+}
+@media (min-width: 1024px) {
+  .story-year-bg {
+    font-size: clamp(10rem, 28vh, 24rem);
+    opacity: 0.09;
+  }
+  .story-year-bg--l { left: -0.06em; right: auto; }
+  .story-year-bg--r { right: -0.06em; left: auto; }
+}

@@ -344,6 +344,130 @@ function setupScrubVideo(): void {
   });
 }
 
+/* ---------- Story path — /about curved timeline ----------
+   Reads the [data-waypoint] elements inside [data-story-section],
+   generates a smooth Catmull-Rom SVG path through their positions,
+   and drives stroke-dashoffset via ScrollTrigger so the path draws
+   itself as the user scrolls. Also slides each chapter card in from
+   its side.
+
+   Desktop-only (≥1024 px). The SVG and waypoints are hidden on mobile
+   via CSS, and this function early-returns on narrow viewports so no
+   GSAP overhead runs on touch devices.
+*/
+
+interface Pt { x: number; y: number }
+
+function catmullRomPath(pts: Pt[], tension = 0.45): string {
+  if (pts.length < 2) return "";
+  let d = `M ${pts[0].x.toFixed(2)},${pts[0].y.toFixed(2)}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[Math.max(0, i - 1)];
+    const p1 = pts[i];
+    const p2 = pts[i + 1];
+    const p3 = pts[Math.min(pts.length - 1, i + 2)];
+    const cp1x = p1.x + tension * (p2.x - p0.x) / 2;
+    const cp1y = p1.y + tension * (p2.y - p0.y) / 2;
+    const cp2x = p2.x - tension * (p3.x - p1.x) / 2;
+    const cp2y = p2.y - tension * (p3.y - p1.y) / 2;
+    d += ` C ${cp1x.toFixed(2)},${cp1y.toFixed(2)} ${cp2x.toFixed(2)},${cp2y.toFixed(2)} ${p2.x.toFixed(2)},${p2.y.toFixed(2)}`;
+  }
+  return d;
+}
+
+let storyPathST: ReturnType<typeof ScrollTrigger.create> | null = null;
+
+function setupStoryPath(): void {
+  if (prefersReducedMotion()) return;
+  if (!window.matchMedia("(min-width: 1024px)").matches) return;
+
+  const section = document.querySelector<HTMLElement>("[data-story-section]");
+  const svg = section?.querySelector<SVGSVGElement>("[data-story-svg]");
+  const pathEl = svg?.querySelector<SVGPathElement>("[data-story-path]");
+  const trackEl = svg?.querySelector<SVGPathElement>("[data-story-track]");
+  const waypoints = section?.querySelectorAll<HTMLElement>("[data-waypoint]");
+
+  if (!section || !svg || !pathEl || !waypoints?.length) return;
+
+  function build(): void {
+    const sRect = section!.getBoundingClientRect();
+    const W = section!.offsetWidth;
+    const H = section!.offsetHeight;
+
+    // Update SVG viewBox to match section pixel dimensions
+    svg!.setAttribute("viewBox", `0 0 ${W} ${H}`);
+
+    // Build point list:
+    //   • fixed start at center-top of section
+    //   • one point per [data-waypoint] — position relative to section
+    //   • fixed end at center-bottom of section
+    const pts: Pt[] = [{ x: W / 2, y: 0 }];
+
+    waypoints!.forEach((wp) => {
+      const r = wp.getBoundingClientRect();
+      pts.push({
+        x: r.left + r.width / 2 - sRect.left,
+        y: r.top + r.height / 2 - sRect.top,
+      });
+    });
+
+    pts.push({ x: W / 2, y: H });
+
+    const d = catmullRomPath(pts);
+    pathEl!.setAttribute("d", d);
+    if (trackEl) trackEl.setAttribute("d", d);
+
+    // Set up dash animation
+    const len = pathEl!.getTotalLength();
+    pathEl!.style.strokeDasharray = String(len);
+    pathEl!.style.strokeDashoffset = String(len);
+
+    storyPathST?.kill();
+    storyPathST = ScrollTrigger.create({
+      trigger: section,
+      start: "top 80%",
+      end: "bottom 20%",
+      scrub: 1.2,
+      onUpdate(self) {
+        pathEl!.style.strokeDashoffset = String(len * (1 - self.progress));
+      },
+    });
+  }
+
+  // Run after fonts + layout are stable (two rAF cycles)
+  requestAnimationFrame(() => requestAnimationFrame(build));
+
+  // Rebuild on resize so path stays aligned with content
+  let resizeTimer: ReturnType<typeof setTimeout>;
+  window.addEventListener("resize", () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(build, 220);
+  });
+
+  // Slide each chapter card in from its side on scroll
+  section!.querySelectorAll<HTMLElement>("[data-story-chapter]").forEach((ch) => {
+    const card = ch.querySelector<HTMLElement>(".story-card");
+    const side = ch.dataset.side;
+    if (!card) return;
+
+    gsap.fromTo(
+      card,
+      { opacity: 0, x: side === "right" ? 50 : -50 },
+      {
+        opacity: 1,
+        x: 0,
+        duration: 1,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: ch,
+          start: "top 78%",
+          once: true,
+        },
+      },
+    );
+  });
+}
+
 /* ---------- Sticky horizontal scroll ----------
    The wrapper provides vertical scroll distance; the inner .h-track
    translates -X as the user scrolls down. Disabled on small
@@ -508,7 +632,8 @@ function build(): void {
   setupParallax();
   setupKenBurns();
   setupScrubVideo();
-  setupStickyHorizontal();
+  setupStickyHorizontal(); // no-op if [data-horizontal] absent
+  setupStoryPath();        // no-op if [data-story-section] absent
   ScrollTrigger.refresh();
 }
 
@@ -516,6 +641,7 @@ function destroy(): void {
   revealObserver?.disconnect();
   revealObserver = null;
   ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
+  storyPathST = null;
   // Tear Lenis down so the new page gets a fresh instance with
   // accurate scroll bounds.
   lenis?.destroy();
