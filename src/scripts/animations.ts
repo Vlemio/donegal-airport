@@ -479,10 +479,16 @@ function setupStoryPath(): void {
   // text (and photo) slides in after it. Separate ScrollTriggers mean
   // the body copy keeps its own entrance instead of arriving already
   // on screen alongside the title.
-  section!.querySelectorAll<HTMLElement>("[data-story-chapter]").forEach((ch) => {
+  section!.querySelectorAll<HTMLElement>("[data-story-chapter]").forEach((ch, idx) => {
     const card = ch.querySelector<HTMLElement>(".story-card");
     if (!card) return;
     const dx = ch.dataset.side === "right" ? 90 : -90;
+
+    // First three chapters need an earlier trigger — the scroll hasn't
+    // built up momentum yet and the plane reaches those waypoints sooner.
+    const early = idx < 3;
+    const headStart  = early ? "center 76%" : "center 67%";
+    const bodyStart  = early ? "center 57%" : "center 48%";
 
     const head = [
       card.querySelector<HTMLElement>(":scope > p"),
@@ -503,10 +509,7 @@ function setupStoryPath(): void {
           duration: 1,
           ease: "power3.out",
           stagger: 0.1,
-          // Fire when the chapter's centre (where the waypoint sits and
-          // the plane passes) reaches the lower-middle of the screen —
-          // not when the chapter first peeks in at the bottom.
-          scrollTrigger: { trigger: ch, start: "center 67%", once: true },
+          scrollTrigger: { trigger: ch, start: headStart, once: true },
         },
       );
     }
@@ -521,8 +524,7 @@ function setupStoryPath(): void {
           duration: 1,
           ease: "power3.out",
           stagger: 0.16,
-          // A beat after the heading, around screen centre.
-          scrollTrigger: { trigger: ch, start: "center 48%", once: true },
+          scrollTrigger: { trigger: ch, start: bodyStart, once: true },
         },
       );
     }
