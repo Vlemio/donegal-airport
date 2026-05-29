@@ -62,30 +62,27 @@
     sans-serif;
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
 
-  /* Surfaces — cream / bone, lightest to slightly deeper. Same
-     family as v1 but more saturation in the mid surface so cards-
-     without-borders read as cards via tone alone. */
-  --color-surface: #f4ede0;
+  /* Surfaces — bleached limestone / coastal white */
+  --color-surface:    #f3f2ee;
   --color-surface-hi: #ffffff;
-  --color-surface-lo: #e6dcc6;
+  --color-surface-lo: #e8e6df;
 
-  /* Text — carbon on cream, ample contrast */
-  --color-ink: #11202d;
-  --color-mute: #4a5560;
+  /* Text — peat dark, near-black with warm green undertone */
+  --color-ink:  #181d16;
+  --color-mute: #56605a;
 
-  /* Accent — deep atlantic blue (brand) */
-  --color-atlantic: #1e3a5f;
-  --color-atlantic-bright: #2a5380;
-  --color-atlantic-ink: #f4ede0;
+  /* Primary accent — Irish field green (replaces atlantic blue) */
+  --color-atlantic:        #2c5430;
+  --color-atlantic-bright: #3a6b3e;
+  --color-atlantic-ink:    #f3f2ee;
 
-  /* Highlight — sand gold for marker accents, awards, beach */
-  --color-sand: #c9a66b;
-  --color-sand-bright: #d8b67c;
-  --color-sand-ink: #1c1208;
+  /* Warm accent — bogland amber / Donegal sand */
+  --color-sand:        #a07840;
+  --color-sand-bright: #bc9256;
+  --color-sand-ink:    #1a1008;
 
-  /* Hairlines and borders — used sparingly, mostly for the flap
-     marquee underlines. Editorial layouts hardly use boxes. */
-  --color-line: rgba(17, 32, 45, 0.12);
+  /* Hairlines */
+  --color-line: rgba(24, 29, 22, 0.11);
 
   /* Status badges (flights live board) */
   --color-status-ontime: #2f6b3a;
@@ -366,21 +363,21 @@
    regardless of the page tone. Custom properties cascade by
    element distance, so setting them on the wrapper wins. */
 .cfn-hero-content {
-  --color-surface: #11202d;
-  --color-surface-hi: #1a2d3d;
-  --color-ink: #f4ede0;
-  --color-mute: rgba(244, 237, 224, 0.92);
-  --color-line: rgba(244, 237, 224, 0.18);
+  --color-surface:    #0f1c0d;
+  --color-surface-hi: #182a15;
+  --color-ink:        #f0eee6;
+  --color-mute:       rgba(240, 238, 230, 0.88);
+  --color-line:       rgba(240, 238, 230, 0.16);
 }
 
 /* Footer inversion */
 [data-footer] {
-  --color-surface: #11202d;
-  --color-surface-hi: #1a2d3d;
-  --color-surface-lo: #0a1620;
-  --color-ink: #f4ede0;
-  --color-mute: rgba(244, 237, 224, 0.72);
-  --color-line: rgba(244, 237, 224, 0.18);
+  --color-surface:    #0f1c0d;
+  --color-surface-hi: #182a15;
+  --color-surface-lo: #091108;
+  --color-ink:        #f0eee6;
+  --color-mute:       rgba(240, 238, 230, 0.70);
+  --color-line:       rgba(240, 238, 230, 0.16);
 }
 
 /* Light-text variant of the hero scroll hint, since the hero is
