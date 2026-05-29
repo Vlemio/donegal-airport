@@ -10,10 +10,11 @@ const altPath = altLocalePath(Astro.url.pathname, locale);
 const prefix = locale === "ga" ? "/ga" : "";
 
 const nav = [
+  { key: "home", href: prefix || "/" },
   { key: "flights", href: `${prefix}/flights` },
   { key: "plan", href: `${prefix}/plan` },
   { key: "discover", href: `${prefix}/discover` },
-  { key: "about", href: `${prefix}/about` },
+  { key: "about", href: `${prefix}/story` },
   { key: "pilots", href: `${prefix}/pilots` },
   { key: "contact", href: `${prefix}/contact` },
 ] as const;
@@ -24,7 +25,9 @@ const normalise = (p: string) =>
 const isActive = (href: string) => {
   const a = normalise(href);
   const b = normalise(pathname);
-  return b.startsWith(a) && a !== "/" && a !== "/ga";
+  // Home links match only when exactly on the home page
+  if (a === "/" || a === "/ga") return b === a || b === "";
+  return b.startsWith(a);
 };
 
 const switchToLabel = t("languageToggle.switchTo", locale);

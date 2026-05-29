@@ -2,31 +2,353 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 const title = "Discover Donegal · Donegal Airport";
-const description = "From CFN you're minutes from the Wild Atlantic Way, blue-flag beaches, world-class golf and the heart of the Gaeltacht.";
+const description =
+  "From CFN you are minutes from the Wild Atlantic Way, blue-flag beaches, Errigal Mountain and the heart of the Irish Gaeltacht.";
+
+const highlights = [
+  {
+    label: "Coast & Ocean",
+    text: "Blue-flag beaches, sea stacks, cliff walks. Ireland's most dramatic coastline is ten minutes from baggage claim. Carrickfinn beach starts at the runway threshold.",
+    link: "#destinations",
+    photo: "Carrickfinn beach · CFN runway in frame",
+  },
+  {
+    label: "Mountain & Lough",
+    text: "Errigal, Slieve League and Glenveagh National Park sit within an hour's drive. No queues. No crowds. The park's 16,000 hectares of blanket bog and oak wood are free.",
+    link: "#destinations",
+    photo: "Errigal from the south · golden hour",
+  },
+  {
+    label: "Gaeltacht",
+    text: "Donegal is Ireland's largest Irish-speaking county. The airport sits at its heart. The dialect here — Úlaidh — is the oldest form of Irish still spoken daily.",
+    link: "#destinations",
+    photo: "Gweedore village · Gaeltacht heartland",
+  },
+] as const;
+
+const destinations = [
+  {
+    code: "01",
+    title: "Wild Atlantic Way",
+    drive: "10 min from CFN",
+    tagline: "Ireland's great coastal road. 2,500 km of cliff, cove and open sky. Donegal holds the wildest stretch.",
+    photo: "Cliffs on the Wild Atlantic Way · north Donegal",
+  },
+  {
+    code: "02",
+    title: "Errigal Mountain",
+    drive: "22 min from CFN",
+    tagline: "Donegal's iconic quartzite cone, 751 m. The summit ridge trail takes two hours. The view takes the rest of the day.",
+    photo: "Errigal summit · looking north toward the Atlantic",
+  },
+  {
+    code: "03",
+    title: "Glenveagh",
+    drive: "45 min from CFN",
+    tagline: "Ireland's largest national park. Red deer, peregrine falcons, a Victorian castle beside a glacier lough. Entry is free.",
+    photo: "Glenveagh Castle · Lough Veagh reflected",
+  },
+  {
+    code: "04",
+    title: "Slieve League",
+    drive: "55 min from CFN",
+    tagline: "Three times the height of the Cliffs of Moher. A fraction of the visitors. The Atlantic crashes 600 m below the summit.",
+    photo: "Slieve League cliffs · looking west",
+  },
+  {
+    code: "05",
+    title: "Malin Head",
+    drive: "1 h 15 min from CFN",
+    tagline: "Ireland's northernmost point. End of the Wild Atlantic Way. The signs point here from every corner of the island.",
+    photo: "Malin Head · Banba's Crown headland",
+  },
+  {
+    code: "06",
+    title: "Donegal Town",
+    drive: "1 h from CFN",
+    tagline: "A medieval castle, a diamond square, the best tweed on the island. Small enough to walk end-to-end before dinner.",
+    photo: "Donegal Castle · River Eske",
+  },
+] as const;
+
+const practical = [
+  { label: "Car hire at CFN", detail: "Collection from arrivals · Budget, Europcar" },
+  { label: "Drive times", detail: "Beach 10 min · Errigal 22 min · Glenveagh 45 min · Donegal Town 1 h" },
+  { label: "Coach transfers", detail: "Bus Éireann 480 · Letterkenny 35 min · Sligo 2 h 30 min" },
+  { label: "Best season", detail: "Open all year · Best light: April – October" },
+] as const;
 ---
 
 <BaseLayout title={title} description={description}>
-  <section class="mx-auto max-w-7xl px-6 pb-24 pt-40">
-    <p class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic">
-      Discover
-    </p>
-    <h1
-      data-split
-      class="mt-4 max-w-4xl font-display text-[clamp(2.5rem,6vw,5.5rem)] font-normal leading-[0.98]"
-    >
-      Land in Donegal.
-    </h1>
-    <p class="mt-7 max-w-2xl text-base leading-relaxed text-mute sm:text-lg">
-      Wild Atlantic Way · Carrickfinn beach · Errigal · Glenveagh · the Gaeltacht.
-    </p>
 
-    <div data-animate="fade-up" class="mt-16 border-t border-line pt-10">
-      <p class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-mute">
-        Coming next
-      </p>
-      <p class="mt-4 max-w-2xl font-display text-2xl leading-snug text-ink">
-        Editorial photography · distances from CFN · golf course directory · Gaeltacht.
-      </p>
+  {/* ─── HERO ──────────────────────────────────────────────────────────────────
+      Full-screen. Left: editorial headline. Right: tall photo placeholder.
+      Photo caption is what José replaces with his image. */}
+  <section class="border-b border-line">
+    <div class="mx-auto grid min-h-[92vh] max-w-7xl grid-cols-1 items-end gap-0 px-6 pb-0 pt-[var(--header-h)] lg:grid-cols-2">
+
+      {/* Text column */}
+      <div class="py-16 pr-0 lg:py-24 lg:pr-16">
+        <p
+          data-animate="fade-up"
+          class="font-mono text-[0.68rem] uppercase tracking-[0.34em] text-atlantic"
+        >
+          Donegal · Ireland · Wild Atlantic Way
+        </p>
+
+        <h1
+          data-split
+          data-split-delay="0.1"
+          class="mt-6 font-display text-[clamp(3rem,6.5vw,7rem)] font-normal leading-[0.92]"
+        >
+          Land in<br />Donegal.
+        </h1>
+
+        <p
+          data-animate="fade-up"
+          data-animate-delay="0.3"
+          class="mt-8 max-w-md text-base leading-relaxed text-mute sm:text-lg"
+        >
+          Ten minutes from baggage claim, you are standing on a blue-flag
+          beach with Mount Errigal behind you and the Atlantic in front.
+        </p>
+
+        <div
+          data-animate="fade-up"
+          data-animate-delay="0.4"
+          class="mt-10 flex flex-wrap gap-6"
+        >
+          <a
+            href="#destinations"
+            class="border-b border-ink/60 pb-1 font-mono text-xs uppercase tracking-[0.22em] text-ink transition-colors hover:border-sand hover:text-sand"
+          >
+            Explore destinations →
+          </a>
+          <a
+            href="/flights"
+            class="border-b border-transparent pb-1 font-mono text-xs uppercase tracking-[0.22em] text-mute transition-colors hover:border-sand hover:text-sand"
+          >
+            Book a flight →
+          </a>
+        </div>
+      </div>
+
+      {/* Hero photo — tall portrait, fills right column to bottom */}
+      <figure
+        data-photo
+        class="relative h-full min-h-[55vw] self-stretch overflow-hidden lg:min-h-0"
+      >
+        <div
+          data-ken-burns
+          data-ken-burns-duration="22"
+          class="absolute inset-0 bg-surface-lo"
+          aria-hidden="true"
+        ></div>
+        {/* ↑ Replace bg-surface-lo with your photo:
+            class="absolute inset-0 h-full w-full object-cover"
+            src="/photos/discover-hero.jpg" alt="..." */}
+        <figcaption class="absolute bottom-4 right-5 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-mute">
+          Photograph · Wild Atlantic Way · Donegal
+        </figcaption>
+      </figure>
     </div>
   </section>
+
+  {/* ─── THREE HIGHLIGHTS ──────────────────────────────────────────────────────
+      Photo on top of each column, text below. */}
+  <section class="border-b border-line">
+    <div class="mx-auto max-w-7xl px-6 py-20">
+      <ul class="grid gap-12 sm:grid-cols-3">
+        {highlights.map((h, i) => (
+          <li
+            data-animate="fade-up"
+            data-animate-delay={`${0.07 * i}`}
+          >
+            {/* Photo placeholder — 3:4 portrait */}
+            <figure data-photo class="relative aspect-[3/4] w-full overflow-hidden bg-surface-lo">
+              {/* Replace bg-surface-lo with real photo */}
+              <figcaption class="absolute bottom-3 left-4 font-mono text-[0.58rem] uppercase tracking-[0.2em] text-mute/60">
+                {h.photo}
+              </figcaption>
+            </figure>
+
+            <div class="mt-6">
+              <p class="font-mono text-[0.66rem] uppercase tracking-[0.26em] text-atlantic">
+                {h.label}
+              </p>
+              <p class="mt-3 text-[0.9rem] leading-relaxed text-mute">
+                {h.text}
+              </p>
+              <a
+                href={h.link}
+                class="mt-5 inline-block border-b border-ink/40 pb-0.5 font-mono text-[0.66rem] uppercase tracking-[0.22em] text-ink transition-colors hover:border-sand hover:text-sand"
+              >
+                Explore →
+              </a>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  {/* ─── DESTINATIONS GRID ─────────────────────────────────────────────────────
+      6 cards · 3×2 on desktop · photos fill each card · text below. */}
+  <section id="destinations" class="border-b border-line bg-surface-lo/50">
+    <div class="mx-auto max-w-7xl px-6 py-20">
+
+      <div class="mb-14 flex items-end justify-between gap-6">
+        <div>
+          <p
+            data-animate="fade-up"
+            class="font-mono text-[0.68rem] uppercase tracking-[0.3em] text-atlantic"
+          >
+            From the terminal
+          </p>
+          <h2
+            data-split
+            class="mt-3 font-display text-[clamp(2rem,4.5vw,4.2rem)] font-normal leading-[0.97]"
+          >
+            Six reasons to<br />miss your return flight.
+          </h2>
+        </div>
+      </div>
+
+      <ul class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        {destinations.map((d, i) => (
+          <li
+            data-animate="fade-up"
+            data-animate-delay={`${0.05 * i}`}
+            class="group"
+          >
+            {/* Photo area — 4:5 portrait */}
+            <figure
+              data-photo
+              class="relative aspect-[4/5] w-full overflow-hidden bg-surface-lo"
+            >
+              {/* Replace bg-surface-lo with real photo.
+                  Overlay text works on any photo via the gradient below: */}
+              <div
+                class="absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                aria-hidden="true"
+              ></div>
+              <p class="absolute bottom-4 left-5 font-display text-[clamp(1.4rem,3vw,2rem)] font-normal leading-tight text-[#f0eee6] opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+                {d.tagline}
+              </p>
+              <figcaption class="absolute bottom-3 right-4 font-mono text-[0.58rem] uppercase tracking-[0.18em] text-mute/50">
+                {d.photo}
+              </figcaption>
+
+              {/* Card number watermark */}
+              <span
+                class="absolute right-4 top-4 font-mono text-[0.6rem] uppercase tracking-[0.28em] text-ink/25"
+                aria-hidden="true"
+              >
+                {d.code}
+              </span>
+            </figure>
+
+            {/* Text below photo — always visible */}
+            <div class="mt-4 flex items-start justify-between gap-4">
+              <div>
+                <h3 class="font-display text-[1.5rem] font-normal leading-tight">
+                  {d.title}
+                </h3>
+                <p class="mt-1 font-mono text-[0.65rem] uppercase tracking-[0.2em] text-mute">
+                  {d.drive}
+                </p>
+              </div>
+              <span class="mt-1 shrink-0 font-mono text-[0.7rem] text-atlantic transition-transform duration-300 group-hover:translate-x-1">
+                →
+              </span>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  {/* ─── EDITORIAL CTA ─────────────────────────────────────────────────────────
+      Atlantic green block — design element, no photo needed. */}
+  <section
+    class="border-b border-line"
+    style="background-color: var(--color-atlantic)"
+  >
+    <div class="mx-auto max-w-7xl px-6 py-28 sm:py-36">
+      <p
+        data-animate="fade-up"
+        class="font-mono text-[0.68rem] uppercase tracking-[0.34em]"
+        style="color: rgba(240,238,230,0.55)"
+      >
+        The plan
+      </p>
+      <h2
+        data-split
+        class="mt-5 max-w-5xl font-display text-[clamp(2.4rem,6vw,6.5rem)] font-normal leading-[0.93]"
+        style="color: #f0eee6"
+      >
+        Fly in Thursday.<br />
+        Back by Sunday.<br />
+        <em class="font-normal not-italic" style="color: var(--color-sand-bright)">
+          You'll stay longer next time.
+        </em>
+      </h2>
+      <div
+        data-animate="fade-up"
+        data-animate-delay="0.3"
+        class="mt-14 flex flex-wrap gap-x-10 gap-y-4"
+      >
+        <a
+          href="/flights"
+          class="border-b pb-1 font-mono text-xs uppercase tracking-[0.22em] transition-colors hover:text-sand"
+          style="color: #f0eee6; border-color: rgba(240,238,230,0.45)"
+        >
+          Book a flight →
+        </a>
+        <a
+          href="/plan"
+          class="border-b border-transparent pb-1 font-mono text-xs uppercase tracking-[0.22em] transition-colors hover:text-sand"
+          style="color: rgba(240,238,230,0.5)"
+        >
+          Plan your journey →
+        </a>
+      </div>
+    </div>
+  </section>
+
+  {/* ─── PRACTICAL INFO ────────────────────────────────────────────────────── */}
+  <section>
+    <div class="mx-auto max-w-7xl px-6 py-20">
+      <p
+        data-animate="fade-up"
+        class="font-mono text-[0.68rem] uppercase tracking-[0.3em] text-atlantic"
+      >
+        Getting around
+      </p>
+      <h2
+        data-split
+        class="mt-3 font-display text-[clamp(1.8rem,3.5vw,3rem)] font-normal leading-[1.02]"
+      >
+        From the terminal to the wilderness.
+      </h2>
+
+      <dl
+        data-animate="fade-up"
+        data-animate-delay="0.15"
+        class="mt-12 grid divide-y divide-line sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4"
+      >
+        {practical.map((p) => (
+          <div class="py-8 sm:pr-8">
+            <dt class="font-mono text-[0.64rem] uppercase tracking-[0.22em] text-atlantic">
+              {p.label}
+            </dt>
+            <dd class="mt-3 text-[0.9rem] leading-relaxed text-mute">
+              {p.detail}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </div>
+  </section>
+
 </BaseLayout>

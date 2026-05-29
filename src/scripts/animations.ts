@@ -191,51 +191,19 @@ function setupKenBurns(): void {
   });
 }
 
-/* ---------- Header reveal on scroll up ----------
-   The header starts off-screen above (CSS sets translateY(-100%)).
-   It reveals when:
-   (a) the user has scrolled past one viewport AND is scrolling up, or
-   (b) the user has reached very near the top of the page.
-   This is the deliberate break from Errigal's translucent fixed bar.
-*/
+/* ---------- Header scrolled-state ----------
+   The header is always visible (no slide-in/out — CSS doesn't hide it).
+   The only job here is toggling .is-scrolled so the frosted-glass
+   background appears once the user has scrolled past the hero edge. */
 function setupHeaderReveal(): void {
   const header = document.querySelector<HTMLElement>("[data-header]");
   if (!header) return;
 
-  const ALWAYS_SHOW_PX = 80;   // always visible this close to the top
-  const HIDE_AFTER_PX  = 80;   // px scrolled DOWN before hiding
-  const SHOW_AFTER_PX  = 40;   // px scrolled UP  before revealing
-
-  let lastY = window.scrollY;
-  let accumulated = 0;
+  const SCROLLED_PX = 60;
   let ticking = false;
 
   const apply = (): void => {
-    const y = window.scrollY;
-    const delta = y - lastY;
-    lastY = y;
-
-    if (y < ALWAYS_SHOW_PX) {
-      // Near the top — always show, clear accumulator
-      header.classList.add("is-revealed");
-      accumulated = 0;
-    } else {
-      accumulated += delta;
-      if (accumulated > HIDE_AFTER_PX) {
-        // Scrolled down enough — hide and reset so next up-gesture
-        // is measured fresh.
-        header.classList.remove("is-revealed");
-        accumulated = 0;
-      } else if (accumulated < -SHOW_AFTER_PX) {
-        // Scrolled up enough — reveal and reset.
-        header.classList.add("is-revealed");
-        accumulated = 0;
-      }
-      // If neither threshold is crossed, do nothing — prevents jitter
-      // from micro-movements or momentum-scroll wobble.
-    }
-
-    header.classList.toggle("is-scrolled", y > ALWAYS_SHOW_PX);
+    header.classList.toggle("is-scrolled", window.scrollY > SCROLLED_PX);
   };
 
   const onScroll = (): void => {
@@ -245,7 +213,7 @@ function setupHeaderReveal(): void {
   };
 
   window.addEventListener("scroll", onScroll, { passive: true });
-  document.addEventListener("astro:page-load", () => { lastY = window.scrollY; apply(); });
+  document.addEventListener("astro:page-load", () => apply());
   apply();
 }
 

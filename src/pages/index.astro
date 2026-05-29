@@ -100,39 +100,40 @@ const news = [
     data-hero-scroll
     class="relative isolate h-[200vh] w-full"
   >
-    <div class="sticky top-0 flex h-screen w-full items-end overflow-hidden">
-      {/* Placeholder gradient — replace with the drone scrub video.
-          When the .mp4 is dropped at /video/hero.mp4 the <video>
-          below picks it up via data-src. */}
-      <div
-        data-ken-burns
-        aria-hidden="true"
-        class="absolute inset-0 -z-20 bg-gradient-to-b from-atlantic via-atlantic-bright to-ink"
-      >
+    <div class="sticky top-0 flex h-screen w-full items-end">
+      {/* Background layers isolated in their own overflow-hidden wrapper
+          so the Ken Burns scale doesn't bleed outside the container, but
+          the hero headline text (which can be taller than the viewport on
+          short screens) is free to extend above without being clipped. */}
+      <div class="absolute inset-0 overflow-hidden" aria-hidden="true">
+        {/* Placeholder gradient — replace with the drone scrub video. */}
+        <div
+          data-ken-burns
+          class="absolute inset-0 bg-gradient-to-b from-atlantic via-atlantic-bright to-ink"
+        >
+        </div>
+
+        <video
+          data-scrub-video
+          data-src="/video/hero.mp4"
+          data-scrub-start="top top"
+          data-scrub-end="bottom bottom"
+          muted
+          playsinline
+          preload="metadata"
+          class="absolute inset-0 hidden h-full w-full object-cover md:block"
+        >
+        </video>
+
+        {/* Bottom gradient so headline stays readable over any frame */}
+        <div
+          class="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/35 to-transparent"
+        >
+        </div>
       </div>
 
-      <video
-        data-scrub-video
-        data-src="/video/hero.mp4"
-        data-scrub-start="top top"
-        data-scrub-end="bottom bottom"
-        muted
-        playsinline
-        preload="metadata"
-        class="absolute inset-0 -z-10 hidden h-full w-full object-cover md:block"
-        aria-hidden="true"
-      >
-      </video>
-
-      {/* Bottom gradient so headline stays readable over any frame */}
       <div
-        class="absolute inset-0 -z-10 bg-gradient-to-t from-ink/85 via-ink/35 to-transparent"
-        aria-hidden="true"
-      >
-      </div>
-
-      <div
-        class="cfn-hero-content mx-auto w-full max-w-7xl px-6 pb-24 pt-32 sm:pb-32"
+        class="cfn-hero-content relative z-10 mx-auto w-full max-w-7xl px-6 pb-24 pt-32 sm:pb-32"
       >
         <p
           data-animate="fade-up"
@@ -223,7 +224,7 @@ const news = [
           </p>
           <p class="mt-5">
             <a
-              href="/about"
+              href="/story"
               class="border-b border-ink/40 pb-0.5 transition-colors hover:border-sand hover:text-sand"
             >
               The full story — Malinair to today →
@@ -493,7 +494,7 @@ const news = [
           </h2>
         </div>
         <a
-          href="/about#news"
+          href="/story#news"
           class="hidden border-b border-ink/60 pb-1 font-mono text-xs uppercase tracking-[0.22em] text-ink transition-colors hover:border-sand hover:text-sand sm:inline-block"
         >
           All news →
@@ -507,7 +508,7 @@ const news = [
             data-animate-delay={`${0.05 + i * 0.05}`}
           >
             <a
-              href="/about#news"
+              href="/story#news"
               class="group grid items-baseline gap-4 py-8 transition-colors md:grid-cols-[7rem_8rem_1fr_2rem]"
             >
               <p class="font-mono text-[0.78rem] tabular-nums text-mute">

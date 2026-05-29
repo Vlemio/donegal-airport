@@ -155,26 +155,24 @@
 
 /*
   ============================================================
-  HEADER — appears on scroll up, not fixed from load. Deliberate
-  break from Errigal's translucent fixed bar. The user has to
-  scroll back up to see the menu, which keeps the hero
-  uncluttered while it does the cinematic work.
+  HEADER — fixed, always visible, always frosted-glass.
+  Works on every page (light or dark background) because the
+  semi-opaque surface provides its own contrast layer.
+  .is-scrolled adds a subtle shadow to separate it from content.
   ============================================================
 */
 [data-header] {
-  transform: translateY(-100%);
+  background-color: color-mix(in srgb, var(--color-surface) 90%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--color-line);
   transition:
-    transform 0.45s cubic-bezier(0.22, 1, 0.36, 1),
     background-color 0.3s ease,
-    border-color 0.3s ease;
-}
-[data-header].is-revealed {
-  transform: translateY(0);
+    box-shadow 0.3s ease;
 }
 [data-header].is-scrolled {
-  background-color: color-mix(in srgb, var(--color-surface) 92%, transparent);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--color-line);
+  background-color: color-mix(in srgb, var(--color-surface) 96%, transparent);
+  box-shadow: 0 2px 28px rgba(24, 29, 22, 0.07);
 }
 
 /* Scroll hint at the bottom of the hero */
