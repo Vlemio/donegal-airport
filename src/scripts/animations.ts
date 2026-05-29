@@ -503,7 +503,10 @@ function setupStoryPath(): void {
           duration: 1,
           ease: "power3.out",
           stagger: 0.1,
-          scrollTrigger: { trigger: ch, start: "top 82%", once: true },
+          // Fire when the chapter's centre (where the waypoint sits and
+          // the plane passes) reaches the lower-middle of the screen —
+          // not when the chapter first peeks in at the bottom.
+          scrollTrigger: { trigger: ch, start: "center 72%", once: true },
         },
       );
     }
@@ -518,7 +521,8 @@ function setupStoryPath(): void {
           duration: 1,
           ease: "power3.out",
           stagger: 0.16,
-          scrollTrigger: { trigger: ch, start: "top 55%", once: true },
+          // A beat after the heading, around screen centre.
+          scrollTrigger: { trigger: ch, start: "center 52%", once: true },
         },
       );
     }
