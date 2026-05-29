@@ -352,28 +352,11 @@ const airlines = [
       })
     }
 
-    {/* ---- OUTRO ---- */}
+    {/* Gradient fade — no text, just a visual hint that the page continues */}
     <div
-      class="relative z-10 flex min-h-[24vh] items-center justify-center px-6 py-16 text-center"
-    >
-      <div>
-        <p class="font-mono text-[0.7rem] uppercase tracking-[0.3em] text-atlantic">
-          Continues below
-        </p>
-        <h2
-          class="mt-3 font-display text-[clamp(1.8rem,3.2vw,3rem)] font-light leading-[1.06]"
-        >
-          Every airline that has ever flown here.
-        </h2>
-        <p
-          class="mt-8 inline-flex items-center gap-3 font-mono text-[0.65rem] uppercase tracking-[0.24em] text-sand"
-          aria-hidden="true"
-        >
-          <span>Scroll down</span>
-          <span class="text-base">↓</span>
-        </p>
-      </div>
-    </div>
+      class="pointer-events-none absolute bottom-0 left-0 right-0 z-20 h-36 bg-gradient-to-b from-transparent to-surface"
+      aria-hidden="true"
+    />
 
   </section>
 
