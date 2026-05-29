@@ -201,29 +201,51 @@ function setupKenBurns(): void {
 function setupHeaderReveal(): void {
   const header = document.querySelector<HTMLElement>("[data-header]");
   if (!header) return;
+
+  const ALWAYS_SHOW_PX = 80;   // always visible this close to the top
+  const HIDE_AFTER_PX  = 80;   // px scrolled DOWN before hiding
+  const SHOW_AFTER_PX  = 40;   // px scrolled UP  before revealing
+
   let lastY = window.scrollY;
+  let accumulated = 0;
   let ticking = false;
 
   const apply = (): void => {
     const y = window.scrollY;
-    const goingUp = y < lastY;
-    const nearTop = y < 40;
-    const pastHero = y > window.innerHeight * 0.85;
-    const shouldReveal = nearTop || (goingUp && pastHero);
-    header.classList.toggle("is-revealed", shouldReveal);
-    header.classList.toggle("is-scrolled", y > 80);
+    const delta = y - lastY;
     lastY = y;
-    ticking = false;
+
+    if (y < ALWAYS_SHOW_PX) {
+      // Near the top — always show, clear accumulator
+      header.classList.add("is-revealed");
+      accumulated = 0;
+    } else {
+      accumulated += delta;
+      if (accumulated > HIDE_AFTER_PX) {
+        // Scrolled down enough — hide and reset so next up-gesture
+        // is measured fresh.
+        header.classList.remove("is-revealed");
+        accumulated = 0;
+      } else if (accumulated < -SHOW_AFTER_PX) {
+        // Scrolled up enough — reveal and reset.
+        header.classList.add("is-revealed");
+        accumulated = 0;
+      }
+      // If neither threshold is crossed, do nothing — prevents jitter
+      // from micro-movements or momentum-scroll wobble.
+    }
+
+    header.classList.toggle("is-scrolled", y > ALWAYS_SHOW_PX);
   };
 
   const onScroll = (): void => {
     if (ticking) return;
     ticking = true;
-    requestAnimationFrame(apply);
+    requestAnimationFrame(() => { apply(); ticking = false; });
   };
 
   window.addEventListener("scroll", onScroll, { passive: true });
-  document.addEventListener("astro:page-load", apply);
+  document.addEventListener("astro:page-load", () => { lastY = window.scrollY; apply(); });
   apply();
 }
 
