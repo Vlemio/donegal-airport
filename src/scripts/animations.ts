@@ -474,27 +474,54 @@ function setupStoryPath(): void {
     resizeTimer = setTimeout(build, 220);
   });
 
-  // Slide each chapter card in from its side on scroll
+  // Reveal each chapter in two beats: the heading slides in from its
+  // side first, then — as the reader keeps scrolling — the explanatory
+  // text (and photo) slides in after it. Separate ScrollTriggers mean
+  // the body copy keeps its own entrance instead of arriving already
+  // on screen alongside the title.
   section!.querySelectorAll<HTMLElement>("[data-story-chapter]").forEach((ch) => {
     const card = ch.querySelector<HTMLElement>(".story-card");
-    const side = ch.dataset.side;
     if (!card) return;
+    const dx = ch.dataset.side === "right" ? 90 : -90;
 
-    gsap.fromTo(
-      card,
-      { opacity: 0, x: side === "right" ? 90 : -90 },
-      {
-        opacity: 1,
-        x: 0,
-        duration: 1.1,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: ch,
-          start: "top 80%",
-          once: true,
-        },
-      },
+    const head = [
+      card.querySelector<HTMLElement>(":scope > p"),
+      card.querySelector<HTMLElement>(":scope > h2"),
+    ].filter(Boolean) as HTMLElement[];
+
+    const body = card.querySelectorAll<HTMLElement>(
+      ":scope > h2 ~ p, :scope > figure, :scope > [data-photo]",
     );
+
+    if (head.length) {
+      gsap.fromTo(
+        head,
+        { opacity: 0, x: dx },
+        {
+          opacity: 1,
+          x: 0,
+          duration: 1,
+          ease: "power3.out",
+          stagger: 0.1,
+          scrollTrigger: { trigger: ch, start: "top 82%", once: true },
+        },
+      );
+    }
+
+    if (body.length) {
+      gsap.fromTo(
+        body,
+        { opacity: 0, x: dx },
+        {
+          opacity: 1,
+          x: 0,
+          duration: 1,
+          ease: "power3.out",
+          stagger: 0.16,
+          scrollTrigger: { trigger: ch, start: "top 55%", once: true },
+        },
+      );
+    }
   });
 }
 
