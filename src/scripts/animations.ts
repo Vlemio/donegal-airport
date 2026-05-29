@@ -389,6 +389,9 @@ function setupStoryPath(): void {
 
   if (!section || !svg || !pathEl || !waypoints?.length) return;
 
+  // Find the plane group once — it lives inside the same SVG element
+  const planeEl = svg?.querySelector<SVGGElement>("[data-story-plane]") ?? null;
+
   function build(): void {
     const sRect = section!.getBoundingClientRect();
     const W = section!.offsetWidth;
@@ -417,6 +420,11 @@ function setupStoryPath(): void {
     pathEl!.setAttribute("d", d);
     if (trackEl) trackEl.setAttribute("d", d);
 
+    // Reset plane to hidden at path start
+    if (planeEl) {
+      gsap.set(planeEl, { opacity: 0, attr: { transform: `translate(${W / 2},0) rotate(0)` } });
+    }
+
     // Set up dash animation
     const len = pathEl!.getTotalLength();
     pathEl!.style.strokeDasharray = String(len);
@@ -429,7 +437,29 @@ function setupStoryPath(): void {
       end: "bottom 20%",
       scrub: 1.2,
       onUpdate(self) {
+        // Draw path
         pathEl!.style.strokeDashoffset = String(len * (1 - self.progress));
+
+        // Move ATR 72 to the current path tip
+        if (planeEl && self.progress > 0.004) {
+          const dist = Math.max(2, self.progress * len);
+          const pt      = pathEl!.getPointAtLength(dist);
+          const ptPrev  = pathEl!.getPointAtLength(Math.max(0, dist - 3));
+          // Tangent angle in degrees (screen coords: y increases downward)
+          const angle   = Math.atan2(pt.y - ptPrev.y, pt.x - ptPrev.x) * (180 / Math.PI);
+          // +90 because the plane SVG has nose pointing UP (−y) at rotation=0
+          const heading = angle + 90;
+          const opacity = Math.min(1, (self.progress - 0.004) * 40);
+
+          gsap.set(planeEl, {
+            opacity,
+            attr: {
+              transform: `translate(${pt.x.toFixed(2)},${pt.y.toFixed(2)}) rotate(${heading.toFixed(2)})`,
+            },
+          });
+        } else if (planeEl) {
+          gsap.set(planeEl, { opacity: 0 });
+        }
       },
     });
   }

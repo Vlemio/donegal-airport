@@ -162,7 +162,17 @@ const airlines = [
       aria-hidden="true"
       preserveAspectRatio="none"
     >
-      {/* Faint guide track — always visible on desktop, shows where the path will go */}
+      <defs>
+        {/* Drop shadow for the aircraft */}
+        <filter id="cfn-plane-shadow" x="-60%" y="-60%" width="220%" height="220%">
+          <feDropShadow
+            dx="2" dy="3" stdDeviation="3"
+            flood-color="#11202d" flood-opacity="0.16"
+          />
+        </filter>
+      </defs>
+
+      {/* Faint guide track — always visible on desktop */}
       <path
         data-story-track
         fill="none"
@@ -182,6 +192,62 @@ const airlines = [
         stroke-linejoin="round"
         opacity="0.8"
       />
+
+      {/*
+        ATR 72-600 · Emerald Airlines · top-down view
+        Nose points UP (−y). GSAP translates + rotates this group
+        to sit at the leading tip of the drawing path.
+        Scale: fuselage ≈ 62 SVG-px tall, wingspan ≈ 92 SVG-px.
+        Drawing order: back-to-front so fuselage sits on top of wings.
+      */}
+      <g data-story-plane opacity="0" filter="url(#cfn-plane-shadow)">
+
+        {/* Horizontal stabilizers (aft, drawn first = below fuselage) */}
+        <path d="M-8,23 L-23,21 L-23,27 L-8,27 Z" fill="#D5D8D2"/>
+        <path d="M8,23 L23,21 L23,27 L8,27 Z"  fill="#D5D8D2"/>
+
+        {/* Wings — nearly rectangular, ATR 72 low-taper planform */}
+        <path d="M-8,-9 L-46,-8 L-46,3 L-8,4 Z"  fill="#E3E7E0"/>
+        <path d="M8,-9 L46,-8 L46,3 L8,4 Z"    fill="#E3E7E0"/>
+
+        {/* Trailing-edge flap line */}
+        <line x1="-46" y1="1.8" x2="-8" y2="3.2"
+              stroke="#C5C9C2" stroke-width="0.5" opacity="0.9"/>
+        <line x1="8"  y1="3.2" x2="46" y2="1.8"
+              stroke="#C5C9C2" stroke-width="0.5" opacity="0.9"/>
+
+        {/* Fuselage — drawn over wings so it occludes the root */}
+        <path
+          d="M0,-30 C5,-30 8,-25 8,-18 L8,20
+             C8,26 5,31 0,31
+             C-5,31 -8,26 -8,20 L-8,-18
+             C-8,-25 -5,-30 0,-30 Z"
+          fill="#F2EFE8"
+          stroke="rgba(17,32,45,0.07)"
+          stroke-width="0.5"
+        />
+
+        {/* Emerald green livery stripe — subtle top-surface hint */}
+        <rect x="-1.6" y="-18" width="3.2" height="38" rx="1.4"
+              fill="#1E5C35" opacity="0.22"/>
+
+        {/* Engine nacelles — Emerald green */}
+        <ellipse cx="-29" cy="-3" rx="5"  ry="9"  fill="#1E5C35"/>
+        <ellipse cx="29"  cy="-3" rx="5"  ry="9"  fill="#1E5C35"/>
+
+        {/* Propeller discs — spinning = semi-transparent disc */}
+        <ellipse cx="-29" cy="-14" rx="13" ry="2"
+                 fill="rgba(10,10,10,0.36)"/>
+        <ellipse cx="29"  cy="-14" rx="13" ry="2"
+                 fill="rgba(10,10,10,0.36)"/>
+
+        {/* Cockpit windows */}
+        <ellipse cx="-2.8" cy="-26" rx="1.6" ry="1.1"
+                 fill="rgba(40,70,120,0.35)"/>
+        <ellipse cx="2.8"  cy="-26" rx="1.6" ry="1.1"
+                 fill="rgba(40,70,120,0.35)"/>
+
+      </g>
     </svg>
 
     {/* ---- INTRO ---- */}
