@@ -482,15 +482,15 @@ function setupStoryPath(): void {
 
     gsap.fromTo(
       card,
-      { opacity: 0, x: side === "right" ? 50 : -50 },
+      { opacity: 0, x: side === "right" ? 90 : -90 },
       {
         opacity: 1,
         x: 0,
-        duration: 1,
+        duration: 1.1,
         ease: "power3.out",
         scrollTrigger: {
           trigger: ch,
-          start: "top 78%",
+          start: "top 80%",
           once: true,
         },
       },

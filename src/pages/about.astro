@@ -274,7 +274,7 @@ const airlines = [
           data-split-delay="0.05"
           class="mt-5 font-display text-[clamp(2.4rem,4.5vw,4.5rem)] font-light leading-[1]"
         >
-          Six chapters, one runway.
+          A runway the sea kept trying to take back.
         </h2>
         <p
           data-animate="fade-up"
@@ -321,14 +321,14 @@ const airlines = [
 
             {/* Content card */}
             <div class="story-card relative z-10">
-              <p class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-sand">
-                <span>{`0${i + 1}`.slice(-2)} · {c.range}</span>
+              <p class="font-mono text-[0.82rem] uppercase tracking-[0.24em] text-sand">
+                {c.range}
                 <span class="ml-3 text-atlantic">{c.year}</span>
               </p>
 
               <h2
                 data-split
-                class="mt-5 font-display text-[clamp(1.75rem,2.8vw,3rem)] font-light leading-[1.04]"
+                class="mt-5 font-display text-[clamp(2.25rem,3.8vw,4.25rem)] font-light leading-[1.02]"
               >
                 {c.title}
               </h2>
@@ -396,30 +396,23 @@ const airlines = [
         Every airline that has flown to Donegal.
       </h2>
 
-      <div data-animate="fade-up" class="mt-12 overflow-x-auto">
-        <table class="w-full min-w-[560px] border-collapse text-left">
-          <thead>
-            <tr
-              class="border-y border-line text-[0.66rem] uppercase tracking-[0.18em] text-mute"
-            >
-              <th class="py-3 pr-6 font-medium">Airline</th>
-              <th class="py-3 pr-6 font-medium">Route</th>
-              <th class="py-3 font-medium">Years</th>
-            </tr>
-          </thead>
-          <tbody class="font-mono text-sm">
-            {
-              airlines.map((a) => (
-                <tr class="border-b border-line/60">
-                  <td class="py-4 pr-6 text-ink">{a.name}</td>
-                  <td class="py-4 pr-6 text-mute">{a.route}</td>
-                  <td class="py-4 tabular-nums text-mute">{a.years}</td>
-                </tr>
-              ))
-            }
-          </tbody>
-        </table>
-      </div>
+      <dl data-animate="fade-up" class="mt-14 border-t border-line/60">
+        {
+          airlines.map((a) => (
+            <div class="flex flex-wrap items-baseline gap-x-8 gap-y-1 border-b border-line/40 py-5">
+              <dt class="basis-full font-display text-xl font-light leading-tight text-ink sm:basis-[36%] sm:text-2xl">
+                {a.name}
+              </dt>
+              <dd class="flex-1 text-[0.95rem] leading-snug text-mute">
+                {a.route}
+              </dd>
+              <dd class="shrink-0 text-sm tabular-nums tracking-wide text-atlantic">
+                {a.years}
+              </dd>
+            </div>
+          ))
+        }
+      </dl>
     </div>
   </section>
 

@@ -467,19 +467,20 @@
   opacity: 0.07;
   pointer-events: none;
   user-select: none;
-  bottom: -0.05em;
+  top: 0.12em;
+  bottom: auto;
   z-index: 0;
 }
-/* Mobile: anchor right, smaller */
+/* Mobile: anchor right (fully on-screen), smaller */
 .story-year-bg {
   font-size: clamp(5rem, 15vh, 11rem);
-  right: -0.08em;
+  right: 0.08em;
 }
 @media (min-width: 1024px) {
   .story-year-bg {
     font-size: clamp(10rem, 28vh, 24rem);
     opacity: 0.09;
   }
-  .story-year-bg--l { left: -0.06em; right: auto; }
-  .story-year-bg--r { right: -0.06em; left: auto; }
+  .story-year-bg--l { left: 0.08em; right: auto; }
+  .story-year-bg--r { right: 0.08em; left: auto; }
 }
