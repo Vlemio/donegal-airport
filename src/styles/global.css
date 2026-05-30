@@ -541,12 +541,33 @@ figure[data-story-photo] {
     left: auto;
   }
 
-  /* Squarish / near-square photos are much taller at the same width, so
-     they extend further down from the fixed top anchor. Give them a taller
-     panel so the photo bottom never collides with the next chapter. The
-     image still fills the full figure width and the caption stays under it. */
+  /* Squarish / portrait photos are sized by HEIGHT (not width) so they never
+     become absurdly tall at the full figure width. The figure shrinks to the
+     resulting narrower width, still flush at the outer edge, caption directly
+     under the image. A taller panel keeps the bottom clear of the next one. */
   [data-story-chapter].has-tall-photo {
-    min-height: 118vh;
+    min-height: 116vh;
+  }
+  [data-story-chapter].has-tall-photo figure[data-story-photo] {
+    width: auto;
+    max-width: clamp(28rem, 52%, 54rem);
+  }
+  [data-story-chapter].has-tall-photo .photo-painted-img {
+    width: auto;
+    height: 58vh;
+    max-width: 100%;
+  }
+
+  /* Lower the text card so its vertical centre lines up with the photo
+     (which is top-anchored just below the year). Panoramic and tall photos
+     sit at slightly different centres, so each gets its own nudge. The
+     transform is on the CARD container; GSAP only animates the card's
+     children, so nothing fights. */
+  [data-story-chapter].has-photo:not(.has-tall-photo) .story-card {
+    transform: translateY(58px);
+  }
+  [data-story-chapter].has-tall-photo .story-card {
+    transform: translateY(33px);
   }
 }
 
