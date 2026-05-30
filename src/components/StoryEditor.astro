@@ -1,0 +1,229 @@
+---
+/*
+  StoryEditor — in-browser visual tuner for the /story timeline.
+
+  DEV-ONLY. It is gated behind `import.meta.env.DEV`, and its logic lives in an
+  `is:inline` script, so it is NEVER emitted into the production build / the
+  published site. Run the local dev server ("Donegal Airport" in the preview
+  launcher) and a small ✎ button appears bottom-right.
+
+  What it does: scans every chapter on the page and gives you live sliders to
+  move/resize the photo, the text and the year, plus fields to edit the year,
+  title and caption text. Nothing is saved to the source files automatically —
+  press "Copiar valores" and paste them back to me (or into the `chapters`
+  array in story.astro). Your tweaks survive reloads via localStorage.
+*/
+---
+
+{
+  import.meta.env.DEV && (
+    <Fragment>
+      <button id="se-toggle" type="button" aria-label="Editar story">✎</button>
+      <aside id="se-panel" hidden>
+        <header>
+          <strong>Editor del story</strong>
+          <span>solo local · no sale publicado</span>
+        </header>
+        <div id="se-body" />
+        <footer>
+          <button id="se-copy" type="button">📋 Copiar valores</button>
+          <button id="se-reset" type="button">↺ Reset</button>
+        </footer>
+      </aside>
+
+      <script is:inline>
+        (function () {
+          const LS = "story-editor-v1";
+          const saved = JSON.parse(localStorage.getItem(LS) || "{}");
+
+          // knob definitions ----------------------------------------------
+          const KNOBS = [
+            { key: "photoShiftY", prop: "--photo-shift", unit: "px", def: 0, min: -160, max: 300, step: 1, label: "Foto ↕" },
+            { key: "cardShiftY", prop: "--card-shift", unit: "px", def: 58, min: -80, max: 340, step: 1, label: "Texto ↕" },
+            { key: "photoH", prop: "--photo-h", unit: "vh", def: 78, min: 45, max: 100, step: 1, label: "Tamaño (alto)", tall: true },
+            { key: "photoW", prop: "--photo-w", unit: "%", def: 52, min: 30, max: 56, step: 0.5, label: "Tamaño (ancho)", wide: true },
+            { key: "yearShiftY", prop: "--year-shift", unit: "px", def: 0, min: -180, max: 280, step: 1, label: "Año ↕" },
+            { key: "yearSize", prop: "--year-size", unit: "rem", def: null, min: 8, max: 30, step: 0.5, label: "Año tamaño" },
+          ];
+
+          const chapters = [].slice.call(document.querySelectorAll("[data-story-chapter]"));
+
+          const sel = (ch, q) => ch.querySelector(q);
+          const isTall = (ch) => ch.classList.contains("has-tall-photo");
+          const hasPhoto = (ch) => ch.classList.contains("has-photo");
+          const yearEl = (ch) => sel(ch, ".story-year-bg");
+          const titleEl = (ch) => sel(ch, ".story-card h2");
+          const capEl = (ch) => sel(ch, "figcaption");
+          const yearSpanEl = (ch) => sel(ch, ".story-card p span");
+
+          function readInit(ch, k) {
+            const inline = ch.style.getPropertyValue(k.prop).trim();
+            if (inline) return parseFloat(inline);
+            if (k.key === "yearSize") {
+              const y = yearEl(ch);
+              return y ? Math.round((parseFloat(getComputedStyle(y).fontSize) / 16) * 2) / 2 : k.def;
+            }
+            return k.def;
+          }
+
+          // state -----------------------------------------------------------
+          const state = chapters.map((ch, i) => {
+            const s = (saved[i] = saved[i] || {});
+            const o = { pos: {}, text: {} };
+            KNOBS.forEach((k) => {
+              o.pos[k.key] = s.pos && s.pos[k.key] != null ? s.pos[k.key] : readInit(ch, k);
+            });
+            o.text.year = s.text && s.text.year != null ? s.text.year : (yearEl(ch) ? yearEl(ch).textContent.trim() : "");
+            o.text.title = s.text && s.text.title != null ? s.text.title : (titleEl(ch) ? titleEl(ch).textContent.trim() : "");
+            o.text.caption = s.text && s.text.caption != null ? s.text.caption : (capEl(ch) ? capEl(ch).textContent.trim() : "");
+            return o;
+          });
+
+          function applyPos(i, key) {
+            const ch = chapters[i], k = KNOBS.find((x) => x.key === key), v = state[i].pos[key];
+            if (v == null || v === "" || isNaN(v)) { ch.style.removeProperty(k.prop); return; }
+            ch.style.setProperty(k.prop, v + k.unit);
+          }
+          function applyText(i) {
+            const ch = chapters[i], t = state[i].text;
+            if (yearEl(ch)) yearEl(ch).textContent = t.year;
+            if (yearSpanEl(ch)) yearSpanEl(ch).textContent = t.year;
+            if (titleEl(ch)) titleEl(ch).textContent = t.title;
+            if (capEl(ch) && t.caption) capEl(ch).textContent = t.caption;
+          }
+          function applyAll() {
+            state.forEach((o, i) => { KNOBS.forEach((k) => applyPos(i, k.key)); applyText(i); });
+          }
+          function save() { localStorage.setItem(LS, JSON.stringify(state.map((o) => ({ pos: o.pos, text: o.text })))); }
+
+          // build UI --------------------------------------------------------
+          const body = document.getElementById("se-body");
+          chapters.forEach((ch, i) => {
+            if (!hasPhoto(ch)) return;
+            const tall = isTall(ch);
+            const det = document.createElement("details");
+            if (i === 0) det.open = true;
+            const sum = document.createElement("summary");
+            sum.textContent = "Sección " + (i + 1) + " · " + state[i].text.year;
+            det.appendChild(sum);
+
+            // text fields
+            [["Año", "year"], ["Título", "title"], ["Pie", "caption"]].forEach(([lab, key]) => {
+              if (key === "caption" && !capEl(ch)) return;
+              const row = document.createElement("label");
+              row.className = "se-text";
+              row.innerHTML = "<span>" + lab + "</span>";
+              const inp = document.createElement("input");
+              inp.type = "text";
+              inp.value = state[i].text[key];
+              inp.addEventListener("input", () => { state[i].text[key] = inp.value; applyText(i); save(); });
+              row.appendChild(inp);
+              det.appendChild(row);
+            });
+
+            // sliders
+            KNOBS.forEach((k) => {
+              if (k.tall && !tall) return;
+              if (k.wide && tall) return;
+              const row = document.createElement("div");
+              row.className = "se-row";
+              const lab = document.createElement("span");
+              lab.className = "se-lab";
+              lab.textContent = k.label;
+              const rng = document.createElement("input");
+              rng.type = "range"; rng.min = k.min; rng.max = k.max; rng.step = k.step;
+              const num = document.createElement("input");
+              num.type = "number"; num.min = k.min; num.max = k.max; num.step = k.step;
+              num.className = "se-num";
+              const val = state[i].pos[k.key];
+              rng.value = num.value = val != null && !isNaN(val) ? val : k.def != null ? k.def : 0;
+              const set = (v) => {
+                v = parseFloat(v); if (isNaN(v)) return;
+                state[i].pos[k.key] = v; rng.value = v; num.value = v;
+                applyPos(i, k.key); save();
+              };
+              rng.addEventListener("input", () => set(rng.value));
+              num.addEventListener("input", () => set(num.value));
+              row.append(lab, rng, num);
+              det.appendChild(row);
+            });
+            body.appendChild(det);
+          });
+
+          // actions ---------------------------------------------------------
+          document.getElementById("se-copy").addEventListener("click", () => {
+            const lines = ["// ==== Valores del editor del story ===="];
+            chapters.forEach((ch, i) => {
+              if (!hasPhoto(ch)) return;
+              const tall = isTall(ch), p = state[i].pos, t = state[i].text;
+              const parts = [];
+              KNOBS.forEach((k) => {
+                if (k.tall && !tall) return; if (k.wide && tall) return;
+                const v = p[k.key]; if (v == null || isNaN(v)) return;
+                if (k.key === "cardShiftY" && v === 58) return; // default
+                if ((k.key === "photoShiftY" || k.key === "yearShiftY") && v === 0) return;
+                if (k.key === "photoW" && v === 52) return;
+                if (k.key === "photoH" && v === 78) return;
+                const isStr = k.unit !== "px";
+                parts.push(k.key + ": " + (isStr ? '"' + v + k.unit + '"' : v));
+              });
+              lines.push("// Sección " + (i + 1) + " (" + t.year + ")");
+              lines.push("  " + (parts.length ? parts.join(", ") : "(posición por defecto)"));
+              lines.push('  year: "' + t.year + '", title: "' + t.title.replace(/"/g, '\\"') + '"' + (t.caption ? ', photoCaption: "' + t.caption.replace(/"/g, '\\"') + '"' : ""));
+            });
+            const out = lines.join("\n");
+            navigator.clipboard.writeText(out).then(
+              () => { const b = document.getElementById("se-copy"); b.textContent = "✓ Copiado"; setTimeout(() => (b.textContent = "📋 Copiar valores"), 1500); },
+              () => { window.prompt("Copia esto:", out); }
+            );
+          });
+
+          document.getElementById("se-reset").addEventListener("click", () => {
+            if (!confirm("¿Descartar todos tus cambios del editor y volver a los valores del archivo?")) return;
+            localStorage.removeItem(LS);
+            location.reload();
+          });
+
+          // toggle ----------------------------------------------------------
+          const panel = document.getElementById("se-panel");
+          document.getElementById("se-toggle").addEventListener("click", () => { panel.hidden = !panel.hidden; });
+
+          applyAll();
+        })();
+      </script>
+
+      <style is:global>
+        #se-toggle {
+          position: fixed; right: 18px; bottom: 18px; z-index: 9999;
+          width: 46px; height: 46px; border-radius: 999px; border: none;
+          background: #181d16; color: #f3f2ee; font-size: 20px; cursor: pointer;
+          box-shadow: 0 6px 24px rgba(0, 0, 0, 0.28);
+        }
+        #se-panel {
+          position: fixed; right: 18px; bottom: 74px; z-index: 9999;
+          width: 340px; max-height: 78vh; overflow-y: auto;
+          background: #fffefb; color: #181d16; border: 1px solid rgba(0, 0, 0, 0.12);
+          border-radius: 14px; box-shadow: 0 12px 48px rgba(0, 0, 0, 0.28);
+          font-family: ui-sans-serif, system-ui, sans-serif; font-size: 12px;
+          padding: 12px 14px;
+        }
+        #se-panel[hidden] { display: none; }
+        #se-panel header { display: flex; flex-direction: column; margin-bottom: 8px; }
+        #se-panel header strong { font-size: 13px; }
+        #se-panel header span { color: #8a8a82; font-size: 10px; }
+        #se-panel details { border-top: 1px solid rgba(0, 0, 0, 0.08); padding: 6px 0; }
+        #se-panel summary { cursor: pointer; font-weight: 600; padding: 4px 0; }
+        #se-panel .se-text { display: grid; grid-template-columns: 46px 1fr; align-items: center; gap: 6px; margin: 4px 0; }
+        #se-panel .se-text span { color: #56605a; }
+        #se-panel .se-text input { width: 100%; padding: 3px 6px; border: 1px solid rgba(0, 0, 0, 0.18); border-radius: 6px; font-size: 11px; }
+        #se-panel .se-row { display: grid; grid-template-columns: 84px 1fr 52px; align-items: center; gap: 6px; margin: 5px 0; }
+        #se-panel .se-lab { color: #56605a; }
+        #se-panel .se-row input[type="range"] { width: 100%; }
+        #se-panel .se-num { width: 100%; padding: 2px 4px; border: 1px solid rgba(0, 0, 0, 0.18); border-radius: 5px; font-size: 11px; }
+        #se-panel footer { display: flex; gap: 8px; margin-top: 10px; }
+        #se-panel footer button { flex: 1; padding: 7px; border: 1px solid rgba(0, 0, 0, 0.18); border-radius: 7px; background: #f3f2ee; cursor: pointer; font-size: 11px; }
+        #se-panel footer button#se-copy { background: #2c5430; color: #fff; border-color: #2c5430; }
+      </style>
+    </Fragment>
+  )
+}

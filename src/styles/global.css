@@ -467,7 +467,8 @@
   opacity: 0.18;
   pointer-events: none;
   user-select: none;
-  top: 0.12em;
+  /* --year-shift lets the in-browser editor nudge the year vertically. */
+  top: calc(0.12em + var(--year-shift, 0px));
   bottom: auto;
   z-index: 0;
 }
@@ -478,7 +479,7 @@
 }
 @media (min-width: 1024px) {
   .story-year-bg {
-    font-size: clamp(10rem, 28vh, 24rem);
+    font-size: var(--year-size, clamp(10rem, 28vh, 24rem));
     opacity: 0.22;
   }
   .story-year-bg--l { left: 0.08em; right: auto; }
@@ -520,7 +521,8 @@ figure[data-story-photo] {
        the INNER edge stops just short of the plane's path (no overlap).
        The path waypoints are at 44% / 56%; this width + outer bleed leaves
        a ~5% gap between the photo's inner edge and the path. */
-    width: clamp(28rem, 52%, 54rem);
+    /* --photo-w lets the in-browser editor override the panoramic width. */
+    width: var(--photo-w, clamp(28rem, 52%, 54rem));
     /* Anchor every photo a FIXED distance below the top, just under the
        big year watermark. Top-anchored (not %-centred) so the year→photo
        gap is identical for every chapter regardless of the photo's aspect.
@@ -556,7 +558,8 @@ figure[data-story-photo] {
   }
   [data-story-chapter].has-tall-photo .photo-painted-img {
     width: auto;
-    height: 78vh;
+    /* --photo-h lets the in-browser editor override the portrait height. */
+    height: var(--photo-h, 78vh);
     max-width: 100%;
   }
 

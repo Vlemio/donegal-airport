@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import StoryEditor from "../components/StoryEditor.astro";
 import { t } from "../i18n";
 
 const locale = "en";
@@ -33,6 +34,14 @@ type Chapter = {
      lines up with the photo's centre. Depends on the photo's height (aspect),
      so it's set per chapter. Defaults to 58 (panoramic) when omitted. */
   cardShiftY?: number;
+  /* Optional size overrides (from the in-browser editor). photoW = panoramic
+     width e.g. "52%"; photoH = portrait height e.g. "82vh". */
+  photoW?: string;
+  photoH?: string;
+  /* Optional year-watermark overrides: vertical nudge (px) and font size
+     e.g. "20rem". */
+  yearShiftY?: number;
+  yearSize?: string;
 };
 
 const chapters: Chapter[] = [
@@ -393,6 +402,10 @@ const airlines = [
         const styleVars = [
           c.photoShiftY != null ? `--photo-shift:${c.photoShiftY}px` : null,
           c.cardShiftY != null ? `--card-shift:${c.cardShiftY}px` : null,
+          c.photoW ? `--photo-w:${c.photoW}` : null,
+          c.photoH ? `--photo-h:${c.photoH}` : null,
+          c.yearShiftY != null ? `--year-shift:${c.yearShiftY}px` : null,
+          c.yearSize ? `--year-size:${c.yearSize}` : null,
         ]
           .filter(Boolean)
           .join(";");
@@ -531,5 +544,9 @@ const airlines = [
       </dl>
     </div>
   </section>
+
+  {/* DEV-only in-browser visual tuner. Self-gates on import.meta.env.DEV,
+      so it never ships to production. */}
+  <StoryEditor />
 
 </BaseLayout>
