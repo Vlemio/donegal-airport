@@ -36,7 +36,7 @@ const chapters: Chapter[] = [
       "For seven years no scheduled flight took off from it. A handful of private aircraft, the odd connection to Derry, and a runway that disappeared under blown sand every winter.",
       "By the mid-1980s the grass was replaced with a hard surface and a temporary prefab terminal went up. Donegal had an aerodrome. It just didn't have an airline yet.",
     ],
-    photo: "/photos/story/story-ch01.jpg",
+    photo: "/photos/story/story-ch01.webp",
     photoAlt: "The original Carrickfinn Airport terminal building, late 1970s",
   },
   {
@@ -49,7 +49,7 @@ const chapters: Chapter[] = [
       "The idea had been hatched over dinner with Danny \"Minnie\" O'Brien in Annagry. The airline was Malinair. By the summer of 1986 it was running ten rotations a day from six in the morning, the Islanders had been replaced by Dorniers, and Edinburgh and Manchester were on the timetable.",
       "By 1987 Malinair was bankrupt and Air Ecosse stepped in for a few weeks. The airline went under. The airport carried on.",
     ],
-    photo: "/photos/story/story-ch02.jpg",
+    photo: "/photos/story/story-ch02.webp",
     photoAlt: "Malinair aircraft on the Carrickfinn apron, 1985–1987",
     photoCaption: "Malinair · Carrickfinn apron · 1985–87",
   },
@@ -118,40 +118,36 @@ const airlines = [
 
 <BaseLayout title={title} description={description}>
 
-  {/* SVG filter — torn-paper photo edges.
-      Key trick: we displace only the ALPHA (the rectangular silhouette),
-      NOT the RGB pixels. The turbulence roughens the outline; then
-      feComposite "in" clips the ORIGINAL sharp image into that ragged
-      outline. Result → crisp interior, torn edge. Applying displacement
-      to SourceGraphic instead would smear the whole photo.
-      Must live at top level so the id is in scope before the figures. */}
+  {/* SVG filter — edge treatment for the hand-cut organic photos.
+      The PNG already carries the organic silhouette (its alpha). On top of
+      that we add the two effects requested:
+        1. FRAY  — feDisplacementMap shoves the alpha contour around with
+                   fine turbulence → ragged, torn-print deckle edge.
+        2. FEATHER (degradado) — feGaussianBlur softens that frayed alpha so
+                   the very edge fades into the page instead of a hard cut.
+      feComposite "in" then clips the UNTOUCHED sharp photo (SourceGraphic)
+      into that frayed+feathered alpha → interior razor-sharp, edge organic
+      + torn + softly faded. RGB pixels never move. */}
   <svg class="absolute h-0 w-0 overflow-hidden" aria-hidden="true" focusable="false">
     <defs>
-      <filter id="photo-torn" x="-6%" y="-6%" width="112%" height="112%">
-        {/* HIGH frequency + MANY octaves = fine torn-paper fibres, not
-            big waves. The short wavelength keeps the overall shape a
-            clean RECTANGLE; only the very edge frays. */}
-        {/* Lower baseFrequency = longer waves = visible undulation.
-            Fewer octaves = smoother (no fine teeth on top of the waves).
-            Higher scale = more amplitude so the wave clearly bites into
-            the frame. SourceAlpha keeps RGB pixels untouched. */}
+      <filter id="photo-torn" x="-8%" y="-8%" width="116%" height="116%">
         <feTurbulence
           type="fractalNoise"
-          baseFrequency="0.012 0.014"
-          numOctaves="3"
+          baseFrequency="0.018 0.02"
+          numOctaves="4"
           seed="7"
           result="noise"
         />
         <feDisplacementMap
           in="SourceAlpha"
           in2="noise"
-          scale="24"
+          scale="26"
           xChannelSelector="R"
           yChannelSelector="G"
           result="ragged"
         />
-        {/* Clip the untouched, sharp image into the ragged outline */}
-        <feComposite in="SourceGraphic" in2="ragged" operator="in" />
+        <feGaussianBlur in="ragged" stdDeviation="1.2" result="softAlpha" />
+        <feComposite in="SourceGraphic" in2="softAlpha" operator="in" />
       </filter>
     </defs>
   </svg>

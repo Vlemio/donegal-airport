@@ -501,39 +501,43 @@ figure[data-story-photo] {
 }
 
 /* Desktop: absolute-positioned in the empty half opposite the text card.
-   Centre pushed to 56% so the photo sits BELOW the big year watermark
-   (which is anchored at the top) instead of covering it. Bleeds off the
-   screen edge (negative inset) so the photo runs continuously to the
-   viewport edge with no gap. */
+   Centre pushed to 62% so the photo sits BELOW the big year watermark
+   (which is anchored at the top) instead of covering it. A small positive
+   inset keeps the FULL organic-cut silhouette on-screen — bleeding it off
+   the edge would slice the irregular contour into a straight line. */
 @media (min-width: 1024px) {
   /* Chapters WITH a photo get a taller panel so the big year watermark
      (top) and the large photo (lower) both fit without colliding. */
   [data-story-chapter].has-photo {
-    min-height: 92vh;
+    min-height: 100vh;
   }
 
   figure[data-story-photo] {
     position: absolute;
     flex-basis: auto;
     margin: 0;
-    /* Wider than before so the inner edge reaches toward the centre line
-       (and the plane's path), shrinking the gap. Outer edge bleeds off
-       the screen. */
-    width: clamp(28rem, 56%, 56rem);
-    /* Centre the photo in the lower zone (below the year watermark).
-       translateY lives on the FIGURE; GSAP animates an INNER div, so the
-       two transforms never fight. */
-    top: 62%;
+    /* Sized so the OUTER edge sits flush against the viewport edge while
+       the INNER edge stops just short of the plane's path (no overlap).
+       The path waypoints are at 44% / 56%; this width + outer bleed leaves
+       a ~5% gap between the photo's inner edge and the path. */
+    width: clamp(28rem, 52%, 54rem);
+    /* Centre the photo lower in the panel so it clears the big year
+       watermark anchored at the top. translateY lives on the FIGURE;
+       GSAP animates an INNER div, so the two transforms never fight. */
+    top: 68%;
     transform: translateY(-50%);
   }
-  /* card right → photo on the LEFT, bleeding off the left edge */
+  /* Outer edge flush to the viewport (small negative bleed so the strong
+     edge-fray never leaves a hairline gap at the screen edge). The inner
+     edge is held back by the width above so it clears the plane's path. */
+  /* card right → photo on the LEFT, flush to the left edge */
   [data-story-chapter][data-side="right"] figure[data-story-photo] {
-    left: -4%;
+    left: -1.2%;
     right: auto;
   }
-  /* card left → photo on the RIGHT, bleeding off the right edge */
+  /* card left → photo on the RIGHT, flush to the right edge */
   [data-story-chapter][data-side="left"] figure[data-story-photo] {
-    right: -4%;
+    right: -1.2%;
     left: auto;
   }
 }
@@ -545,34 +549,20 @@ figure[data-story-photo] {
 }
 
 /*
-  Torn-paper edge — two layers, like the reference:
-    1. img mask: a THIN edge feather (2.5%) so the very filo softens into
-       the page instead of a hard cut. Stays rectangular — the centre is
-       fully solid, only the outermost band fades.
-    2. wrapper filter: displaces that feathered alpha with fine, high-
-       frequency noise → ragged deckle edge. RGB never moves, so the
-       photo interior is razor-sharp. A faint light drop-shadow mimics
-       the white paper fringe of a torn print.
-  The figcaption lives outside the wrapper so it is never distorted.
+  Organic cut-out photos with edge treatment.
+  The irregular silhouette is baked into the source PNG (transparent
+  background, hand-cut contour). On top of it the #photo-torn SVG filter
+  adds the FRAY (displaced contour = torn-print deckle) and the FEATHER
+  (gaussian-blurred alpha = soft gradient edge fading into the page). The
+  interior stays razor-sharp because feComposite clips the untouched photo
+  into the frayed+feathered alpha. A whisper of drop-shadow lifts the cut
+  shape off the page.
 */
 .photo-painted-wrapper {
-  filter: url(#photo-torn) drop-shadow(0 0 1.5px rgba(252, 251, 247, 0.9));
+  filter: url(#photo-torn) drop-shadow(2px 6px 14px rgba(24, 29, 22, 0.12));
 }
 .photo-painted-img {
-  /* Panoramic crop — narrower vertically (more rectangular) than the
-     source. object-fit keeps the main subject centred. */
+  display: block;
   width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  object-position: center;
-  /* Wider feather zone (8%) gives the SVG displacement filter more
-     alpha gradient to work with → visibly wavy edge, not near-straight */
-  -webkit-mask-image:
-    linear-gradient(to right, transparent, #000 8%, #000 92%, transparent),
-    linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
-  -webkit-mask-composite: source-in;
-  mask-image:
-    linear-gradient(to right, transparent, #000 8%, #000 92%, transparent),
-    linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
-  mask-composite: intersect;
+  height: auto;
 }
