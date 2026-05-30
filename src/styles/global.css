@@ -423,11 +423,16 @@
     z-index: 4;
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-atlantic) 15%, transparent);
   }
+  /* Waypoint sits in the gap on the PHOTO side, so the plane's path
+     weaves close to each photo's inner edge (small ~6% gap) instead of
+     hugging the text card on the far side. */
   [data-story-chapter][data-side="right"] .story-waypoint {
-    left: 65%;
+    /* card right → photo LEFT → path just inboard of the photo */
+    left: 56%;
   }
   [data-story-chapter][data-side="left"] .story-waypoint {
-    left: 35%;
+    /* card left → photo RIGHT → path just inboard of the photo */
+    left: 44%;
   }
 }
 
@@ -459,7 +464,7 @@
   font-weight: 400;
   line-height: 0.85;
   color: var(--color-sand);
-  opacity: 0.07;
+  opacity: 0.18;
   pointer-events: none;
   user-select: none;
   top: 0.12em;
@@ -474,8 +479,100 @@
 @media (min-width: 1024px) {
   .story-year-bg {
     font-size: clamp(10rem, 28vh, 24rem);
-    opacity: 0.09;
+    opacity: 0.22;
   }
   .story-year-bg--l { left: 0.08em; right: auto; }
   .story-year-bg--r { right: 0.08em; left: auto; }
+}
+
+/*
+  ============================================================
+  STORY CHAPTER PHOTO — painted edge, opposite side from card
+  ============================================================
+*/
+
+/* Mobile: full-width block that wraps below the text card */
+figure[data-story-photo] {
+  flex-basis: 100%;
+  width: min(26rem, 88%);
+  margin: 2.5rem auto 0;
+  position: relative;
+  z-index: 3;
+}
+
+/* Desktop: absolute-positioned in the empty half opposite the text card.
+   Centre pushed to 56% so the photo sits BELOW the big year watermark
+   (which is anchored at the top) instead of covering it. Bleeds off the
+   screen edge (negative inset) so the photo runs continuously to the
+   viewport edge with no gap. */
+@media (min-width: 1024px) {
+  /* Chapters WITH a photo get a taller panel so the big year watermark
+     (top) and the large photo (lower) both fit without colliding. */
+  [data-story-chapter].has-photo {
+    min-height: 92vh;
+  }
+
+  figure[data-story-photo] {
+    position: absolute;
+    flex-basis: auto;
+    margin: 0;
+    /* Wider than before so the inner edge reaches toward the centre line
+       (and the plane's path), shrinking the gap. Outer edge bleeds off
+       the screen. */
+    width: clamp(28rem, 56%, 56rem);
+    /* Centre the photo in the lower zone (below the year watermark).
+       translateY lives on the FIGURE; GSAP animates an INNER div, so the
+       two transforms never fight. */
+    top: 62%;
+    transform: translateY(-50%);
+  }
+  /* card right → photo on the LEFT, bleeding off the left edge */
+  [data-story-chapter][data-side="right"] figure[data-story-photo] {
+    left: -4%;
+    right: auto;
+  }
+  /* card left → photo on the RIGHT, bleeding off the right edge */
+  [data-story-chapter][data-side="left"] figure[data-story-photo] {
+    right: -4%;
+    left: auto;
+  }
+}
+
+/* Clip the photo bleed so it never creates a horizontal scrollbar.
+   overflow-x: clip (not hidden) keeps vertical scroll + sticky intact. */
+[data-story-section] {
+  overflow-x: clip;
+}
+
+/*
+  Torn-paper edge — two layers, like the reference:
+    1. img mask: a THIN edge feather (2.5%) so the very filo softens into
+       the page instead of a hard cut. Stays rectangular — the centre is
+       fully solid, only the outermost band fades.
+    2. wrapper filter: displaces that feathered alpha with fine, high-
+       frequency noise → ragged deckle edge. RGB never moves, so the
+       photo interior is razor-sharp. A faint light drop-shadow mimics
+       the white paper fringe of a torn print.
+  The figcaption lives outside the wrapper so it is never distorted.
+*/
+.photo-painted-wrapper {
+  filter: url(#photo-torn) drop-shadow(0 0 1.5px rgba(252, 251, 247, 0.9));
+}
+.photo-painted-img {
+  /* Panoramic crop — narrower vertically (more rectangular) than the
+     source. object-fit keeps the main subject centred. */
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  object-position: center;
+  /* Wider feather zone (8%) gives the SVG displacement filter more
+     alpha gradient to work with → visibly wavy edge, not near-straight */
+  -webkit-mask-image:
+    linear-gradient(to right, transparent, #000 8%, #000 92%, transparent),
+    linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(to right, transparent, #000 8%, #000 92%, transparent),
+    linear-gradient(to bottom, transparent, #000 8%, #000 92%, transparent);
+  mask-composite: intersect;
 }

@@ -14,7 +14,18 @@ const description =
   wiring lives in animations.ts → setupStoryPath().
   Mobile: single centred column, SVG hidden.
 */
-const chapters = [
+type Chapter = {
+  year: string;
+  range: string;
+  title: string;
+  lead: string;
+  body: string[];
+  photo?: string;
+  photoAlt?: string;
+  photoCaption?: string;
+};
+
+const chapters: Chapter[] = [
   {
     year: "1978",
     range: "Before the airport",
@@ -25,6 +36,8 @@ const chapters = [
       "For seven years no scheduled flight took off from it. A handful of private aircraft, the odd connection to Derry, and a runway that disappeared under blown sand every winter.",
       "By the mid-1980s the grass was replaced with a hard surface and a temporary prefab terminal went up. Donegal had an aerodrome. It just didn't have an airline yet.",
     ],
+    photo: "/photos/story/story-ch01.jpg",
+    photoAlt: "The original Carrickfinn Airport terminal building, late 1970s",
   },
   {
     year: "1985",
@@ -36,6 +49,9 @@ const chapters = [
       "The idea had been hatched over dinner with Danny \"Minnie\" O'Brien in Annagry. The airline was Malinair. By the summer of 1986 it was running ten rotations a day from six in the morning, the Islanders had been replaced by Dorniers, and Edinburgh and Manchester were on the timetable.",
       "By 1987 Malinair was bankrupt and Air Ecosse stepped in for a few weeks. The airline went under. The airport carried on.",
     ],
+    photo: "/photos/story/story-ch02.jpg",
+    photoAlt: "Malinair aircraft on the Carrickfinn apron, 1985–1987",
+    photoCaption: "Malinair · Carrickfinn apron · 1985–87",
   },
   {
     year: "1988",
@@ -102,18 +118,70 @@ const airlines = [
 
 <BaseLayout title={title} description={description}>
 
+  {/* SVG filter — torn-paper photo edges.
+      Key trick: we displace only the ALPHA (the rectangular silhouette),
+      NOT the RGB pixels. The turbulence roughens the outline; then
+      feComposite "in" clips the ORIGINAL sharp image into that ragged
+      outline. Result → crisp interior, torn edge. Applying displacement
+      to SourceGraphic instead would smear the whole photo.
+      Must live at top level so the id is in scope before the figures. */}
+  <svg class="absolute h-0 w-0 overflow-hidden" aria-hidden="true" focusable="false">
+    <defs>
+      <filter id="photo-torn" x="-6%" y="-6%" width="112%" height="112%">
+        {/* HIGH frequency + MANY octaves = fine torn-paper fibres, not
+            big waves. The short wavelength keeps the overall shape a
+            clean RECTANGLE; only the very edge frays. */}
+        {/* Lower baseFrequency = longer waves = visible undulation.
+            Fewer octaves = smoother (no fine teeth on top of the waves).
+            Higher scale = more amplitude so the wave clearly bites into
+            the frame. SourceAlpha keeps RGB pixels untouched. */}
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.012 0.014"
+          numOctaves="3"
+          seed="7"
+          result="noise"
+        />
+        <feDisplacementMap
+          in="SourceAlpha"
+          in2="noise"
+          scale="24"
+          xChannelSelector="R"
+          yChannelSelector="G"
+          result="ragged"
+        />
+        {/* Clip the untouched, sharp image into the ragged outline */}
+        <feComposite in="SourceGraphic" in2="ragged" operator="in" />
+      </filter>
+    </defs>
+  </svg>
+
   {/* ------------------------------------------------------------------ */}
-  {/* HERO — text only, short                                             */}
+  {/* HERO — drone photo full-bleed, text at bottom                       */}
   {/* ------------------------------------------------------------------ */}
   <section
-    class="relative isolate flex min-h-[72vh] w-full items-end border-b border-line bg-surface-lo/40"
+    class="relative isolate flex min-h-[72vh] w-full items-end overflow-hidden border-b border-line"
   >
-    <div class="mx-auto w-full max-w-7xl px-6 pb-16 pt-40 sm:pb-24">
+    {/* Background photo */}
+    <div class="absolute inset-0" aria-hidden="true">
+      <img
+        src="/photos/story/story-hero.jpg"
+        alt=""
+        class="h-full w-full object-cover object-center"
+        loading="eager"
+        decoding="async"
+      />
+      {/* Gradient — bottom-heavy so headline stays readable */}
+      <div class="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/45 to-ink/10"></div>
+    </div>
+
+    {/* Text — light tokens via cfn-hero-content */}
+    <div class="cfn-hero-content relative z-10 mx-auto w-full max-w-7xl px-6 pb-16 pt-40 sm:pb-24">
       <p
         data-animate="fade-up"
-        class="font-mono text-[1.1rem] uppercase tracking-[0.22em] text-atlantic"
+        class="font-mono text-[0.72rem] uppercase tracking-[0.32em] text-sand"
       >
-        About · An scéal
+        CFN · Carrickfinn · Donegal
       </p>
       <h1
         data-split
@@ -137,10 +205,10 @@ const airlines = [
         class="mt-12 flex items-center gap-3 text-mute"
         aria-hidden="true"
       >
-        <span class="scroll-hint font-mono text-[0.65rem] uppercase tracking-[0.24em]">
+        <span class="scroll-hint scroll-hint--light font-mono text-[0.65rem] uppercase tracking-[0.24em]">
           Scroll
         </span>
-        <span class="scroll-hint text-base">↓</span>
+        <span class="scroll-hint scroll-hint--light text-base">↓</span>
       </div>
     </div>
   </section>
@@ -291,10 +359,15 @@ const airlines = [
     {/* ---- CHAPTER PANELS ---- */}
     {
       chapters.map((c, i) => {
-        const side = i % 2 === 0 ? "right" : "left";
+        // side = the CARD's side. Chapter 1 starts with the card on the
+        // LEFT (so text left, photo right), then alternates.
+        const side = i % 2 === 0 ? "left" : "right";
         return (
           <div
-            class="story-chapter relative flex min-h-[75vh] items-center py-16"
+            class:list={[
+              "story-chapter relative flex flex-wrap min-h-[75vh] items-center py-16",
+              c.photo && "has-photo",
+            ]}
             data-story-chapter
             data-side={side}
           >
@@ -343,11 +416,35 @@ const airlines = [
                 </p>
               ))}
 
-              {/* Photo slot — drop image here once available */}
-              {/* <figure class="story-photo mt-8 aspect-[4/3] overflow-hidden rounded-sm bg-surface-lo" data-photo>
-                <img src="" alt="" class="h-full w-full object-cover" data-ken-burns />
-              </figure> */}
             </div>
+
+            {/* Photo — OPPOSITE side from the text card.
+                Desktop: position:absolute via CSS, in the year-watermark zone.
+                Mobile:  flex-basis:100% so it wraps below the card. */}
+            {c.photo && (
+              <figure data-photo data-story-photo>
+                {/* Inner div carries the slide-in animation so GSAP's
+                    transform never clobbers the figure's translateY
+                    vertical-centering. */}
+                <div data-animate={side === "right" ? "fade-right" : "fade-left"}>
+                  {/* wrapper receives the displacement filter after img is masked */}
+                  <div class="photo-painted-wrapper">
+                    <img
+                      src={c.photo}
+                      alt={c.photoAlt ?? ""}
+                      class="photo-painted-img block w-full"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                  {c.photoCaption && (
+                    <figcaption class="mt-2 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-mute/70">
+                      {c.photoCaption}
+                    </figcaption>
+                  )}
+                </div>
+              </figure>
+            )}
           </div>
         );
       })
