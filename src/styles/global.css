@@ -566,3 +566,20 @@ figure[data-story-photo] {
   width: 100%;
   height: auto;
 }
+@media (min-width: 1024px) {
+  /* Cap tall / squarish photos so they never overflow the panel. Wide
+     panoramic photos stay untouched (their auto height is already under the
+     cap). object-fit preserves aspect; object-position pins the photo to the
+     OUTER edge, so any spare width falls on the INNER side (extra clearance
+     from the plane path) — never as a gap at the viewport edge. */
+  .photo-painted-img {
+    max-height: 60vh;
+    object-fit: contain;
+  }
+  [data-story-chapter][data-side="left"] .photo-painted-img {
+    object-position: right center;
+  }
+  [data-story-chapter][data-side="right"] .photo-painted-img {
+    object-position: left center;
+  }
+}
