@@ -521,11 +521,11 @@ figure[data-story-photo] {
        The path waypoints are at 44% / 56%; this width + outer bleed leaves
        a ~5% gap between the photo's inner edge and the path. */
     width: clamp(28rem, 52%, 54rem);
-    /* Centre the photo lower in the panel so it clears the big year
-       watermark anchored at the top. translateY lives on the FIGURE;
-       GSAP animates an INNER div, so the two transforms never fight. */
-    top: 68%;
-    transform: translateY(-50%);
+    /* Anchor every photo a FIXED distance below the top, just under the
+       big year watermark. Top-anchored (not %-centred) so the year→photo
+       gap is identical for every chapter regardless of the photo's aspect.
+       No transform here — GSAP animates the INNER div, so nothing fights. */
+    top: 33vh;
   }
   /* Outer edge flush to the viewport (small negative bleed so the strong
      edge-fray never leaves a hairline gap at the screen edge). The inner
@@ -541,16 +541,12 @@ figure[data-story-photo] {
     left: auto;
   }
 
-  /* Squarish photos (e.g. the B/W collage) are much taller at the same
-     width, so they get a taller panel and sit a touch higher to clear both
-     the year watermark above and the next panel below. The image still
-     fills the full figure width (bigger, inner edge reaches toward the path)
-     and the caption stays directly under it. */
+  /* Squarish / near-square photos are much taller at the same width, so
+     they extend further down from the fixed top anchor. Give them a taller
+     panel so the photo bottom never collides with the next chapter. The
+     image still fills the full figure width and the caption stays under it. */
   [data-story-chapter].has-tall-photo {
-    min-height: 112vh;
-  }
-  [data-story-chapter].has-tall-photo figure[data-story-photo] {
-    top: 60%;
+    min-height: 118vh;
   }
 }
 
