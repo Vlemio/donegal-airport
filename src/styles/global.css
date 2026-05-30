@@ -540,6 +540,18 @@ figure[data-story-photo] {
     right: -1.2%;
     left: auto;
   }
+
+  /* Squarish photos (e.g. the B/W collage) are much taller at the same
+     width, so they get a taller panel and sit a touch higher to clear both
+     the year watermark above and the next panel below. The image still
+     fills the full figure width (bigger, inner edge reaches toward the path)
+     and the caption stays directly under it. */
+  [data-story-chapter].has-tall-photo {
+    min-height: 112vh;
+  }
+  [data-story-chapter].has-tall-photo figure[data-story-photo] {
+    top: 60%;
+  }
 }
 
 /* Clip the photo bleed so it never creates a horizontal scrollbar.
@@ -565,21 +577,4 @@ figure[data-story-photo] {
   display: block;
   width: 100%;
   height: auto;
-}
-@media (min-width: 1024px) {
-  /* Cap tall / squarish photos so they never overflow the panel. Wide
-     panoramic photos stay untouched (their auto height is already under the
-     cap). object-fit preserves aspect; object-position pins the photo to the
-     OUTER edge, so any spare width falls on the INNER side (extra clearance
-     from the plane path) — never as a gap at the viewport edge. */
-  .photo-painted-img {
-    max-height: 60vh;
-    object-fit: contain;
-  }
-  [data-story-chapter][data-side="left"] .photo-painted-img {
-    object-position: right center;
-  }
-  [data-story-chapter][data-side="right"] .photo-painted-img {
-    object-position: left center;
-  }
 }
