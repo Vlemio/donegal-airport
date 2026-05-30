@@ -25,6 +25,14 @@ type Chapter = {
   photoCaption?: string;
   /* Squarish photos (taller at the same width) need a taller panel. */
   photoTall?: boolean;
+  /* Optional per-chapter vertical nudge (px). Shifts BOTH the photo and the
+     text card down together, keeping them aligned, when one panel reads a
+     touch high. */
+  photoShiftY?: number;
+  /* Per-chapter downward shift (px) applied to the text card so its centre
+     lines up with the photo's centre. Depends on the photo's height (aspect),
+     so it's set per chapter. Defaults to 58 (panoramic) when omitted. */
+  cardShiftY?: number;
 };
 
 const chapters: Chapter[] = [
@@ -40,6 +48,8 @@ const chapters: Chapter[] = [
     ],
     photo: "/photos/story/story-ch01.webp",
     photoAlt: "The original Carrickfinn Airport terminal building, late 1970s",
+    photoShiftY: 18,
+    cardShiftY: 53,
   },
   {
     year: "1985",
@@ -54,6 +64,7 @@ const chapters: Chapter[] = [
     photo: "/photos/story/story-ch02.webp",
     photoAlt: "Malinair aircraft on the Carrickfinn apron, 1985–1987",
     photoCaption: "Malinair · Carrickfinn apron · 1985–87",
+    cardShiftY: 52,
   },
   {
     year: "1988",
@@ -65,9 +76,10 @@ const chapters: Chapter[] = [
       "In the winter of 1994 a storm ran for weeks. The ferry to Tory Island couldn't sail. The Irish Air Corps moved their helicopters to Carrickfinn and ran supplies — bread, post, prescriptions, schoolchildren — out to the island until the sea calmed down. The pattern stuck: for decades after, the helicopter to Tory would route through CFN whenever the weather closed in on Magheroarty.",
     ],
     photo: "/photos/story/story-ch03.webp",
-    photoAlt: "A Ryanair ATR and a Loganair Shorts 360 'Scotland's Airline' at Carrickfinn, early 1990s",
-    photoCaption: "Ryanair · Loganair · Carrickfinn · early 1990s",
+    photoAlt: "A Ryanair ATR, a Loganair Shorts 360 'Scotland's Airline', and the Tory Island relief helicopter at Carrickfinn, 1990s",
+    photoCaption: "Ryanair · Loganair · the Tory Island relief helicopter",
     photoTall: true,
+    cardShiftY: 98,
   },
   {
     year: "1996",
@@ -81,21 +93,23 @@ const chapters: Chapter[] = [
     photo: "/photos/story/story-ch04.webp",
     photoAlt: "An Aer Arann Shorts 360 and an Ireland Airways aircraft with crew on the Carrickfinn apron, late 1990s",
     photoCaption: "Ireland Airways · Aer Arann · Carrickfinn · late 1990s",
-    photoTall: true,
+    cardShiftY: 109,
   },
   {
     year: "2001",
     range: "Helicopters out west",
     title: "The Atlantic margin runs on Donegal fuel.",
     lead:
-      "For a stretch of about a decade Donegal was something else entirely: the closest paved runway with refuelling to the offshore oil and gas exploration in the Atlantic margin. Bristow Helicopters ran the shuttle.",
+      "For a stretch of about a decade Donegal was something else entirely: the closest paved runway with refuelling to the offshore oil and gas exploration in the Atlantic margin. Helicopter operators ran the shuttle.",
     body: [
       "Two basins drove the traffic. The Slyne-Erris Trough off Mayo, where the Corrib gas field had been discovered in 1996, and the deeper Rockall Trough where in 2002 Enterprise drilled the Dooish well — 125 kilometres northwest of Donegal, 1,478 metres of water under the rig. Both campaigns needed crews changed every couple of weeks and a fuel stop that wasn't four hundred miles away.",
     ],
     photo: "/photos/story/story-ch05.webp",
-    photoAlt: "Bristow Sikorsky helicopters and offshore crews in survival suits on the Carrickfinn apron, early 2000s",
-    photoCaption: "Bristow · offshore crew change · Carrickfinn · early 2000s",
+    photoAlt: "Sikorsky helicopters and offshore crews in survival suits on the Carrickfinn apron, early 2000s",
+    photoCaption: "Offshore crew change · Carrickfinn · early 2000s",
     photoTall: true,
+    photoShiftY: 28,
+    cardShiftY: 98,
   },
   {
     year: "2025",
@@ -108,8 +122,9 @@ const chapters: Chapter[] = [
       "Emerald Airlines flies Dublin twice a day under the Aer Lingus Regional brand. Loganair is year-round to Glasgow. The airport carried 50,530 passengers in 2024, up twenty-one per cent.",
     ],
     photo: "/photos/story/story-ch06.webp",
-    photoAlt: "An Aer Lingus Regional ATR on the apron at the modern Donegal terminal at dusk",
-    photoCaption: "Aer Lingus Regional · Donegal · today",
+    photoAlt: "An Aer Lingus Regional ATR on the apron at the Donegal terminal at dusk",
+    photoCaption: "Aer Lingus Regional · Donegal",
+    cardShiftY: 66,
   },
 ];
 
@@ -375,6 +390,12 @@ const airlines = [
         // side = the CARD's side. Chapter 1 starts with the card on the
         // LEFT (so text left, photo right), then alternates.
         const side = i % 2 === 0 ? "left" : "right";
+        const styleVars = [
+          c.photoShiftY != null ? `--photo-shift:${c.photoShiftY}px` : null,
+          c.cardShiftY != null ? `--card-shift:${c.cardShiftY}px` : null,
+        ]
+          .filter(Boolean)
+          .join(";");
         return (
           <div
             class:list={[
@@ -384,6 +405,7 @@ const airlines = [
             ]}
             data-story-chapter
             data-side={side}
+            style={styleVars || undefined}
           >
             {/*
               Waypoint marker — invisible 0×0 span used ONLY for path

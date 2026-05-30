@@ -524,8 +524,10 @@ figure[data-story-photo] {
     /* Anchor every photo a FIXED distance below the top, just under the
        big year watermark. Top-anchored (not %-centred) so the year→photo
        gap is identical for every chapter regardless of the photo's aspect.
+       --photo-shift is an optional per-chapter nudge (set inline) that lowers
+       the photo (and the card, below) together when a panel reads too high.
        No transform here — GSAP animates the INNER div, so nothing fights. */
-    top: 33vh;
+    top: calc(33vh + var(--photo-shift, 0px));
   }
   /* Outer edge flush to the viewport (small negative bleed so the strong
      edge-fray never leaves a hairline gap at the screen edge). The inner
@@ -546,7 +548,7 @@ figure[data-story-photo] {
      resulting narrower width, still flush at the outer edge, caption directly
      under the image. A taller panel keeps the bottom clear of the next one. */
   [data-story-chapter].has-tall-photo {
-    min-height: 116vh;
+    min-height: 120vh;
   }
   [data-story-chapter].has-tall-photo figure[data-story-photo] {
     width: auto;
@@ -554,20 +556,28 @@ figure[data-story-photo] {
   }
   [data-story-chapter].has-tall-photo .photo-painted-img {
     width: auto;
-    height: 58vh;
+    height: 78vh;
     max-width: 100%;
   }
 
   /* Lower the text card so its vertical centre lines up with the photo
-     (which is top-anchored just below the year). Panoramic and tall photos
-     sit at slightly different centres, so each gets its own nudge. The
-     transform is on the CARD container; GSAP only animates the card's
-     children, so nothing fights. */
-  [data-story-chapter].has-photo:not(.has-tall-photo) .story-card {
-    transform: translateY(58px);
+     (top-anchored below the year). Because each photo's height differs, the
+     exact nudge is set per-chapter via --card-shift (computed from its
+     aspect). --photo-shift adds the optional per-chapter lowering so the
+     card tracks the photo. Transform is on the CARD container; GSAP only
+     animates the card's children, so nothing fights. */
+  [data-story-chapter].has-photo .story-card {
+    transform: translateY(calc(var(--card-shift, 58px) + var(--photo-shift, 0px)));
   }
-  [data-story-chapter].has-tall-photo .story-card {
-    transform: translateY(33px);
+
+  /* The photo bleeds ~1.2% off the OUTER (flush) edge; keep the left-aligned
+     caption inset from that edge so its text isn't clipped by the section's
+     overflow-x: clip. */
+  [data-story-chapter][data-side="right"] figcaption {
+    padding-left: 1.75rem;
+  }
+  [data-story-chapter][data-side="left"] figcaption {
+    padding-right: 1.75rem;
   }
 }
 
