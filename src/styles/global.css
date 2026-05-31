@@ -586,29 +586,21 @@ figure[data-story-photo] {
 
 /* Clip the photo bleed so it never creates a horizontal scrollbar.
    overflow-x: clip (not hidden) keeps vertical scroll + sticky intact. */
+/* Aged-paper texture baked into the SECTION background via background-blend-
+   mode (NOT mix-blend-mode): it's part of the background paint, so it shows
+   the multiply grain without the per-frame compositing cost that janked the
+   scroll. Layer order (front→back): a translucent cream wash to soften, then
+   fine grain ×multiply, then coarse mottle ×multiply, over the cream colour. */
 [data-story-section] {
   overflow-x: clip;
   position: relative;
-}
-/* Aged-paper texture over the cream surface — same colour, just roughened.
-   Two multiply layers (fine grain + coarse mottle) at z-index:-1 so they sit
-   behind all content but in front of the section's background. */
-[data-story-section]::before,
-[data-story-section]::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-}
-[data-story-section]::before {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23f)'/%3E%3C/svg%3E");
-  background-size: 220px;
-  opacity: 0.10;
-}
-[data-story-section]::after {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='700' height='700'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.03' numOctaves='3'/%3E%3C/filter%3E%3Crect width='700' height='700' filter='url(%23g)'/%3E%3C/svg%3E");
-  opacity: 0.06;
+  background-color: var(--color-surface);
+  background-image:
+    linear-gradient(rgba(243, 242, 238, 0.34), rgba(243, 242, 238, 0.34)),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600'%3E%3Cfilter id='m'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.02' numOctaves='3'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='600' height='600' filter='url(%23m)'/%3E%3C/svg%3E");
+  background-size: auto, 200px, 600px;
+  background-blend-mode: normal, multiply, multiply;
 }
 
 /*
@@ -642,7 +634,7 @@ figure[data-story-photo] {
   justify-content: center;
   /* Solid darker-blue stub (same family as the card, just deeper) so the
      coloured tail marks read against it instead of the busy drone photo. */
-  background: rgba(7, 16, 28, 0.62);
+  background: rgba(7, 16, 28, 0.5);
   border-right: 2px dashed rgba(255, 255, 255, 0.18);
 }
 .airline-pass .pass-logo svg { width: 3.1rem; height: 3.1rem; }
