@@ -675,6 +675,18 @@ figure[data-story-photo] {
   color: var(--color-mute);
 }
 
+/* Operators on a deep-blue night panel — white ticket cards pop against it.
+   Cards keep their own light interior; only the heading sits on the dark. */
+.cfn-operators {
+  background:
+    radial-gradient(120% 110% at 82% -10%, #16456f 0%, #0d2840 52%, #081827 100%);
+  color: #e9f1f8;
+}
+.cfn-operators .op-eyebrow { color: #74a9d4; }
+.cfn-operators .op-title { color: #f1f6fb; }
+/* Year accent inside the white cards → navy (no green in this section). */
+.cfn-operators .pass-years { color: #1f4e79; }
+
 /*
   Organic cut-out photos with edge treatment.
   The irregular silhouette is baked into the source PNG (transparent
