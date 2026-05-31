@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Option 3 — Nautical chart bg</title>
+<link href="https://api.fontshare.com/v2/css?f[]=switzer@300,400,500,600&display=swap" rel="stylesheet"/>
+<style>
+  :root{--ink:#181d16;--mute:#56605a;--sand:#a07840;--atlantic:#2c5430;--surface:#f3f2ee;--line:rgba(24,29,22,.11)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Switzer",system-ui,sans-serif;color:var(--ink)}
+
+  /* ── NAUTICAL background (SVG inline, no extra cost on scroll) ── */
+  .story-section{
+    position:relative;
+    background-color:var(--surface);
+    background-image:
+      /* Fine isobaric lines */
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900'%3E%3Cg fill='none' stroke='%232c5430' stroke-width='0.8' opacity='0.12'%3E%3Cellipse cx='450' cy='450' rx='80' ry='55'/%3E%3Cellipse cx='450' cy='450' rx='155' ry='115'/%3E%3Cellipse cx='450' cy='450' rx='235' ry='180'/%3E%3Cellipse cx='450' cy='450' rx='320' ry='250'/%3E%3Cellipse cx='450' cy='450' rx='410' ry='325'/%3E%3C/g%3E%3Cg fill='none' stroke='%23a07840' stroke-width='0.7' stroke-dasharray='3 8' opacity='0.10'%3E%3Cline x1='0' y1='150' x2='900' y2='150'/%3E%3Cline x1='0' y1='300' x2='900' y2='300'/%3E%3Cline x1='0' y1='450' x2='900' y2='450'/%3E%3Cline x1='0' y1='600' x2='900' y2='600'/%3E%3Cline x1='0' y1='750' x2='900' y2='750'/%3E%3Cline x1='150' y1='0' x2='150' y2='900'/%3E%3Cline x1='300' y1='0' x2='300' y2='900'/%3E%3Cline x1='450' y1='0' x2='450' y2='900'/%3E%3Cline x1='600' y1='0' x2='600' y2='900'/%3E%3Cline x1='750' y1='0' x2='750' y2='900'/%3E%3C/g%3E%3C/svg%3E"),
+      /* Coastline shape of Donegal peninsula */
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1400 900'%3E%3Cpath d='M200,700 C280,680 340,620 380,560 C420,500 400,440 450,400 C500,360 560,380 600,340 C640,300 630,240 680,210 C730,180 800,200 860,180 C920,160 960,120 1020,110 C1080,100 1100,140 1140,160' fill='none' stroke='%232c5430' stroke-width='2.2' opacity='0.13'/%3E%3Cpath d='M160,760 C240,740 300,700 340,660 C380,620 360,570 400,530 C440,490 500,510 550,470 C600,430 590,370 640,340' fill='none' stroke='%232c5430' stroke-width='1.4' opacity='0.09'/%3E%3C/svg%3E");
+    background-size: 900px 900px, cover;
+    background-position: center, center;
+    overflow-x:clip;
+  }
+
+  /* ── compass rose (top-right corner) ── */
+  .compass{
+    position:absolute;
+    top:32px;right:48px;
+    width:72px;height:72px;
+    opacity:.13;
+  }
+
+  /* ── chapter panels ── */
+  .chapter{
+    position:relative;
+    min-height:72vh;
+    display:flex;
+    align-items:center;
+    padding:64px 6vw;
+    border-bottom:1px solid var(--line);
+  }
+  .card{max-width:340px;position:relative;z-index:2}
+  .kicker{font-family:ui-monospace,monospace;font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--sand)}
+  .year{font-family:Georgia,serif;font-size:11rem;line-height:.8;color:var(--sand);opacity:.18;position:absolute;right:.06em;top:.05em;pointer-events:none}
+  h2{font-family:Georgia,serif;font-size:2.1rem;font-weight:400;margin:.3em 0 .5em;line-height:1.05}
+  p{color:var(--mute);font-size:.94rem;line-height:1.72}
+  .photo-slot{position:absolute;right:-3%;top:50%;transform:translateY(-50%);width:320px;height:195px;background:linear-gradient(135deg,#cfd3c9,#b0b8a8);border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:.68rem;letter-spacing:.18em;color:#7a806f;box-shadow:2px 8px 24px rgba(0,0,0,.10)}
+</style>
+</head>
+<body>
+<div class="story-section">
+
+  <!-- compass rose SVG -->
+  <svg class="compass" viewBox="0 0 100 100" aria-hidden="true">
+    <circle cx="50" cy="50" r="46" fill="none" stroke="#2c5430" stroke-width="1.5"/>
+    <polygon points="50,6 54,50 50,94 46,50" fill="#2c5430"/>
+    <polygon points="94,50 50,54 6,50 50,46" fill="#2c5430" opacity=".5"/>
+    <circle cx="50" cy="50" r="4" fill="#a07840"/>
+    <text x="50" y="3" text-anchor="middle" font-size="7" font-family="monospace" fill="#2c5430">N</text>
+  </svg>
+
+  <div class="chapter">
+    <span class="year">1978</span>
+    <div class="card">
+      <span class="kicker">Before the airport</span>
+      <h2>A grass strip on the dunes.</h2>
+      <p>The IDA needed an air link for the new industrial estate at Annagry. In March 1978, on a sandbar between the Atlantic and Errigal, a 610-metre grass runway opened.</p>
+    </div>
+    <div class="photo-slot">foto</div>
+  </div>
+
+  <div class="chapter">
+    <span class="year">1985</span>
+    <div class="card">
+      <span class="kicker">Christmas Eve</span>
+      <h2>A lawyer, an Islander, an £85 ticket.</h2>
+      <p>On Christmas Eve 1985 Frank Cannon flew the first commercial service himself. A nine-seat Britten-Norman Islander, £85 one way to Glasgow.</p>
+    </div>
+    <div class="photo-slot">foto</div>
+  </div>
+
+  <div class="chapter">
+    <span class="year">2025</span>
+    <div class="card">
+      <span class="kicker">Today</span>
+      <h2>Greener than Dublin.</h2>
+      <p>In January 2025 Donegal became the first airport on the island of Ireland to reach Airport Carbon Accreditation Level 4 "Transformation".</p>
+    </div>
+    <div class="photo-slot">foto</div>
+  </div>
+
+</div>
+</body>
+</html>
