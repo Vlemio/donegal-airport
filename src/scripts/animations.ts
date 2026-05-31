@@ -14,7 +14,7 @@ let lenisTickerAdded = false;
 function initSmoothScroll(): void {
   if (lenis || prefersReducedMotion()) return;
 
-  lenis = new Lenis({ duration: 0.8, smoothWheel: true, wheelMultiplier: 1.05 });
+  lenis = new Lenis({ duration: 1.1, smoothWheel: true });
   lenis.on("scroll", () => ScrollTrigger.update());
 
   // gsap.ticker is global to the page; only add the lenis.raf callback
@@ -425,7 +425,7 @@ function setupStoryPath(): void {
       trigger: section,
       start: "top 80%",
       end: "bottom 20%",
-      scrub: 0.6,
+      scrub: 1.2,
       onUpdate(self) {
         // Draw path
         pathEl!.style.strokeDashoffset = String(len * (1 - self.progress));
