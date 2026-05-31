@@ -489,11 +489,9 @@ const airlines: Airline[] = [
                 Mobile:  flex-basis:100% so it wraps below the card. */}
             {c.photo && (
               <figure data-photo data-story-photo>
-                {/* Reveal with OPACITY ONLY (no x-slide): the wrapper below
-                    carries an expensive SVG filter, and transforming a
-                    filtered element re-rasterises it every frame → scroll
-                    jank. Fading avoids that. */}
-                <div data-animate="fade">
+                {/* Slide in from the photo's side. Cheap now that the wrapper
+                    no longer carries the heavy SVG filter. */}
+                <div data-animate={side === "right" ? "fade-right" : "fade-left"}>
                   {/* wrapper receives the displacement filter after img is masked */}
                   <div class="photo-painted-wrapper">
                     <img
