@@ -680,18 +680,17 @@ figure[data-story-photo] {
 .cfn-operators {
   position: relative;
   overflow: hidden;
-  background:
-    radial-gradient(120% 110% at 82% -10%, #16456f 0%, #0d2840 52%, #081827 100%);
+  /* Drone photo of the airport behind a deep-blue veil so the white ticket
+     cards and the heading stay readable. */
+  background-image:
+    linear-gradient(to bottom, rgba(8, 22, 38, 0.80), rgba(8, 20, 33, 0.86)),
+    url("/photos/operators-bg.webp");
+  background-size: cover;
+  background-position: center;
   color: #e9f1f8;
 }
-.cfn-operators .op-deco {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  pointer-events: none;
-}
+/* The decorative arcs are redundant over the photo. */
+.cfn-operators .op-deco { display: none; }
 .cfn-operators .op-eyebrow { color: #74a9d4; }
 .cfn-operators .op-title { color: #f1f6fb; }
 /* Year accent inside the white cards → navy (no green in this section). */
