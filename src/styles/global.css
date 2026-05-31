@@ -640,10 +640,10 @@ figure[data-story-photo] {
   display: flex;
   align-items: center;
   justify-content: center;
-  /* Solid light stub so the coloured tail marks read against it (the drone
-     photo behind the glass card was washing them out). */
-  background: rgba(244, 242, 237, 0.93);
-  border-right: 2px dashed rgba(8, 20, 33, 0.22);
+  /* Solid darker-blue stub (same family as the card, just deeper) so the
+     coloured tail marks read against it instead of the busy drone photo. */
+  background: rgba(7, 16, 28, 0.62);
+  border-right: 2px dashed rgba(255, 255, 255, 0.18);
 }
 .airline-pass .pass-logo svg { width: 3.1rem; height: 3.1rem; }
 .airline-pass .pass-logo img { max-width: 78%; max-height: 64%; object-fit: contain; }
@@ -661,6 +661,9 @@ figure[data-story-photo] {
   color: rgba(233, 241, 248, 0.72);
   font-size: 0.78rem;
   margin: 0.25rem 0 0.6rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .airline-pass .pass-years {
   font-family: var(--font-mono);
