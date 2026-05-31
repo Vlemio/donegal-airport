@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Donegal · A3 + B2</title>
+<link href="https://api.fontshare.com/v2/css?f[]=switzer@300,400,500,600,700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --surface:#f3f2ee; --ink:#181d16; --mute:#56605a;
+    --atlantic:#2c5430; --sand:#a07840; --line:rgba(24,29,22,.12);
+    --sans:"Switzer",system-ui,sans-serif; --disp:Georgia,"Times New Roman",serif;
+    --mono:ui-monospace,"SF Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#e9e7e0;color:var(--ink);font-family:var(--sans);line-height:1.5}
+  .wrap{max-width:1080px;margin:0 auto;padding:48px 28px 120px}
+  h1{font-family:var(--disp);font-weight:400;letter-spacing:-.02em;margin:6px 0 0;font-size:2.4rem}
+  .lead{max-width:680px;color:var(--mute);margin:6px 0 0}
+  .tag{font-family:var(--mono);font-size:.7rem;letter-spacing:.28em;text-transform:uppercase;color:var(--sand)}
+  .opt-label{font-family:var(--mono);font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:#fff;background:var(--atlantic);display:inline-block;padding:5px 12px;border-radius:999px;margin:42px 0 12px}
+  .note{font-size:.82rem;color:var(--mute);margin:6px 0 16px}
+  .frame{border:1px solid var(--line);border-radius:16px;overflow:hidden;background:var(--surface);box-shadow:0 10px 40px rgba(0,0,0,.06)}
+
+  /* ---------- A3 paper (rougher) ---------- */
+  .snip{position:relative;min-height:320px;display:flex;align-items:center;padding:38px 44px;overflow:hidden}
+  .snip>*{position:relative;z-index:2}
+  .snip .yr{position:absolute;right:.1em;top:.05em;font-family:var(--disp);font-size:13rem;line-height:.8;color:var(--sand);opacity:.20;z-index:1}
+  .snip .card{max-width:360px}
+  .snip .card .k{font-family:var(--mono);font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--sand)}
+  .snip .card h3{font-family:var(--disp);font-weight:400;font-size:2rem;margin:.3em 0 .4em}
+  .snip .card p{color:var(--mute);font-size:.95rem;margin:0}
+  .snip .photo{position:absolute;z-index:1;right:-3%;top:50%;transform:translateY(-50%);width:300px;height:185px;background:linear-gradient(135deg,#cfd3c9,#aeb4a4);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#6c7363;font-family:var(--mono);font-size:.7rem;letter-spacing:.2em;box-shadow:2px 6px 20px rgba(0,0,0,.12)}
+
+  .bg-paper{background:#f3f2ee}
+  .bg-paper::before{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23f)'/%3E%3C/svg%3E");
+    background-size:220px;opacity:.24;mix-blend-mode:multiply}
+  .bg-paper::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='700' height='700'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.03' numOctaves='3'/%3E%3C/filter%3E%3Crect width='700' height='700' filter='url(%23g)'/%3E%3C/svg%3E");
+    opacity:.12;mix-blend-mode:multiply}
+
+  /* ---------- B2 boarding-pass cards (refined) ---------- */
+  .btitle{font-family:var(--mono);font-size:.7rem;letter-spacing:.24em;text-transform:uppercase;color:var(--atlantic);margin:0 0 4px}
+  .bpad{padding:30px 34px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:16px;margin-top:18px}
+  .pass{position:relative;display:flex;border-radius:10px;overflow:hidden;background:#fff;border:1px solid var(--line);box-shadow:0 4px 16px rgba(0,0,0,.06)}
+  .pass .logo{width:74px;flex:none;display:flex;align-items:center;justify-content:center;background:#f6f4ee;border-right:2px dashed var(--line)}
+  .pass .logo svg{width:50px;height:50px}
+  .pass .logo img{max-width:78%;max-height:64%;object-fit:contain}    /* logo real cuando lo haya */
+  .pass .body{padding:13px 15px 14px;flex:1;min-width:0}
+  .pass .body .nm{font-family:var(--disp);font-size:1.18rem;line-height:1.1;padding-right:30px}
+  .pass .body .rt{color:var(--mute);font-size:.78rem;margin:3px 0 9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pass .body .yr{font-family:var(--mono);font-size:.72rem;letter-spacing:.04em;color:var(--atlantic)}
+  .pass .code{position:absolute;top:9px;right:12px;font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;color:var(--mute)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="tag">Donegal Airport · mockup</p>
+  <h1>A3 + B2 — refinado</h1>
+  <p class="lead">A3 con papel más rugoso. B2 con el código arriba-derecha (solo letras, sin fondo) y el hueco de la izquierda reservado para el logo de cola de cada aerolínea.</p>
+
+  <div class="opt-label">A3 · Papel de archivo (más rugoso)</div>
+  <div class="frame">
+    <div class="snip bg-paper">
+      <span class="yr">1985</span>
+      <div class="card"><span class="k">Christmas Eve</span><h3>A lawyer, an Islander, an £85 ticket.</h3><p>On Christmas Eve 1985 Frank Cannon flew the first commercial service himself — a nine-seat Britten-Norman Islander, £85 one way.</p></div>
+      <div class="photo">foto</div>
+    </div>
+  </div>
+
+  <div class="opt-label">B2 · Tarjetas tipo billete (logo + código)</div>
+  <p class="note">El monograma gris del hueco izquierdo es provisional: ahí irá el logo real de cola. Códigos en gris = los que tienen IATA fiable; en blanco = aerolíneas extintas sin código claro.</p>
+  <div class="frame bpad"><p class="btitle">Operators</p><div id="b2" class="cards"></div></div>
+</div>
+
+<script>
+  const A = [
+    {n:"Malinair", r:"Glasgow · Manchester · Edinburgh", s:1985, e:1987, code:"WG", c:"#a07840"},
+    {n:"Loganair", r:"Glasgow", s:1988, e:1997, code:"LM", c:"#14315f"},
+    {n:"Ryanair", r:"London Luton", s:1990, e:1991, code:"FR", c:"#073590"},
+    {n:"Aer Arann", r:"Dublin · Cork · Glasgow", s:1998, e:2012, code:"RE", c:"#1f6b3a"},
+    {n:"Euroceltic", r:"Dublin PSO", s:2001, e:2003, code:"5Q", c:"#7a2e2e"},
+    {n:"CityJet", r:"Rotterdam (charter)", s:2005, e:2012, code:"WX", c:"#b4472c"},
+    {n:"Loganair / Flybe", r:"Dublin", s:2012, e:2015, code:"BE", c:"#4a2a86"},
+    {n:"Stobart · Aer Lingus Rgl.", r:"Dublin PSO", s:2015, e:2021, code:"EI", c:"#2c5430"},
+    {n:"Emerald · Aer Lingus Rgl.", r:"Dublin · 2× diario", s:2022, e:2026, code:"EI", c:"#00a04b"},
+    {n:"Loganair (relaunch)", r:"Glasgow · todo el año", s:2023, e:2026, code:"LM", c:"#14315f"},
+  ];
+  // Original, generic swept tail-fin mark (our design, not any real livery),
+  // tinted with each airline's brand colour. A lighter diagonal adds depth.
+  const tail = c => `<svg viewBox="0 0 64 64" aria-hidden="true">
+      <path d="M14,55 L41,9 L53,9 L47,55 Z" fill="${c}"/>
+      <path d="M14,55 L41,9 L46,26 L25,55 Z" fill="rgba(255,255,255,.28)"/>
+    </svg>`;
+  document.getElementById('b2').innerHTML = A.map(a=>`
+    <div class="pass">
+      ${a.code?`<span class="code">${a.code}</span>`:""}
+      <div class="logo">${tail(a.c)}</div>
+      <div class="body">
+        <div class="nm">${a.n}</div>
+        <div class="rt">${a.r}</div>
+        <div class="yr">${a.s} – ${a.e>=2026?'hoy':a.e}</div>
+      </div>
+    </div>`).join('');
+</script>
+</body>
+</html>

@@ -138,24 +138,40 @@ const chapters: Chapter[] = [
   },
 ];
 
-const airlines = [
-  { name: "Malinair", route: "Glasgow · Manchester · Edinburgh", years: "1985 – 1987" },
-  { name: "Air Ecosse", route: "Glasgow", years: "1987" },
-  { name: "Loganair", route: "Glasgow", years: "1988 – 1997" },
-  { name: "Ryanair", route: "London Luton", years: "1990 – 1991" },
-  { name: "Macair", route: "Edinburgh · Birmingham", years: "1995" },
-  { name: "Gill Airways", route: "Glasgow Prestwick", years: "1996 · 1999" },
-  { name: "Ireland Airways", route: "Dublin PSO", years: "1996 – 1998" },
-  { name: "Bright Air", route: "Glasgow", years: "1997 – 1998" },
-  { name: "Aer Arann", route: "Dublin · Cork · Glasgow Intl.", years: "1998 – 2012" },
-  { name: "Euroceltic", route: "Dublin PSO", years: "2001 – 2003" },
-  { name: "CityJet", route: "Rotterdam (seasonal charter)", years: "c. 2005 – 2012" },
-  { name: "Loganair / Flybe", route: "Dublin", years: "2012 – 2015" },
-  { name: "Stobart Air (Aer Lingus Regional)", route: "Dublin PSO", years: "2015 – 2021" },
-  { name: "Amapola Flyg", route: "Dublin PSO (interim)", years: "2021 – 2022" },
-  { name: "Emerald Airlines (Aer Lingus Regional)", route: "Dublin PSO · 2× daily", years: "2022 – today" },
-  { name: "Loganair (relaunch)", route: "Glasgow · year-round", years: "2023 – today" },
-] as const;
+/*
+  Operators. `code` = IATA where reliably known (blank for defunct minnows
+  without one). `color` = brand-ish tint used by the ORIGINAL stylised
+  tail-fin mark (our own design, not a reproduction of any real livery).
+  `logo` is optional — drop in an official logo file later and it overrides
+  the stylised tail for that carrier.
+*/
+type Airline = {
+  name: string;
+  route: string;
+  years: string;
+  code?: string;
+  color: string;
+  logo?: string;
+};
+
+const airlines: Airline[] = [
+  { name: "Malinair", route: "Glasgow · Manchester · Edinburgh", years: "1985 – 1987", code: "WG", color: "#a07840" },
+  { name: "Air Ecosse", route: "Glasgow", years: "1987", color: "#4d6173" },
+  { name: "Loganair", route: "Glasgow", years: "1988 – 1997", code: "LM", color: "#14315f" },
+  { name: "Ryanair", route: "London Luton", years: "1990 – 1991", code: "FR", color: "#0a3d91" },
+  { name: "Macair", route: "Edinburgh · Birmingham", years: "1995", color: "#6b6b2e" },
+  { name: "Gill Airways", route: "Glasgow Prestwick", years: "1996 · 1999", color: "#7a3a5a" },
+  { name: "Ireland Airways", route: "Dublin PSO", years: "1996 – 1998", color: "#2f6b3a" },
+  { name: "Bright Air", route: "Glasgow", years: "1997 – 1998", color: "#b9822a" },
+  { name: "Aer Arann", route: "Dublin · Cork · Glasgow Intl.", years: "1998 – 2012", code: "RE", color: "#1f6b3a" },
+  { name: "Euroceltic", route: "Dublin PSO", years: "2001 – 2003", code: "5Q", color: "#7a2e2e" },
+  { name: "CityJet", route: "Rotterdam (seasonal charter)", years: "c. 2005 – 2012", code: "WX", color: "#b4472c" },
+  { name: "Loganair / Flybe", route: "Dublin", years: "2012 – 2015", code: "BE", color: "#4a2a86" },
+  { name: "Stobart Air (Aer Lingus Regional)", route: "Dublin PSO", years: "2015 – 2021", code: "EI", color: "#2c5430" },
+  { name: "Amapola Flyg", route: "Dublin PSO (interim)", years: "2021 – 2022", color: "#b03a2c" },
+  { name: "Emerald Airlines (Aer Lingus Regional)", route: "Dublin PSO · 2× daily", years: "2022 – today", code: "EI", color: "#0a8f4a" },
+  { name: "Loganair (relaunch)", route: "Glasgow · year-round", years: "2023 – today", code: "LM", color: "#14315f" },
+];
 ---
 
 <BaseLayout title={title} description={description}>
@@ -526,23 +542,31 @@ const airlines = [
         Every airline that has flown to Donegal.
       </h2>
 
-      <dl data-animate="fade-up" class="mt-14 border-t border-line/60">
+      <div data-animate="fade-up" class="airline-grid mt-14">
         {
           airlines.map((a) => (
-            <div class="flex flex-wrap items-baseline gap-x-8 gap-y-1 border-b border-line/40 py-5">
-              <dt class="basis-full font-display text-xl font-light leading-tight text-ink sm:basis-[36%] sm:text-2xl">
-                {a.name}
-              </dt>
-              <dd class="flex-1 text-[0.95rem] leading-snug text-mute">
-                {a.route}
-              </dd>
-              <dd class="shrink-0 text-sm tabular-nums tracking-wide text-atlantic">
-                {a.years}
-              </dd>
+            <div class="airline-pass">
+              {a.code && <span class="pass-code">{a.code}</span>}
+              <div class="pass-logo">
+                {a.logo ? (
+                  <img src={a.logo} alt={`${a.name} logo`} loading="lazy" />
+                ) : (
+                  <svg viewBox="0 0 64 64" aria-hidden="true">
+                    {/* Original, generic swept tail-fin — NOT a real livery. */}
+                    <path d="M14,55 L41,9 L53,9 L47,55 Z" fill={a.color} />
+                    <path d="M14,55 L41,9 L46,26 L25,55 Z" fill="rgba(255,255,255,0.28)" />
+                  </svg>
+                )}
+              </div>
+              <div class="pass-body">
+                <div class="pass-name">{a.name}</div>
+                <div class="pass-route">{a.route}</div>
+                <div class="pass-years">{a.years}</div>
+              </div>
             </div>
           ))
         }
-      </dl>
+      </div>
     </div>
   </section>
 
