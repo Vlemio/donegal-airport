@@ -192,7 +192,7 @@ const airlines: Airline[] = [
         <feTurbulence
           type="fractalNoise"
           baseFrequency="0.018 0.02"
-          numOctaves="4"
+          numOctaves="3"
           seed="7"
           result="noise"
         />
@@ -489,10 +489,11 @@ const airlines: Airline[] = [
                 Mobile:  flex-basis:100% so it wraps below the card. */}
             {c.photo && (
               <figure data-photo data-story-photo>
-                {/* Inner div carries the slide-in animation so GSAP's
-                    transform never clobbers the figure's translateY
-                    vertical-centering. */}
-                <div data-animate={side === "right" ? "fade-right" : "fade-left"}>
+                {/* Reveal with OPACITY ONLY (no x-slide): the wrapper below
+                    carries an expensive SVG filter, and transforming a
+                    filtered element re-rasterises it every frame → scroll
+                    jank. Fading avoids that. */}
+                <div data-animate="fade">
                   {/* wrapper receives the displacement filter after img is masked */}
                   <div class="photo-painted-wrapper">
                     <img
@@ -528,7 +529,26 @@ const airlines: Airline[] = [
   {/* AIRLINES TABLE                                                       */}
   {/* ------------------------------------------------------------------ */}
   <section class="cfn-operators">
-    <div class="mx-auto max-w-5xl px-6 py-24">
+    {/* Decorative flight-route arcs — faint, behind the content */}
+    <svg class="op-deco" viewBox="0 0 1200 640" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <radialGradient id="op-glow" cx="78%" cy="0%" r="80%">
+          <stop offset="0%" stop-color="#3b82c4" stop-opacity="0.5" />
+          <stop offset="100%" stop-color="#3b82c4" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+      <rect width="1200" height="640" fill="url(#op-glow)" />
+      <g fill="none" stroke="#8fbce6" stroke-width="1.4" stroke-dasharray="2 9" stroke-linecap="round" opacity="0.5">
+        <path d="M-40,560 C320,360 760,300 1260,170" />
+        <path d="M-40,620 C360,470 820,440 1260,330" />
+        <path d="M120,680 C460,520 900,540 1320,440" />
+      </g>
+      <g fill="#bcd9f2" opacity="0.55">
+        <circle cx="262" cy="430" r="3.2" /><circle cx="760" cy="305" r="3.2" />
+        <circle cx="1042" cy="208" r="3.2" /><circle cx="494" cy="487" r="2.6" />
+      </g>
+    </svg>
+    <div class="relative z-10 mx-auto max-w-5xl px-6 py-24">
       <p
         data-animate="fade-up"
         class="op-eyebrow font-mono text-[0.95rem] uppercase tracking-[0.26em]"
