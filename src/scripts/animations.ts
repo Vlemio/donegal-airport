@@ -705,7 +705,8 @@ function destroy(): void {
 // Registered once.
 watchNav();
 setupHeaderReveal();
-setupCursor();
+// Custom pointer circle disabled per request — native cursor only.
+// setupCursor();
 
 // First load and every View Transitions navigation.
 document.addEventListener("astro:page-load", () => {
