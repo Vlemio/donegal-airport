@@ -629,9 +629,10 @@ figure[data-story-photo] {
   display: flex;
   border-radius: 12px;
   overflow: hidden;
-  background: var(--color-surface-hi);
-  border: 1px solid var(--color-line);
-  box-shadow: 0 4px 18px rgba(24, 29, 22, 0.06);
+  /* Translucent "glass" so the drone photo shows through. */
+  background: rgba(13, 27, 44, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 6px 22px rgba(0, 0, 0, 0.22);
 }
 .airline-pass .pass-logo {
   width: 4.6rem;
@@ -639,8 +640,8 @@ figure[data-story-photo] {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: color-mix(in srgb, var(--color-surface) 70%, var(--color-surface-hi));
-  border-right: 2px dashed var(--color-line);
+  background: rgba(255, 255, 255, 0.07);
+  border-right: 2px dashed rgba(255, 255, 255, 0.2);
 }
 .airline-pass .pass-logo svg { width: 3.1rem; height: 3.1rem; }
 .airline-pass .pass-logo img { max-width: 78%; max-height: 64%; object-fit: contain; }
@@ -651,9 +652,11 @@ figure[data-story-photo] {
   font-size: 1.2rem;
   line-height: 1.1;
   padding-right: 2rem;
+  color: #eef4fb;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
 }
 .airline-pass .pass-route {
-  color: var(--color-mute);
+  color: rgba(233, 241, 248, 0.72);
   font-size: 0.78rem;
   margin: 0.25rem 0 0.6rem;
 }
@@ -670,7 +673,7 @@ figure[data-story-photo] {
   font-family: var(--font-mono);
   font-size: 0.72rem;
   letter-spacing: 0.14em;
-  color: var(--color-mute);
+  color: rgba(233, 241, 248, 0.6);
 }
 
 /* Operators on a deep-blue night panel — white ticket cards pop against it.
@@ -681,18 +684,20 @@ figure[data-story-photo] {
   /* Drone photo of the airport behind a deep-blue veil so the white ticket
      cards and the heading stay readable. */
   background-image:
-    linear-gradient(to bottom, rgba(8, 22, 38, 0.68) 0%, rgba(8, 20, 33, 0.42) 40%, rgba(8, 20, 33, 0.5) 100%),
+    linear-gradient(to bottom, rgba(8, 22, 38, 0.50) 0%, rgba(8, 20, 33, 0.26) 42%, rgba(8, 20, 33, 0.40) 100%),
     url("/photos/operators-bg.webp");
   background-size: cover;
   background-position: center;
   color: #e9f1f8;
 }
+.cfn-operators .op-eyebrow,
+.cfn-operators .op-title { text-shadow: 0 1px 14px rgba(6, 16, 28, 0.55); }
 /* The decorative arcs are redundant over the photo. */
 .cfn-operators .op-deco { display: none; }
 .cfn-operators .op-eyebrow { color: #74a9d4; }
 .cfn-operators .op-title { color: #f1f6fb; }
-/* Year accent inside the white cards → navy (no green in this section). */
-.cfn-operators .pass-years { color: #1f4e79; }
+/* Year accent on the glass cards → light blue (legible, no green here). */
+.cfn-operators .pass-years { color: #9ec7ea; }
 
 /*
   Organic cut-out photos with edge treatment.
