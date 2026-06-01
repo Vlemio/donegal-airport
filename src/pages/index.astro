@@ -99,9 +99,9 @@ const news = [
   <section
     data-scrub-trigger
     data-hero-scroll
-    class="relative isolate h-[200vh] w-full"
+    class="relative isolate h-[300vh] w-full"
   >
-    <div class="sticky top-0 flex h-screen w-full items-end">
+    <div class="sticky top-0 flex h-screen w-full flex-col overflow-hidden">
       {/* Background layers isolated in their own overflow-hidden wrapper
           so the Ken Burns scale doesn't bleed outside the container, but
           the hero headline text (which can be taller than the viewport on
@@ -139,6 +139,12 @@ const news = [
         <div class="absolute inset-0 bg-gradient-to-b from-ocean/55 via-ocean/10 to-transparent" />
       </div>
 
+      {/* Header-height spacer — reserves space so content never slides
+          under the navigation bar, regardless of how tall the headline is */}
+      <div class="shrink-0" style="height: var(--header-h)" aria-hidden="true" />
+
+      {/* Content fills the remaining viewport height, anchored to bottom */}
+      <div class="flex flex-1 items-end overflow-hidden w-full">
       <div
         class="cfn-hero-content relative z-10 mx-auto w-full max-w-7xl px-6 pb-20 sm:pb-28"
       >
@@ -196,6 +202,7 @@ const news = [
           <span class="scroll-hint scroll-hint--light text-base">↓</span>
         </div>
       </div>
+      </div> {/* flex flex-1 items-end overflow-hidden */}
     </div>
   </section>
 
