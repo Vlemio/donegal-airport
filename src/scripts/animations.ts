@@ -277,6 +277,13 @@ function setupScrubVideo(): void {
     }
 
     const wire = (): void => {
+      // On desktop, hide the Ken Burns fallback image now that the
+      // video has loaded and taken over the background.
+      const kbImg = section?.querySelector<HTMLElement>("[data-ken-burns]");
+      if (kbImg && window.matchMedia("(min-width: 768px)").matches) {
+        kbImg.classList.add("is-hidden");
+      }
+
       const totalDuration = video.duration || 7;
       // data-video-start / data-video-end let you trim the playback
       // window without re-encoding the file. Change those two numbers

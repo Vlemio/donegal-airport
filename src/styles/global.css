@@ -367,6 +367,20 @@
   --color-mute:       rgba(240, 238, 230, 0.88);
   --color-line:       rgba(240, 238, 230, 0.16);
 }
+/* Text shadow so headlines stay legible over bright clouds */
+.cfn-hero-content h1 {
+  text-shadow: 0 2px 24px rgba(0,0,0,0.45), 0 1px 6px rgba(0,0,0,0.3);
+}
+.cfn-hero-content p {
+  text-shadow: 0 1px 8px rgba(0,0,0,0.35);
+}
+/* Hide Ken Burns fallback on desktop once video is playing */
+@media (min-width: 768px) {
+  [data-ken-burns].is-hidden {
+    opacity: 0;
+    transition: opacity 0.8s ease;
+  }
+}
 
 /* Footer inversion */
 [data-footer] {
