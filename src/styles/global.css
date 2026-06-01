@@ -71,9 +71,9 @@
   --color-ink:  #181d16;
   --color-mute: #56605a;
 
-  /* Primary accent — Irish field green (replaces atlantic blue) */
-  --color-atlantic:        #2c5430;
-  --color-atlantic-bright: #3a6b3e;
+  /* Primary accent — Atlantic deep blue */
+  --color-atlantic:        #1a4a6e;
+  --color-atlantic-bright: #235f8e;
   --color-atlantic-ink:    #f3f2ee;
 
   /* Warm accent — bogland amber / Donegal sand */
@@ -361,8 +361,8 @@
    regardless of the page tone. Custom properties cascade by
    element distance, so setting them on the wrapper wins. */
 .cfn-hero-content {
-  --color-surface:    #0f1c0d;
-  --color-surface-hi: #182a15;
+  --color-surface:    #090f1c;
+  --color-surface-hi: #0d1a2e;
   --color-ink:        #f0eee6;
   --color-mute:       rgba(240, 238, 230, 0.88);
   --color-line:       rgba(240, 238, 230, 0.16);
@@ -370,9 +370,9 @@
 
 /* Footer inversion */
 [data-footer] {
-  --color-surface:    #0f1c0d;
-  --color-surface-hi: #182a15;
-  --color-surface-lo: #091108;
+  --color-surface:    #090f1c;
+  --color-surface-hi: #0d1a2e;
+  --color-surface-lo: #060b16;
   --color-ink:        #f0eee6;
   --color-mute:       rgba(240, 238, 230, 0.70);
   --color-line:       rgba(240, 238, 230, 0.16);

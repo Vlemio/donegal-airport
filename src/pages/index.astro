@@ -17,8 +17,7 @@ const flightsToday = [
 ] as const;
 
 // Destinations — horizontal-scroll panels. Each panel is one viewport
-// wide on desktop; on mobile they stack vertically. Photo URL is a
-// placeholder gradient until Jose Manuel's photography lands. */
+// wide on desktop; on mobile they stack vertically.
 const destinations = [
   {
     code: "DUB",
@@ -27,7 +26,8 @@ const destinations = [
     duration: "55 min",
     schedule: "Daily · 2× return",
     carrier: "Aer Lingus Regional",
-    hero: "linear-gradient(135deg, #1e3a5f 0%, #2a5380 60%, #c9a66b 100%)",
+    hero: "/photos/dest-dub.webp",
+    photoPos: "center center",
     caption: "An overnight bag and you're halfway to the city by lunch.",
   },
   {
@@ -37,10 +37,11 @@ const destinations = [
     duration: "1 h 5 min",
     schedule: "Friday & Sunday",
     carrier: "Loganair",
-    hero: "linear-gradient(135deg, #11202d 0%, #1e3a5f 50%, #2a5380 100%)",
+    hero: "/photos/dest-gla.webp",
+    photoPos: "center 20%",
     caption: "Weekend in the Highlands. Home before bedtime.",
   },
-] as const;
+];
 
 // Awards — editorial blocks, not cards. Big year, big claim, no
 // bounded rectangles. Sourced from CFN press history (verify dates).
@@ -106,12 +107,18 @@ const news = [
           the hero headline text (which can be taller than the viewport on
           short screens) is free to extend above without being clipped. */}
       <div class="absolute inset-0 overflow-hidden" aria-hidden="true">
-        {/* Placeholder gradient — replace with the drone scrub video. */}
-        <div
+        {/* Drone photo — Ken Burns slow scale until Higgsfield video is ready.
+            The video layer (below) fades in on top once loaded; on mobile
+            the video element is hidden and this photo shows always. */}
+        <img
           data-ken-burns
-          class="absolute inset-0 bg-gradient-to-b from-atlantic via-atlantic-bright to-ink"
-        >
-        </div>
+          src="/photos/hero-poster.webp"
+          alt="Aerial view of Donegal Airport — runway between the beach and the Atlantic"
+          class="absolute inset-0 h-full w-full object-cover object-[center_55%]"
+          loading="eager"
+          fetchpriority="high"
+          decoding="async"
+        />
 
         <video
           data-scrub-video
@@ -347,10 +354,16 @@ const news = [
           <article
             data-photo
             class="relative flex h-[80vh] w-[44rem] shrink-0 flex-col justify-end overflow-hidden"
-            style={`background: ${d.hero}`}
           >
+            <img
+              src={d.hero}
+              alt={d.city}
+              class="absolute inset-0 h-full w-full object-cover"
+              style={`object-position: ${d.photoPos}`}
+              loading="lazy"
+            />
             <div
-              class="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/25 to-transparent"
+              class="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/30 to-transparent"
               aria-hidden="true"
             >
             </div>
@@ -406,12 +419,16 @@ const news = [
             data-animate-delay={`${0.05 + i * 0.08}`}
             class="relative overflow-hidden"
           >
-            <div
-              class="relative aspect-[4/5] w-full"
-              style={`background: ${d.hero}`}
-            >
+            <div class="relative aspect-[4/5] w-full overflow-hidden">
+              <img
+                src={d.hero}
+                alt={d.city}
+                class="absolute inset-0 h-full w-full object-cover"
+                style={`object-position: ${d.photoPos}`}
+                loading="lazy"
+              />
               <div
-                class="absolute inset-0 bg-gradient-to-t from-ink/80 to-transparent"
+                class="absolute inset-0 bg-gradient-to-t from-ink/85 to-transparent"
                 aria-hidden="true"
               >
               </div>
