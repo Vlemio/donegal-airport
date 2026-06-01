@@ -277,13 +277,20 @@ function setupScrubVideo(): void {
     }
 
     const wire = (): void => {
-      const duration = video.duration || 5;
+      const totalDuration = video.duration || 7;
+      // data-video-start / data-video-end let you trim the playback
+      // window without re-encoding the file. Change those two numbers
+      // in index.astro to adjust how much of the video the scrub uses.
+      const videoStart = parseFloat(video.dataset.videoStart ?? "0");
+      const videoEnd   = parseFloat(video.dataset.videoEnd   ?? String(totalDuration));
+      const playRange  = Math.max(0.1, videoEnd - videoStart);
+
       video.classList.add("is-playing");
 
       // Coalesce seeks: never start a new seek while one is still
       // in flight. Scrolling fast otherwise queues dozens of seeks
       // and saturates the decoder, stuttering the whole page.
-      let target = 0;
+      let target = videoStart;
       let seeking = false;
       const applySeek = (): void => {
         if (seeking || Math.abs(video.currentTime - target) < 1 / 24) return;
@@ -304,7 +311,7 @@ function setupScrubVideo(): void {
         end: endPos,
         scrub: 0.4,
         onUpdate: (self) => {
-          target = self.progress * duration;
+          target = videoStart + self.progress * playRange;
           if (Number.isFinite(target)) applySeek();
         },
       });
