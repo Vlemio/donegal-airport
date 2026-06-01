@@ -28,12 +28,12 @@
 --color-mute:         #56605a   /* texto secundario */
 --color-sand:         #a07840   /* acento dorado/arena */
 --color-surface:      #f3f2ee   /* fondo crema */
---color-atlantic:     #2c5430   /* verde atlántico (puede cambiar) */
+--color-atlantic:     #1a4a6e   /* azul atlántico navy — CONFIRMADO */
+--color-atlantic-bright: #235f8e
 --color-ocean:        #08162a   /* azul noche profunda */
 ```
 
-**Nota:** El verde `--color-atlantic` está en revisión — Jose Manuel quiere
-cambiarlo a azul. Pendiente decisión.
+**Dark overlays (hero/footer):** `#090f1c` / `#0d1a2e` / `#060b16` (navy, sustituyen al verde oscuro anterior)
 
 ---
 
@@ -203,13 +203,53 @@ tenga los archivos oficiales. Campo `logo` en el array de airlines.
 
 ---
 
+## Estado homepage (`/`)
+
+### Secciones implementadas
+| Sección | Estado | Notas |
+|---------|--------|-------|
+| Hero scrub | ✅ | `hero.mp4` 13s: nubes→airport reveal + drone real |
+| Editorial intro | ⚠️ | Gradiente placeholder — falta foto portrait |
+| Flights table | ✅ | Mock data, diseño mono editorial |
+| Destinations H-scroll | ✅ | Dublin + Glasgow con fotos reales |
+| Awards | ✅ | Editorial list, sin cards |
+| News | ✅ | DD.MM.YYYY list |
+| CTA | ✅ | Wild Atlantic Way |
+
+### Fotos homepage
+| Archivo | Uso | Estado |
+|---------|-----|--------|
+| `public/photos/hero-poster.webp` | Hero fallback (Ken Burns) | ✅ |
+| `public/photos/dest-dub.webp` | Dublin panel | ⚠️ personas pendientes quitar |
+| `public/photos/dest-gla.webp` | Glasgow panel | ✅ (personas aceptadas) |
+| `public/video/hero.mp4` | Hero scrub 13s 1080p | ✅ |
+| `public/video/clouds-start.png` | Referencia nubes hero | ✅ guardado |
+
+### Hero video workflow (Higgsfield CLI)
+```bash
+# Kling 3.0 — clouds→airport transition
+higgsfield generate create kling3_0 \
+  --start-image <clouds_uuid> --end-image <airport_frame_uuid> \
+  --duration 8 --mode 4k --aspect_ratio 16:9 --sound off
+
+# Drone clip extraction (source: Emerald - Airport HD Vid 1.mp4)
+# Ruta fuente: C:\Users\jjgar\Desktop\Fotos\Donegal Airport\Airport old photos\
+ffmpeg -ss 00:01:27 -i "source.mp4" -t 8 -c:v libx264 \
+  -g 1 -keyint_min 1 -sc_threshold 0 -movflags +faststart -crf 23 -an clip.mp4
+
+# Concat: Kling(1080p) + drone(trimmed 3s, 1080p) → hero.mp4
+```
+
+**Regla del start frame (nubes):** Nubes esponjosas blancas sobre cielo azul (tipo altocumulus),
+NO dramáticas ni de tormenta, NO sunset. Nano Banana Pro genera buenos resultados.
+Usar Flux Kontext para compositar sobre foto real es demasiado conservador — mejor standalone.
+
 ## Pendientes conocidos
 
-- [ ] Homepage — en progreso (siguiente sesión)
-- [ ] Anthony Gillespie — tira de cita entre ch1 y ch2 (fotos pendientes)
+- [ ] Homepage intro editorial — foto portrait del aeropuerto (desde tierra/terminal)
+- [ ] Dublin dest foto — quitar personas con cleanup.pictures
+- [ ] Anthony Gillespie — tira de cita entre ch1 y ch2 (fotos pendientes de Jose Manuel)
 - [ ] Logos reales aerolíneas (cuando Jose Manuel los tenga)
-- [ ] `--color-atlantic` → cambiar de verde a azul
-- [ ] Video hero (`/public/video/hero.mp4`) — generar con Higgsfield/Kling 3.0
 - [ ] `/discover` — Fanad Head + Poisoned Glen cards
 - [ ] `/flights`, `/plan`, `/pilots`, `/contact` — páginas stub
 - [ ] 21st.dev MCP — pendiente de instalar (API key)
@@ -256,3 +296,16 @@ tenga los archivos oficiales. Campo `logo` en el array de airlines.
 7. **Verificar datos históricos.** Antes de publicar una afirmación histórica
    concreta (año, distancia, cifra), buscarla. El error del Dooish/Rockall
    es el ejemplo — lo puse sin fuente y tuvo que corregirse.
+
+8. **Higgsfield CLI para vídeos.** `higgsfield` está instalado globalmente.
+   Kling 3.0 necesita AMBOS `--start-image` y `--end-image` si usas keyframes
+   (no funciona con solo uno). Parámetros con underscore: `--aspect_ratio` no `--aspect-ratio`.
+   `mode: 4k` da calidad notablemente mejor que `pro`. Coste: ~20 créditos/generación.
+
+9. **Flux Kontext es conservador.** Diseñado para edición sutil, no para añadir
+   cobertura masiva (nubes, objetos grandes). Para composiciones agresivas,
+   mejor generar el elemento standalone con Nano Banana Pro y compositar con Sharp.
+
+10. **Vídeo hero = Kling transition + drone real.** El drone clip real de Jose Manuel
+    siempre gana en autenticidad frente al vídeo 100% generado. El flujo óptimo:
+    Kling para la intro cinematográfica (nubes→reveal) + clip real para el movimiento.
