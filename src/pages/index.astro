@@ -88,6 +88,14 @@ const news = [
 ---
 
 <BaseLayout title={title} description={description}>
+  {/* Mark this page so the header starts transparent over the hero video
+      and fades in with its glass background once the user scrolls. */}
+  <script>
+    document.documentElement.setAttribute('data-cinematic-hero', '');
+    document.addEventListener('astro:before-swap', () => {
+      document.documentElement.removeAttribute('data-cinematic-hero');
+    });
+  </script>
   {/* ---------- HERO ----------
       Full-screen, video-scrub-ready. The drone clip will live in
       /public/video/hero.mp4 once generated in Higgsfield (Kling 3.0):
@@ -143,9 +151,9 @@ const news = [
       <div class="cfn-hero-content mx-auto w-full max-w-7xl px-6 pb-16">
         <p
           data-animate="fade-up"
-          class="font-mono text-[0.7rem] uppercase tracking-[0.32em] text-sand"
+          class="font-mono text-[0.7rem] uppercase tracking-[0.32em] text-mute"
         >
-          Donegal · Ireland · 55.04°N 8.34°W
+          Carrickfinn · Co. Donegal · CFN
         </p>
 
         <h1
@@ -153,7 +161,7 @@ const news = [
           data-split-delay="0.15"
           class="mt-6 max-w-5xl font-display text-[clamp(2.6rem,6.5vw,6rem)] font-normal leading-[0.95] text-ink"
         >
-          The world's most scenic runway, between the mountain and the sea.
+          The world's most scenic approach to landing.
         </h1>
 
         <div
@@ -162,7 +170,8 @@ const news = [
           class="mt-8 flex flex-wrap items-center gap-x-10 gap-y-3 text-mute"
         >
           <p class="max-w-lg text-base leading-relaxed sm:text-lg">
-            Daily to Dublin. Weekend to Glasgow. A blue-flag beach for a runway.
+            Dublin daily. Glasgow on weekends — and select summer weekdays.
+            The Atlantic on both sides of the runway.
           </p>
         </div>
 
@@ -173,13 +182,13 @@ const news = [
         >
           <a
             href="/flights"
-            class="border-b border-ink/60 pb-1 font-mono text-xs uppercase tracking-[0.22em] text-ink transition-colors hover:border-sand hover:text-sand"
+            class="border-b border-ink/60 pb-1 font-mono text-sm uppercase tracking-[0.22em] text-ink transition-colors hover:border-sand hover:text-sand"
           >
             Today's flights →
           </a>
           <a
             href="/plan#parking"
-            class="border-b border-transparent pb-1 font-mono text-xs uppercase tracking-[0.22em] text-mute transition-colors hover:border-sand hover:text-sand"
+            class="border-b border-transparent pb-1 font-mono text-sm uppercase tracking-[0.22em] text-mute transition-colors hover:border-sand hover:text-sand"
           >
             Parking & getting here →
           </a>

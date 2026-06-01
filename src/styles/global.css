@@ -167,12 +167,27 @@
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--color-line);
   transition:
-    background-color 0.3s ease,
-    box-shadow 0.3s ease;
+    background-color 0.45s ease,
+    backdrop-filter 0.45s ease,
+    box-shadow 0.3s ease,
+    border-color 0.45s ease;
 }
 [data-header].is-scrolled {
   background-color: color-mix(in srgb, var(--color-surface) 96%, transparent);
   box-shadow: 0 2px 28px rgba(24, 29, 22, 0.07);
+}
+/* Cinematic hero pages (homepage): header starts fully transparent
+   and fades in with glass background once the user scrolls.
+   CSS variable overrides make nav links light-coloured over the video. */
+:root[data-cinematic-hero] [data-header]:not(.is-scrolled) {
+  background-color: transparent;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-bottom-color: transparent;
+  box-shadow: none;
+  --color-ink:  rgba(240, 238, 230, 0.92);
+  --color-mute: rgba(240, 238, 230, 0.65);
+  --color-line: rgba(240, 238, 230, 0.18);
 }
 
 /* Scroll hint at the bottom of the hero */
