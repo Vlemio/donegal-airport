@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Donegal Airport — Mockup B · Atlantic Night</title>
+<link href="https://api.fontshare.com/v2/css?f[]=switzer@300,400,500,600,700&display=swap" rel="stylesheet"/>
+<style>
+/* ── MOCKUP B: Atlantic Night ──────────────────────────────────────
+   Philosophy: Cinematic, full-viewport, atmospheric. Dark ocean
+   blues, glowing details, large breathing sections. Inspired by
+   luxury travel brands — Soho House, Condé Nast Traveller, Visit
+   Scotland dark-mode microsites. Bold but quiet.
+──────────────────────────────────────────────────────────────────── */
+:root {
+  --night:   #050e1a;
+  --ocean:   #08162a;
+  --deep:    #0d2040;
+  --foam:    #e8f2fc;
+  --silver:  #a8bdd4;
+  --gold:    #c49a4a;
+  --glow:    rgba(80,140,220,.18);
+  --rule:    rgba(168,189,212,.08);
+  --sans:    "Switzer", system-ui, sans-serif;
+  --serif:   Georgia, "Times New Roman", serif;
+  --mono:    ui-monospace, "SF Mono", Menlo, monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; scroll-behavior: smooth; }
+body { background: var(--night); color: var(--foam); font-family: var(--sans); line-height: 1.5; overflow-x: hidden; }
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 3vw; height: 60px;
+  border-bottom: 1px solid var(--rule);
+  background: rgba(5,14,26,.72);
+  backdrop-filter: blur(16px) saturate(1.4);
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 1rem;
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .28em;
+  text-transform: uppercase; color: var(--foam);
+}
+.nav-logo-badge {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 1px solid rgba(196,154,74,.4);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--mono); font-size: .7rem; letter-spacing: .06em;
+  color: var(--gold); background: rgba(196,154,74,.06);
+}
+.nav-links { display: flex; gap: 2.5rem; list-style: none; }
+.nav-links a {
+  font-size: .68rem; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--silver); text-decoration: none; opacity: .7;
+  transition: opacity .2s;
+}
+.nav-links a:hover { opacity: 1; color: var(--foam); }
+.nav-cta {
+  padding: 9px 22px;
+  background: linear-gradient(135deg, rgba(196,154,74,.2), rgba(196,154,74,.08));
+  border: 1px solid rgba(196,154,74,.35);
+  color: var(--gold); font-family: var(--mono); font-size: .65rem;
+  letter-spacing: .18em; text-transform: uppercase; text-decoration: none;
+  transition: all .2s;
+}
+.nav-cta:hover {
+  background: rgba(196,154,74,.22);
+  border-color: rgba(196,154,74,.6);
+}
+
+/* ── HERO: full viewport ── */
+.hero {
+  position: relative; min-height: 100vh;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 0 5vw 8vh; padding-top: 60px;
+  overflow: hidden;
+}
+.hero-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 60% 40%, rgba(20,60,120,.35) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 80% at 20% 80%, rgba(8,22,42,.8) 0%, transparent 60%),
+    linear-gradient(to bottom, rgba(5,14,26,.3) 0%, rgba(5,14,26,.8) 70%, var(--night) 100%),
+    linear-gradient(145deg, #1a3a5c 0%, #0a2040 30%, #050e1a 70%, #020810 100%);
+  z-index: 0;
+}
+/* Animated star-like dots */
+.hero-bg::after {
+  content: "";
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(1px 1px at 15% 25%, rgba(255,255,255,.3), transparent),
+    radial-gradient(1px 1px at 35% 15%, rgba(255,255,255,.2), transparent),
+    radial-gradient(1px 1px at 55% 30%, rgba(255,255,255,.25), transparent),
+    radial-gradient(1px 1px at 75% 20%, rgba(255,255,255,.2), transparent),
+    radial-gradient(1px 1px at 85% 40%, rgba(255,255,255,.15), transparent),
+    radial-gradient(2px 2px at 45% 10%, rgba(255,255,255,.18), transparent);
+  opacity: .5;
+}
+.hero-glow {
+  position: absolute; top: 20%; left: 50%;
+  width: 600px; height: 300px;
+  background: radial-gradient(ellipse, rgba(80,140,220,.12) 0%, transparent 70%);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+.hero-content { position: relative; z-index: 1; max-width: 820px; }
+.hero-eyebrow {
+  display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;
+}
+.hero-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--gold); box-shadow: 0 0 8px var(--gold);
+}
+.hero-eyebrow-text {
+  font-family: var(--mono); font-size: .64rem; letter-spacing: .26em;
+  text-transform: uppercase; color: var(--silver); opacity: .7;
+}
+.hero-title {
+  font-family: var(--serif); font-weight: 400;
+  font-size: clamp(3.8rem, 8vw, 9rem);
+  line-height: .88; letter-spacing: -.025em; margin-bottom: 2.5rem;
+}
+.hero-title .line-2 {
+  display: block;
+  background: linear-gradient(90deg, var(--foam) 0%, var(--silver) 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-title .line-3 {
+  display: block; font-style: italic;
+  color: var(--gold); -webkit-text-fill-color: var(--gold);
+}
+.hero-body {
+  max-width: 46ch; color: var(--silver); font-size: 1.02rem; line-height: 1.72;
+  margin-bottom: 3rem; opacity: .8;
+}
+.hero-ctas { display: flex; gap: 1.2rem; align-items: center; margin-bottom: 4rem; }
+.btn-glow {
+  padding: 14px 36px;
+  background: linear-gradient(135deg, rgba(196,154,74,.25), rgba(196,154,74,.1));
+  border: 1px solid rgba(196,154,74,.5);
+  color: var(--gold); font-family: var(--mono); font-size: .7rem;
+  letter-spacing: .2em; text-transform: uppercase; text-decoration: none;
+  box-shadow: 0 0 24px rgba(196,154,74,.08), inset 0 1px 0 rgba(255,255,255,.05);
+  transition: all .25s;
+}
+.btn-glow:hover {
+  box-shadow: 0 0 40px rgba(196,154,74,.18);
+  border-color: rgba(196,154,74,.8);
+}
+.btn-outline {
+  padding: 14px 30px;
+  border: 1px solid var(--rule);
+  color: var(--foam); font-family: var(--mono); font-size: .7rem;
+  letter-spacing: .2em; text-transform: uppercase; text-decoration: none;
+  background: rgba(255,255,255,.03);
+  transition: all .25s;
+}
+.btn-outline:hover {
+  border-color: rgba(168,189,212,.25);
+  background: rgba(255,255,255,.06);
+}
+.hero-data {
+  display: flex; gap: 3rem; align-items: center;
+  padding-top: 2.5rem;
+  border-top: 1px solid var(--rule);
+}
+.hero-data-item { }
+.hero-data-value {
+  font-family: var(--serif); font-size: 1.8rem; color: var(--foam);
+  line-height: 1; margin-bottom: .2rem;
+}
+.hero-data-label {
+  font-family: var(--mono); font-size: .58rem; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--silver); opacity: .5;
+}
+.hero-data-sep {
+  width: 1px; height: 44px;
+  background: linear-gradient(to bottom, transparent, var(--rule), transparent);
+}
+/* Scroll hint */
+.hero-scroll {
+  position: absolute; bottom: 3rem; right: 5vw; z-index: 1;
+  display: flex; flex-direction: column; align-items: center; gap: .6rem;
+  font-family: var(--mono); font-size: .54rem; letter-spacing: .22em;
+  text-transform: uppercase; color: var(--silver); opacity: .4;
+}
+.hero-scroll-line {
+  width: 1px; height: 40px;
+  background: linear-gradient(to bottom, var(--silver), transparent);
+  animation: scrollLine 1.8s ease-in-out infinite;
+}
+@keyframes scrollLine {
+  0%,100% { transform: scaleY(1); opacity: .4; }
+  50% { transform: scaleY(.5); opacity: .8; }
+}
+/* CFN coords badge, top right */
+.hero-coords {
+  position: absolute; top: 80px; right: 5vw; z-index: 1;
+  text-align: right;
+  font-family: var(--mono); font-size: .58rem; letter-spacing: .14em;
+  color: var(--silver); opacity: .35; line-height: 1.8;
+}
+
+/* ── ROUTES (glass cards) ── */
+.routes {
+  padding: 7rem 5vw;
+  border-top: 1px solid var(--rule);
+  background: var(--ocean);
+}
+.section-header {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 3.5rem;
+}
+.section-kicker {
+  font-family: var(--mono); font-size: .62rem; letter-spacing: .26em;
+  text-transform: uppercase; color: var(--gold); margin-bottom: .6rem;
+}
+.section-title {
+  font-family: var(--serif); font-size: 2.4rem; font-weight: 400; color: var(--foam);
+}
+.section-note {
+  font-family: var(--mono); font-size: .62rem; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--silver); opacity: .4;
+}
+.routes-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;
+}
+.route-glass {
+  padding: 2.5rem;
+  background: rgba(255,255,255,.03);
+  border: 1px solid var(--rule);
+  backdrop-filter: blur(8px);
+  transition: border-color .2s, background .2s;
+  position: relative; overflow: hidden;
+}
+.route-glass::before {
+  content: "";
+  position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(196,154,74,.2), transparent);
+}
+.route-glass:hover {
+  border-color: rgba(196,154,74,.2);
+  background: rgba(255,255,255,.05);
+}
+.route-top {
+  display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem;
+}
+.route-iata {
+  font-family: var(--mono); font-size: 2.4rem; letter-spacing: .04em;
+  color: var(--foam); opacity: .12; line-height: 1;
+}
+.route-freq {
+  font-family: var(--mono); font-size: .6rem; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--gold); opacity: .7;
+  padding: 4px 10px; border: 1px solid rgba(196,154,74,.25); border-radius: 2px;
+}
+.route-city {
+  font-family: var(--serif); font-size: 2rem; color: var(--foam); line-height: 1;
+  margin-bottom: .4rem;
+}
+.route-detail {
+  font-family: var(--mono); font-size: .62rem; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--silver); opacity: .5; margin-bottom: 1rem;
+}
+.route-op {
+  font-family: var(--mono); font-size: .58rem; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--silver); opacity: .4;
+}
+
+/* ── SCENIC: full-bleed section ── */
+.scenic {
+  position: relative; min-height: 80vh;
+  display: flex; align-items: center;
+  overflow: hidden;
+}
+.scenic-bg {
+  position: absolute; inset: 0;
+  background: linear-gradient(100deg, #0a2030 0%, #1a3a28 50%, #0e2418 100%);
+}
+.scenic-overlay {
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(to right, var(--night) 0%, transparent 45%),
+    linear-gradient(to top, rgba(5,14,26,.6) 0%, transparent 40%);
+}
+.scenic-content {
+  position: relative; z-index: 1; padding: 0 5vw; max-width: 600px;
+}
+.scenic-tag {
+  font-family: var(--mono); font-size: .62rem; letter-spacing: .26em;
+  text-transform: uppercase; color: var(--gold); margin-bottom: 1.5rem;
+  display: flex; align-items: center; gap: .8rem;
+}
+.scenic-tag::before {
+  content: ""; width: 24px; height: 1px; background: var(--gold); opacity: .5;
+}
+.scenic-heading {
+  font-family: var(--serif); font-size: clamp(2rem, 4vw, 4rem);
+  font-weight: 400; line-height: 1.05; color: var(--foam);
+  margin-bottom: 1.5rem; letter-spacing: -.02em;
+}
+.scenic-text {
+  color: var(--silver); font-size: .97rem; line-height: 1.74; opacity: .8;
+  max-width: 42ch; margin-bottom: 2.5rem;
+}
+.scenic-link {
+  display: inline-flex; align-items: center; gap: .8rem;
+  font-family: var(--mono); font-size: .66rem; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--gold); text-decoration: none;
+  border-bottom: 1px solid rgba(196,154,74,.3); padding-bottom: 2px;
+}
+.scenic-link::after { content: "→"; }
+.scenic-img-area {
+  position: absolute; right: 0; top: 0; bottom: 0; width: 55%;
+  background: linear-gradient(135deg, #2a5040 0%, #1a3828 40%, #0e2218 100%);
+  clip-path: polygon(8% 0%, 100% 0%, 100% 100%, 0% 100%);
+  display: flex; align-items: flex-end; justify-content: flex-end; padding: 2rem;
+}
+.scenic-caption {
+  font-family: var(--mono); font-size: .55rem; letter-spacing: .2em;
+  text-transform: uppercase; color: rgba(168,189,212,.35);
+}
+
+/* ── HISTORY TEASER ── */
+.history {
+  padding: 7rem 5vw;
+  background: var(--night);
+  border-top: 1px solid var(--rule);
+}
+.history-inner {
+  display: grid; grid-template-columns: auto 1fr; gap: 5vw; align-items: center;
+}
+.history-years {
+  display: flex; flex-direction: column; gap: .5rem; opacity: .06;
+  pointer-events: none; user-select: none;
+}
+.history-year-text {
+  font-family: var(--serif); font-size: clamp(4rem, 10vw, 11rem);
+  line-height: .8; color: var(--foam); display: block;
+}
+.history-body {}
+.history-kicker {
+  font-family: var(--mono); font-size: .62rem; letter-spacing: .26em;
+  text-transform: uppercase; color: var(--gold); margin-bottom: 1.2rem;
+}
+.history-heading {
+  font-family: var(--serif); font-size: clamp(1.8rem, 3vw, 3.4rem);
+  font-weight: 400; line-height: 1.05; color: var(--foam);
+  margin-bottom: 1.2rem; max-width: 20ch;
+}
+.history-text {
+  max-width: 50ch; color: var(--silver); opacity: .7; font-size: .96rem;
+  line-height: 1.74; margin-bottom: 2rem;
+}
+.history-cta {
+  display: inline-flex; align-items: center; gap: .8rem;
+  padding: 12px 28px;
+  border: 1px solid var(--rule); color: var(--foam);
+  font-family: var(--mono); font-size: .66rem; letter-spacing: .2em;
+  text-transform: uppercase; text-decoration: none;
+  background: rgba(255,255,255,.03); transition: all .2s;
+}
+.history-cta:hover {
+  border-color: rgba(168,189,212,.2);
+  background: rgba(255,255,255,.06);
+}
+.history-cta::after { content: "→"; }
+
+/* ── FOOTER ── */
+footer {
+  padding: 2.5rem 5vw;
+  border-top: 1px solid var(--rule);
+  display: flex; justify-content: space-between; align-items: center;
+  background: rgba(5,14,26,.8);
+}
+.footer-logo {
+  font-family: var(--mono); font-size: .62rem; letter-spacing: .24em;
+  text-transform: uppercase; color: var(--silver); opacity: .4;
+}
+.footer-coords {
+  font-family: var(--mono); font-size: .58rem; letter-spacing: .18em;
+  color: var(--silver); opacity: .25;
+}
+
+/* ── LABEL ── */
+.mockup-label {
+  position: fixed; top: 70px; right: 18px; z-index: 200;
+  background: rgba(196,154,74,.85); color: var(--night);
+  font-family: var(--mono); font-size: .62rem; letter-spacing: .18em;
+  text-transform: uppercase; padding: 6px 14px; border-radius: 999px;
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+
+<div class="mockup-label">Mockup B · Atlantic Night</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-badge">CFN</div>
+    Donegal Airport
+  </div>
+  <ul class="nav-links">
+    <li><a href="#">Flights</a></li>
+    <li><a href="#">Story</a></li>
+    <li><a href="#">Plan</a></li>
+    <li><a href="#">Pilots</a></li>
+  </ul>
+  <a href="#" class="nav-cta">Book now →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-coords">55°02'N<br>08°20'W<br>CFN · EIDL</div>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <div class="hero-dot"></div>
+      <span class="hero-eyebrow-text">Ireland's edge · Est. 1978 · ACA Level 4</span>
+    </div>
+    <h1 class="hero-title">
+      Donegal<br>
+      <span class="line-2">from above</span><br>
+      <span class="line-3">the Atlantic.</span>
+    </h1>
+    <p class="hero-body">Two daily flights to Dublin. Year-round to Glasgow. On the northwest edge of Europe — where the mountains meet the ocean.</p>
+    <div class="hero-ctas">
+      <a href="#" class="btn-glow">View flights</a>
+      <a href="#" class="btn-outline">Our story</a>
+    </div>
+    <div class="hero-data">
+      <div class="hero-data-item">
+        <div class="hero-data-value">40 min</div>
+        <div class="hero-data-label">To Dublin</div>
+      </div>
+      <div class="hero-data-sep"></div>
+      <div class="hero-data-item">
+        <div class="hero-data-value">50k</div>
+        <div class="hero-data-label">Passengers 2024</div>
+      </div>
+      <div class="hero-data-sep"></div>
+      <div class="hero-data-item">
+        <div class="hero-data-value">1<sup style="font-size:.7em">st</sup></div>
+        <div class="hero-data-label">Carbon neutral Ireland</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-scroll">
+    <div class="hero-scroll-line"></div>
+    Scroll
+  </div>
+</section>
+
+<!-- ROUTES -->
+<section class="routes">
+  <div class="section-header">
+    <div>
+      <p class="section-kicker">Direct routes</p>
+      <h2 class="section-title">Where we fly</h2>
+    </div>
+    <span class="section-note">Summer 2025</span>
+  </div>
+  <div class="routes-grid">
+    <div class="route-glass">
+      <div class="route-top">
+        <span class="route-iata">DUB</span>
+        <span class="route-freq">2× daily</span>
+      </div>
+      <div class="route-city">Dublin</div>
+      <div class="route-detail">40 minutes · PSO route</div>
+      <div class="route-op">Emerald Airlines · Aer Lingus Regional</div>
+    </div>
+    <div class="route-glass">
+      <div class="route-top">
+        <span class="route-iata">GLA</span>
+        <span class="route-freq">Year-round</span>
+      </div>
+      <div class="route-city">Glasgow</div>
+      <div class="route-detail">55 minutes · Tue · Thu · Sun</div>
+      <div class="route-op">Loganair</div>
+    </div>
+  </div>
+</section>
+
+<!-- SCENIC -->
+<section class="scenic">
+  <div class="scenic-bg"></div>
+  <div class="scenic-overlay"></div>
+  <div class="scenic-img-area">
+    <span class="scenic-caption">Atlantic coast · County Donegal</span>
+  </div>
+  <div class="scenic-content">
+    <p class="scenic-tag">The approach</p>
+    <h2 class="scenic-heading">One of the most scenic approaches in the world.</h2>
+    <p class="scenic-text">Errigal to the east, the open Atlantic to the west. Pilots and passengers descend over the Rosses with the Tory Island ferry visible below. There is no approach like it on the island of Ireland.</p>
+    <a href="#" class="scenic-link">Pilot information</a>
+  </div>
+</section>
+
+<!-- HISTORY -->
+<section class="history">
+  <div class="history-inner">
+    <div class="history-years">
+      <span class="history-year-text">1978</span>
+      <span class="history-year-text">2025</span>
+    </div>
+    <div class="history-body">
+      <p class="history-kicker">The story of CFN</p>
+      <h2 class="history-heading">A grass strip. A Christmas Eve flight. Forty-seven years.</h2>
+      <p class="history-text">From a 610-metre grass runway on a sandbar to Ireland's first ACA Level 4 carbon-accredited airport. Malinair, Ryanair, offshore helicopters for Corrib, and one runway extended three times.</p>
+      <a href="#" class="history-cta">Read the full story</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-logo">Donegal Airport · Carrickfinn · Co. Donegal</span>
+  <span class="footer-coords">55°02'N · 08°20'W · CFN · EIDL</span>
+</footer>
+
+</body>
+</html>

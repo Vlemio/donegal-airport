@@ -42,6 +42,11 @@ type Chapter = {
      e.g. "20rem". */
   yearShiftY?: number;
   yearSize?: string;
+  /* Caption position overrides (px). Applied via transform so they don't
+     affect layout flow. captionShiftY: negative = up, positive = down.
+     captionShiftX: negative = left, positive = right. */
+  captionShiftY?: number;
+  captionShiftX?: number;
 };
 
 const chapters: Chapter[] = [
@@ -56,9 +61,13 @@ const chapters: Chapter[] = [
       "By the mid-1980s the grass was replaced with a hard surface and a temporary prefab terminal went up. Donegal had an aerodrome. It just didn't have an airline yet.",
     ],
     photo: "/photos/story/story-ch01.webp",
-    photoAlt: "The original Carrickfinn Airport terminal building, late 1970s",
-    photoShiftY: 18,
-    cardShiftY: -40,
+    photoAlt: "The original Carrickfinn Airport terminal building and apron, early years",
+    photoCaption: "Carrickfinn · surfaced runway · c. 1982",
+    photoShiftY: -42,
+    cardShiftY: 66,
+    photoW: "48%",
+    captionShiftY: 9,
+    captionShiftX: 106,
   },
   {
     year: "1985",
@@ -74,6 +83,7 @@ const chapters: Chapter[] = [
     photoAlt: "Malinair aircraft on the Carrickfinn apron, 1985–1987",
     photoCaption: "Malinair · Carrickfinn apron · 1985–87",
     cardShiftY: -10,
+    captionShiftY: 19,
   },
   {
     year: "1988",
@@ -89,6 +99,8 @@ const chapters: Chapter[] = [
     photoCaption: "Ryanair · Loganair · the Tory Island relief helicopter",
     photoTall: true,
     cardShiftY: 36,
+    captionShiftY: 12,
+    captionShiftX: 38,
   },
   {
     year: "1996",
@@ -104,15 +116,16 @@ const chapters: Chapter[] = [
     photoCaption: "Ireland Airways · Aer Arann · Carrickfinn · late 1990s",
     cardShiftY: 33,
     photoW: "45%",
+    captionShiftY: 20,
   },
   {
     year: "2001",
     range: "Helicopters out west",
     title: "The Atlantic margin runs on Donegal fuel.",
     lead:
-      "For a stretch of about a decade Donegal was something else entirely: the closest paved runway with refuelling to the offshore oil and gas exploration in the Atlantic margin. Helicopter operators ran the shuttle.",
+      "For a stretch of about a decade Donegal became the operational hub for offshore helicopter work on the Atlantic margin. The Corrib gas field — discovered in 1996 off the northwest coast of Mayo — needed regular crew changes, and the helicopter operators chose Carrickfinn as their base.",
     body: [
-      "Two basins drove the traffic. The Slyne-Erris Trough off Mayo, where the Corrib gas field had been discovered in 1996, and the deeper Rockall Trough where in 2002 Enterprise drilled the Dooish well — 125 kilometres northwest of Donegal, 1,478 metres of water under the rig. Both campaigns needed crews changed every couple of weeks and a fuel stop that wasn't four hundred miles away.",
+      "Sikorsky helicopters on the apron, crews in survival suits, fuel trucks. For a few years the airport had a rhythm that had nothing to do with scheduled services — and a purpose that reached a hundred miles out into the Atlantic.",
     ],
     photo: "/photos/story/story-ch05.webp",
     photoAlt: "Sikorsky helicopters and offshore crews in survival suits on the Carrickfinn apron, early 2000s",
@@ -120,6 +133,7 @@ const chapters: Chapter[] = [
     photoTall: true,
     photoShiftY: 28,
     cardShiftY: -7,
+    captionShiftX: 96,
   },
   {
     year: "2025",
@@ -132,9 +146,12 @@ const chapters: Chapter[] = [
       "Emerald Airlines flies Dublin twice a day under the Aer Lingus Regional brand. Loganair is year-round to Glasgow. The airport carried 50,530 passengers in 2024, up twenty-one per cent.",
     ],
     photo: "/photos/story/story-ch06.webp",
-    photoAlt: "An Aer Lingus Regional ATR on the apron at the Donegal terminal at dusk",
+    photoAlt: "Aerial drone view of Donegal Airport with Emerald Airlines ATR on the apron, 2025",
     photoCaption: "Aer Lingus Regional · Donegal",
-    cardShiftY: 66,
+    photoShiftY: -118,
+    cardShiftY: 65,
+    photoW: "55%",
+    captionShiftY: -58,
   },
 ];
 
@@ -165,11 +182,11 @@ const airlines: Airline[] = [
   { name: "Bright Air", route: "Glasgow", years: "1997 – 1998", code: "C6", color: "#b9822a" },
   { name: "Aer Arann", route: "Dublin · Cork · Glasgow Intl.", years: "1998 – 2012", code: "RE", color: "#1f6b3a" },
   { name: "Euroceltic", route: "Dublin PSO", years: "2001 – 2003", code: "5Q", color: "#7a2e2e" },
-  { name: "CityJet", route: "Rotterdam (seasonal charter)", years: "c. 2005 – 2012", code: "WX", color: "#b4472c" },
+  { name: "CityJet", route: "Rotterdam (seasonal charter)", years: "2005 – 2012", code: "WX", color: "#b4472c" },
   { name: "Loganair / Flybe", route: "Dublin", years: "2012 – 2015", code: "BE", color: "#4a2a86" },
   { name: "Stobart Air", route: "Aer Lingus Regional · Dublin PSO", years: "2015 – 2021", code: "EI", color: "#2c5430" },
   { name: "Amapola Flyg", route: "Dublin PSO (interim)", years: "2021 – 2022", code: "HG", color: "#b03a2c" },
-  { name: "Emerald Airlines", route: "Aer Lingus Regional · Dublin · 2×/day", years: "2022 – today", code: "EI", color: "#0a8f4a" },
+  { name: "Emerald Airlines", route: "Dublin · 2×/day", years: "2022 – today", code: "EI", color: "#0a8f4a" },
   { name: "Loganair (relaunch)", route: "Glasgow · year-round", years: "2023 – today", code: "LM", color: "#14315f" },
 ];
 ---
@@ -423,6 +440,8 @@ const airlines: Airline[] = [
           c.photoH ? `--photo-h:${c.photoH}` : null,
           c.yearShiftY != null ? `--year-shift:${c.yearShiftY}px` : null,
           c.yearSize ? `--year-size:${c.yearSize}` : null,
+          c.captionShiftY != null ? `--cap-shift-y:${c.captionShiftY}px` : null,
+          c.captionShiftX != null ? `--cap-shift-x:${c.captionShiftX}px` : null,
         ]
           .filter(Boolean)
           .join(";");
@@ -503,7 +522,7 @@ const airlines: Airline[] = [
                     />
                   </div>
                   {c.photoCaption && (
-                    <figcaption class="mt-2 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-mute/70">
+                    <figcaption class="mt-2 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-ink/60">
                       {c.photoCaption}
                     </figcaption>
                   )}

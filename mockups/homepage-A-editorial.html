@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Donegal Airport — Mockup A · Atlantic Editorial</title>
+<link href="https://api.fontshare.com/v2/css?f[]=switzer@300,400,500,600,700&display=swap" rel="stylesheet"/>
+<style>
+/* ── MOCKUP A: Atlantic Editorial ──────────────────────────────────
+   Philosophy: Swiss editorial precision. Massive asymmetric type,
+   strict grid, cream + ink, zero decoration. Every element earns
+   its place. Inspired by Wallpaper*, Kinfolk, airport wayfinding.
+──────────────────────────────────────────────────────────────────── */
+:root {
+  --ink:     #181d16;
+  --mute:    #56605a;
+  --sand:    #a07840;
+  --cream:   #f3f2ee;
+  --ocean:   #08162a;
+  --rule:    rgba(24,29,22,.12);
+  --sans:    "Switzer", system-ui, sans-serif;
+  --serif:   Georgia, "Times New Roman", serif;
+  --mono:    ui-monospace, "SF Mono", Menlo, monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body { background: var(--cream); color: var(--ink); font-family: var(--sans); line-height: 1.5; overflow-x: hidden; }
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 3vw; height: 56px;
+  border-bottom: 1px solid var(--rule);
+  background: rgba(243,242,238,.92);
+  backdrop-filter: blur(8px);
+}
+.nav-logo {
+  font-family: var(--mono); font-size: .72rem; letter-spacing: .28em;
+  text-transform: uppercase; color: var(--ink);
+}
+.nav-logo span { color: var(--sand); }
+.nav-links { display: flex; gap: 2rem; list-style: none; }
+.nav-links a {
+  font-size: .72rem; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--mute); text-decoration: none;
+}
+.nav-links a:hover { color: var(--ink); }
+.nav-cta {
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .18em;
+  text-transform: uppercase; padding: 8px 18px;
+  border: 1px solid var(--ink); color: var(--ink); background: transparent;
+  cursor: pointer; text-decoration: none;
+}
+.nav-cta:hover { background: var(--ink); color: var(--cream); }
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 56px 1fr;
+  padding-top: 56px;
+  border-bottom: 1px solid var(--rule);
+}
+.hero-left {
+  grid-column: 1; grid-row: 2;
+  display: flex; flex-direction: column; justify-content: flex-end;
+  padding: 4vw 4vw 6vh 4vw;
+  border-right: 1px solid var(--rule);
+  position: relative;
+}
+.hero-eyebrow {
+  font-family: var(--mono); font-size: .66rem; letter-spacing: .26em;
+  text-transform: uppercase; color: var(--sand); margin-bottom: 1.5rem;
+}
+.hero-title {
+  font-family: var(--serif); font-weight: 400;
+  font-size: clamp(3.2rem, 6vw, 7rem); line-height: .9;
+  letter-spacing: -.02em; margin-bottom: 2.5rem;
+}
+.hero-title em { font-style: italic; color: var(--sand); }
+.hero-body {
+  max-width: 38ch; color: var(--mute); font-size: .95rem; line-height: 1.72;
+  margin-bottom: 3rem;
+}
+.hero-actions { display: flex; gap: 1rem; align-items: center; }
+.btn-primary {
+  padding: 12px 28px; background: var(--ink); color: var(--cream);
+  font-family: var(--mono); font-size: .68rem; letter-spacing: .18em;
+  text-transform: uppercase; text-decoration: none; border: 1px solid var(--ink);
+}
+.btn-primary:hover { background: var(--ocean); border-color: var(--ocean); }
+.btn-ghost {
+  padding: 12px 0; color: var(--mute); font-family: var(--mono);
+  font-size: .68rem; letter-spacing: .18em; text-transform: uppercase;
+  text-decoration: none; border-bottom: 1px solid currentColor;
+}
+.hero-coords {
+  position: absolute; bottom: 6vh; right: 3vw;
+  font-family: var(--mono); font-size: .58rem; letter-spacing: .14em;
+  color: var(--mute); opacity: .6;
+  writing-mode: vertical-rl; text-orientation: mixed;
+}
+
+/* ── HERO RIGHT: photo + giant year ── */
+.hero-right {
+  grid-column: 2; grid-row: 2;
+  position: relative; overflow: hidden;
+  background: #d8d4c8;
+}
+.hero-photo {
+  width: 100%; height: 100%; object-fit: cover; object-position: center;
+  display: block; opacity: .85;
+}
+.hero-year {
+  position: absolute; bottom: -0.1em; left: -.04em;
+  font-family: var(--serif); font-size: clamp(8rem, 20vw, 22rem);
+  line-height: .8; color: var(--cream); opacity: .22;
+  pointer-events: none; mix-blend-mode: screen;
+}
+.hero-badge {
+  position: absolute; top: 2rem; right: 2rem;
+  width: 88px; height: 88px; border-radius: 50%;
+  border: 1px solid rgba(243,242,238,.4);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: rgba(8,22,42,.42); backdrop-filter: blur(8px);
+}
+.hero-badge-code {
+  font-family: var(--mono); font-size: 1.1rem; letter-spacing: .08em;
+  color: #e8f0f8; font-weight: 600;
+}
+.hero-badge-label {
+  font-family: var(--mono); font-size: .5rem; letter-spacing: .18em;
+  color: rgba(232,240,248,.6); text-transform: uppercase; margin-top: 2px;
+}
+
+/* ── STATS STRIP ── */
+.stats {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  border-bottom: 1px solid var(--rule);
+}
+.stat {
+  padding: 2.5rem 3vw; border-right: 1px solid var(--rule);
+}
+.stat:last-child { border-right: none; }
+.stat-value {
+  font-family: var(--serif); font-size: 2.8rem; font-weight: 400;
+  line-height: 1; color: var(--ink); margin-bottom: .4rem;
+}
+.stat-value sup { font-size: 1rem; vertical-align: super; }
+.stat-label {
+  font-family: var(--mono); font-size: .62rem; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--mute);
+}
+
+/* ── EDITORIAL SECTION: scenic approach ── */
+.editorial {
+  display: grid; grid-template-columns: 1fr 1fr;
+  min-height: 80vh; border-bottom: 1px solid var(--rule);
+}
+.editorial-media {
+  position: relative; background: #2a3520; overflow: hidden;
+}
+.editorial-photo {
+  width: 100%; height: 100%; object-fit: cover; opacity: .72;
+  display: block;
+}
+.editorial-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to right, rgba(8,22,42,.28) 0%, transparent 60%);
+}
+.editorial-caption {
+  position: absolute; bottom: 2rem; left: 2rem;
+  font-family: var(--mono); font-size: .58rem; letter-spacing: .2em;
+  text-transform: uppercase; color: rgba(243,242,238,.6);
+}
+.editorial-content {
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 6vw 5vw; border-left: 1px solid var(--rule);
+}
+.editorial-tag {
+  font-family: var(--mono); font-size: .62rem; letter-spacing: .24em;
+  text-transform: uppercase; color: var(--sand); margin-bottom: 1.5rem;
+}
+.editorial-heading {
+  font-family: var(--serif); font-size: clamp(2rem, 3.5vw, 3.6rem);
+  font-weight: 400; line-height: 1.05; letter-spacing: -.015em;
+  margin-bottom: 1.5rem;
+}
+.editorial-text {
+  color: var(--mute); font-size: .95rem; line-height: 1.72; max-width: 46ch;
+  margin-bottom: 2.5rem;
+}
+.editorial-link {
+  display: inline-flex; align-items: center; gap: .6rem;
+  font-family: var(--mono); font-size: .66rem; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--ink); text-decoration: none;
+  border-bottom: 1px solid var(--rule); padding-bottom: 2px;
+}
+.editorial-link::after { content: "→"; }
+.editorial-link:hover { border-color: var(--ink); }
+
+/* ── ROUTES BAND ── */
+.routes-band {
+  padding: 5rem 4vw; background: var(--ocean); color: #e0ecf8;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.routes-header {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 3rem; border-bottom: 1px solid rgba(255,255,255,.1); padding-bottom: 1.5rem;
+}
+.routes-title {
+  font-family: var(--serif); font-size: 1.8rem; font-weight: 400;
+}
+.routes-note {
+  font-family: var(--mono); font-size: .62rem; letter-spacing: .2em;
+  text-transform: uppercase; color: rgba(224,236,248,.4);
+}
+.routes-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px; background: rgba(255,255,255,.06); }
+.route-card {
+  background: var(--ocean); padding: 2.5rem 2rem;
+  display: flex; align-items: flex-start; gap: 2rem;
+}
+.route-iata {
+  font-family: var(--mono); font-size: 2rem; letter-spacing: .04em;
+  color: rgba(224,236,248,.3); flex-shrink: 0; line-height: 1;
+  min-width: 3ch;
+}
+.route-info {}
+.route-city {
+  font-family: var(--serif); font-size: 1.4rem; font-weight: 400;
+  line-height: 1.1; margin-bottom: .4rem;
+}
+.route-detail {
+  font-family: var(--mono); font-size: .62rem; letter-spacing: .14em;
+  color: rgba(224,236,248,.45); text-transform: uppercase;
+}
+.route-airline {
+  margin-top: .8rem; display: inline-block;
+  font-family: var(--mono); font-size: .58rem; letter-spacing: .18em;
+  text-transform: uppercase; color: var(--sand); border: 1px solid rgba(160,120,64,.3);
+  padding: 3px 8px; border-radius: 2px;
+}
+
+/* ── HISTORY TEASE ── */
+.history-tease {
+  display: grid; grid-template-columns: 1fr 2fr;
+  border-bottom: 1px solid var(--rule);
+}
+.history-year-col {
+  padding: 5rem 3vw; border-right: 1px solid var(--rule);
+  display: flex; align-items: center; justify-content: center;
+}
+.history-year-big {
+  font-family: var(--serif); font-size: clamp(6rem, 12vw, 14rem);
+  line-height: .8; color: var(--ink); opacity: .08;
+  pointer-events: none; user-select: none;
+}
+.history-content {
+  padding: 5rem 5vw;
+  display: flex; flex-direction: column; justify-content: center;
+}
+.history-kicker {
+  font-family: var(--mono); font-size: .62rem; letter-spacing: .24em;
+  text-transform: uppercase; color: var(--sand); margin-bottom: 1rem;
+}
+.history-heading {
+  font-family: var(--serif); font-size: clamp(1.8rem, 2.8vw, 3rem);
+  font-weight: 400; line-height: 1.1; margin-bottom: 1.2rem;
+}
+.history-text {
+  max-width: 52ch; color: var(--mute); font-size: .95rem; line-height: 1.72;
+  margin-bottom: 2rem;
+}
+.history-link {
+  font-family: var(--mono); font-size: .66rem; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--ink); text-decoration: none;
+  display: inline-flex; align-items: center; gap: .5rem;
+}
+.history-link::after { content: "→"; }
+
+/* ── FOOTER ── */
+footer {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 2rem 4vw; border-top: 1px solid var(--rule);
+}
+.footer-name {
+  font-family: var(--mono); font-size: .62rem; letter-spacing: .22em;
+  text-transform: uppercase; color: var(--mute);
+}
+.footer-note {
+  font-family: var(--mono); font-size: .58rem; letter-spacing: .14em;
+  color: var(--mute); opacity: .5;
+}
+
+/* ── LABEL ── */
+.mockup-label {
+  position: fixed; top: 68px; right: 18px; z-index: 200;
+  background: rgba(24,29,22,.85); color: var(--cream);
+  font-family: var(--mono); font-size: .62rem; letter-spacing: .18em;
+  text-transform: uppercase; padding: 6px 14px; border-radius: 999px;
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+
+<div class="mockup-label">Mockup A · Atlantic Editorial</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo"><span>CFN</span> · Donegal Airport</div>
+  <ul class="nav-links">
+    <li><a href="#">Flights</a></li>
+    <li><a href="#">Story</a></li>
+    <li><a href="#">Plan</a></li>
+    <li><a href="#">Pilots</a></li>
+  </ul>
+  <a href="#" class="nav-cta">Book Dublin →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <p class="hero-eyebrow">Ireland's most scenic approach · Est. 1978</p>
+    <h1 class="hero-title">Where the<br>Atlantic<br><em>begins.</em></h1>
+    <p class="hero-body">Two daily flights to Dublin. Year-round to Glasgow. On the edge of Europe, between the Errigal mountains and the open ocean.</p>
+    <div class="hero-actions">
+      <a href="#" class="btn-primary">View flights</a>
+      <a href="#" class="btn-ghost">Our story</a>
+    </div>
+    <span class="hero-coords">55°02'N · 08°20'W</span>
+  </div>
+  <div class="hero-right">
+    <!-- grey placeholder where drone photo would go -->
+    <div style="width:100%;height:100%;background:linear-gradient(145deg,#b8c4b0 0%,#8a9e88 40%,#5a7255 100%);display:flex;align-items:flex-end;justify-content:flex-start;padding:2rem;">
+      <span style="font-family:ui-monospace,monospace;font-size:.6rem;letter-spacing:.2em;color:rgba(255,255,255,.5);text-transform:uppercase;">Drone · Carrickfinn · 2025</span>
+    </div>
+    <div class="hero-year">1978</div>
+    <div class="hero-badge">
+      <span class="hero-badge-code">CFN</span>
+      <span class="hero-badge-label">IATA</span>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat">
+    <div class="stat-value">50<sup>k</sup></div>
+    <div class="stat-label">Passengers 2024</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value">40<sup>min</sup></div>
+    <div class="stat-label">Flight to Dublin</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value">1<sup>st</sup></div>
+    <div class="stat-label">ACA Level 4 Ireland</div>
+  </div>
+  <div class="stat">
+    <div class="stat-value">1978</div>
+    <div class="stat-label">Year founded</div>
+  </div>
+</div>
+
+<!-- EDITORIAL: SCENIC APPROACH -->
+<section class="editorial">
+  <div class="editorial-media">
+    <div style="width:100%;height:100%;min-height:520px;background:linear-gradient(160deg,#4a6040 0%,#2a3a22 50%,#1a2818 100%);display:flex;align-items:flex-end;">
+      <div style="padding:2rem;font-family:ui-monospace,monospace;font-size:.58rem;letter-spacing:.2em;color:rgba(255,255,255,.4);text-transform:uppercase;">Atlantic coast · County Donegal</div>
+    </div>
+    <div class="editorial-overlay"></div>
+  </div>
+  <div class="editorial-content">
+    <p class="editorial-tag">The approach</p>
+    <h2 class="editorial-heading">Ranked among the most scenic approaches in the world.</h2>
+    <p class="editorial-text">Errigal to the east, the Atlantic to the west. Pilots descend over the Rosses with the Tory Island ferry below and the Donegal coast stretching north to Malin Head. There is no approach like it.</p>
+    <a href="#" class="editorial-link">Pilot information</a>
+  </div>
+</section>
+
+<!-- ROUTES -->
+<section class="routes-band">
+  <div class="routes-header">
+    <h2 class="routes-title">Scheduled routes</h2>
+    <span class="routes-note">Summer 2025</span>
+  </div>
+  <div class="routes-grid">
+    <div class="route-card">
+      <span class="route-iata">DUB</span>
+      <div class="route-info">
+        <div class="route-city">Dublin</div>
+        <div class="route-detail">40 min · 2× daily</div>
+        <span class="route-airline">Emerald · Aer Lingus Regional</span>
+      </div>
+    </div>
+    <div class="route-card">
+      <span class="route-iata">GLA</span>
+      <div class="route-info">
+        <div class="route-city">Glasgow</div>
+        <div class="route-detail">55 min · Year-round</div>
+        <span class="route-airline">Loganair</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HISTORY TEASE -->
+<section class="history-tease">
+  <div class="history-year-col">
+    <span class="history-year-big">1978</span>
+  </div>
+  <div class="history-content">
+    <p class="history-kicker">The story</p>
+    <h2 class="history-heading">A grass strip. A lawyer. An £85 ticket on Christmas Eve.</h2>
+    <p class="history-text">From a sandbar between the Atlantic and Mount Errigal to Ireland's first carbon-neutral airport. Forty-seven years of routes opened and abandoned, helicopters for oil rigs, and one runway extended three times.</p>
+    <a href="#" class="history-link">Read the full story</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span class="footer-name">Donegal Airport · Carrickfinn · Co. Donegal · Ireland</span>
+  <span class="footer-note">© 2025 · CFN · EIDL</span>
+</footer>
+
+</body>
+</html>

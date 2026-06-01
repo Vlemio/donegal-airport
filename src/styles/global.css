@@ -582,6 +582,14 @@ figure[data-story-photo] {
   [data-story-chapter][data-side="left"] figcaption {
     padding-right: 1.75rem;
   }
+  /* Caption position overrides via CSS custom properties.
+     transform-origin is top-left so nudges are intuitive.
+     --cap-shift-y: negative = up, positive = down.
+     --cap-shift-x: negative = left, positive = right. */
+  [data-story-chapter] figcaption {
+    display: inline-block;
+    transform: translate(var(--cap-shift-x, 0px), var(--cap-shift-y, 0px));
+  }
 }
 
 /* Clip the photo bleed so it never creates a horizontal scrollbar.

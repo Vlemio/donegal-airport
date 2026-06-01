@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Option 2 — Topographic bg (Donegal)</title>
+<link href="https://api.fontshare.com/v2/css?f[]=switzer@300,400,500,600&display=swap" rel="stylesheet"/>
+<style>
+  :root{--ink:#181d16;--mute:#56605a;--sand:#a07840;--surface:#f3f2ee;--line:rgba(24,29,22,.11)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Switzer",system-ui,sans-serif;color:var(--ink)}
+
+  /* ── TOPOGRAPHIC background ── */
+  .story-section{
+    position:relative;
+    background-color:var(--surface);
+    overflow-x:clip;
+  }
+
+  /* SVG topo layer — fixed behind content, not affected by scroll jank */
+  .topo-bg{
+    position:absolute;
+    inset:0;
+    width:100%;height:100%;
+    pointer-events:none;
+    opacity:1;
+  }
+
+  /* ── chapter panels ── */
+  .chapter{
+    position:relative;
+    min-height:72vh;
+    display:flex;
+    align-items:center;
+    padding:64px 6vw;
+    border-bottom:1px solid var(--line);
+  }
+  .card{max-width:360px;position:relative;z-index:2}
+  .kicker{font-family:ui-monospace,monospace;font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--sand)}
+  .year{font-family:Georgia,serif;font-size:11rem;line-height:.8;color:var(--sand);opacity:.18;position:absolute;right:.06em;top:.05em;pointer-events:none}
+  h2{font-family:Georgia,serif;font-size:2.1rem;font-weight:400;margin:.3em 0 .5em;line-height:1.05}
+  p{color:var(--mute);font-size:.94rem;line-height:1.72}
+  .photo-slot{
+    position:absolute;right:-3%;top:50%;transform:translateY(-50%);
+    width:320px;height:200px;
+    background:linear-gradient(135deg,#cfd3c9,#b0b8a8);
+    border-radius:6px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:monospace;font-size:.68rem;letter-spacing:.18em;color:#7a806f;
+    box-shadow:2px 8px 24px rgba(0,0,0,.10)
+  }
+  .label{
+    position:fixed;top:18px;left:50%;transform:translateX(-50%);
+    background:rgba(24,29,22,.82);color:#f3f2ee;
+    font-family:monospace;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;
+    padding:7px 18px;border-radius:999px;z-index:100;pointer-events:none;
+  }
+</style>
+</head>
+<body>
+<div class="label">Opción 2 · Curvas de nivel · Donegal</div>
+<div class="story-section">
+
+  <!--
+    Topographic SVG of the Donegal area around Carrickfinn / The Rosses.
+    Carrickfinn sits on a flat coastal strip (sea level).
+    To the NE: Errigal 751 m, Muckish 666 m.
+    To the S/E: Croaghnageer 491 m, Slieve Snaght 615 m.
+    Contour lines drawn at ~50 m intervals, wider spacing near coast (flat).
+    The airport runway is marked as a thin rectangle on the NW coast.
+    Coordinate grid in sand colour at low opacity (like an old OS map).
+    Elevation labels on selected contours.
+  -->
+  <svg class="topo-bg" viewBox="0 0 1440 2400" preserveAspectRatio="xMidYMid slice"
+       xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <!-- very faint paper grain under the lines -->
+      <filter id="grain" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="4" stitchTiles="stitch" result="n"/>
+        <feColorMatrix type="saturate" values="0" in="n" result="g"/>
+        <feBlend in="SourceGraphic" in2="g" mode="multiply" result="b"/>
+        <feComposite in="b" in2="SourceGraphic" operator="in"/>
+      </filter>
+    </defs>
+
+    <!-- ── coordinate grid (sand, very faint) ── -->
+    <g stroke="#a07840" stroke-width="0.6" opacity="0.10" stroke-dasharray="4 10">
+      <!-- vertical lines every ~180px -->
+      <line x1="180"  y1="0" x2="180"  y2="2400"/>
+      <line x1="360"  y1="0" x2="360"  y2="2400"/>
+      <line x1="540"  y1="0" x2="540"  y2="2400"/>
+      <line x1="720"  y1="0" x2="720"  y2="2400"/>
+      <line x1="900"  y1="0" x2="900"  y2="2400"/>
+      <line x1="1080" y1="0" x2="1080" y2="2400"/>
+      <line x1="1260" y1="0" x2="1260" y2="2400"/>
+      <!-- horizontal lines every ~200px -->
+      <line x1="0" y1="200"  x2="1440" y2="200"/>
+      <line x1="0" y1="400"  x2="1440" y2="400"/>
+      <line x1="0" y1="600"  x2="1440" y2="600"/>
+      <line x1="0" y1="800"  x2="1440" y2="800"/>
+      <line x1="0" y1="1000" x2="1440" y2="1000"/>
+      <line x1="0" y1="1200" x2="1440" y2="1200"/>
+      <line x1="0" y1="1400" x2="1440" y2="1400"/>
+      <line x1="0" y1="1600" x2="1440" y2="1600"/>
+      <line x1="0" y1="1800" x2="1440" y2="1800"/>
+      <line x1="0" y1="2000" x2="1440" y2="2000"/>
+      <line x1="0" y1="2200" x2="1440" y2="2200"/>
+    </g>
+
+    <!-- ── CONTOUR LINES ──
+         Layout: coast/flat in the left-center, mountains appear to the
+         right and toward the bottom. Lines spread wide at low elevation
+         (coastal flat) and compress toward peaks.
+    -->
+
+    <!-- Sea / coastal outline – very faint blue-grey wash -->
+    <path d="M0,320 C80,300 140,310 180,340 C220,370 200,400 240,420
+             C280,440 340,430 370,460 C400,490 390,530 420,550
+             C450,570 490,560 510,540 C530,520 520,490 540,470
+             C560,450 600,440 620,460 C640,480 630,510 650,540
+             C670,570 700,590 720,580 L720,0 L0,0 Z"
+          fill="rgba(180,210,225,0.09)"/>
+
+    <!-- ERRIGAL massif (upper-right quadrant) — tight concentric ovals -->
+    <!-- 750m peak (~6 tight rings, each ~30–40px apart) -->
+    <g fill="none" stroke="#181d16" stroke-width="0.85">
+      <!-- 50m -->
+      <ellipse cx="1060" cy="480" rx="280" ry="190" opacity="0.055"/>
+      <!-- 100m -->
+      <ellipse cx="1060" cy="480" rx="240" ry="158" opacity="0.065"/>
+      <!-- 150m -->
+      <ellipse cx="1060" cy="480" rx="200" ry="130" opacity="0.072"/>
+      <!-- 200m -->
+      <ellipse cx="1060" cy="480" rx="165" ry="105" opacity="0.080"/>
+      <!-- 250m -->
+      <ellipse cx="1060" cy="480" rx="134" ry="84"  opacity="0.085"/>
+      <!-- 300m -->
+      <ellipse cx="1060" cy="480" rx="108" ry="68"  opacity="0.090"/>
+      <!-- 350m -->
+      <ellipse cx="1060" cy="480" rx="86"  ry="54"  opacity="0.093"/>
+      <!-- 400m -->
+      <ellipse cx="1060" cy="480" rx="68"  ry="42"  opacity="0.096"/>
+      <!-- 450m -->
+      <ellipse cx="1060" cy="480" rx="53"  ry="32"  opacity="0.10"/>
+      <!-- 500m -->
+      <ellipse cx="1060" cy="480" rx="40"  ry="24"  opacity="0.11"/>
+      <!-- 550m -->
+      <ellipse cx="1060" cy="480" rx="30"  ry="18"  opacity="0.12"/>
+      <!-- 600m -->
+      <ellipse cx="1060" cy="480" rx="21"  ry="13"  opacity="0.13"/>
+      <!-- 650m -->
+      <ellipse cx="1060" cy="480" rx="14"  ry="9"   opacity="0.14"/>
+      <!-- 700m / 750m summit -->
+      <ellipse cx="1060" cy="478" rx="8"   ry="6"   opacity="0.16"/>
+      <ellipse cx="1060" cy="478" rx="4"   ry="3"   opacity="0.18"/>
+    </g>
+    <!-- Errigal elevation label -->
+    <text x="1068" y="466" font-family="ui-monospace,monospace" font-size="9"
+          fill="#181d16" opacity="0.18" letter-spacing="0.5">751 m</text>
+
+    <!-- MUCKISH (upper-right, offset NE from Errigal) — broader, flatter top -->
+    <g fill="none" stroke="#181d16" stroke-width="0.85">
+      <ellipse cx="1200" cy="310" rx="195" ry="120" opacity="0.050"/>
+      <ellipse cx="1200" cy="310" rx="162" ry="98"  opacity="0.060"/>
+      <ellipse cx="1200" cy="310" rx="133" ry="79"  opacity="0.068"/>
+      <ellipse cx="1200" cy="310" rx="108" ry="63"  opacity="0.074"/>
+      <ellipse cx="1200" cy="310" rx="86"  ry="50"  opacity="0.080"/>
+      <ellipse cx="1200" cy="310" rx="67"  ry="39"  opacity="0.086"/>
+      <ellipse cx="1200" cy="310" rx="51"  ry="30"  opacity="0.090"/>
+      <ellipse cx="1200" cy="310" rx="38"  ry="23"  opacity="0.095"/>
+      <ellipse cx="1200" cy="310" rx="28"  ry="17"  opacity="0.10"/>
+      <ellipse cx="1200" cy="310" rx="20"  ry="13"  opacity="0.11"/>
+      <ellipse cx="1200" cy="310" rx="13"  ry="9"   opacity="0.13"/>
+      <!-- Muckish plateau — flat top shown as wider oval at summit -->
+      <ellipse cx="1200" cy="308" rx="22"  ry="6"   opacity="0.14"/>
+    </g>
+    <text x="1208" y="302" font-family="ui-monospace,monospace" font-size="9"
+          fill="#181d16" opacity="0.17" letter-spacing="0.5">666 m</text>
+
+    <!-- SLIEVE LEAGUE / south hills — lower-center -->
+    <g fill="none" stroke="#181d16" stroke-width="0.85">
+      <ellipse cx="820"  cy="1100" rx="310" ry="210" opacity="0.050"/>
+      <ellipse cx="820"  cy="1100" rx="260" ry="172" opacity="0.058"/>
+      <ellipse cx="820"  cy="1100" rx="215" ry="140" opacity="0.065"/>
+      <ellipse cx="820"  cy="1100" rx="174" ry="112" opacity="0.072"/>
+      <ellipse cx="820"  cy="1100" rx="138" ry="88"  opacity="0.078"/>
+      <ellipse cx="820"  cy="1100" rx="107" ry="68"  opacity="0.084"/>
+      <ellipse cx="820"  cy="1100" rx="80"  ry="51"  opacity="0.090"/>
+      <ellipse cx="820"  cy="1100" rx="57"  ry="36"  opacity="0.095"/>
+      <ellipse cx="820"  cy="1100" rx="38"  ry="24"  opacity="0.10"/>
+      <ellipse cx="820"  cy="1100" rx="23"  ry="15"  opacity="0.11"/>
+      <ellipse cx="820"  cy="1100" rx="12"  ry="8"   opacity="0.13"/>
+    </g>
+    <text x="828" y="1094" font-family="ui-monospace,monospace" font-size="9"
+          fill="#181d16" opacity="0.17" letter-spacing="0.5">595 m</text>
+
+    <!-- COASTAL RIDGE (small, near airport) — gentle low hills, wide spacing -->
+    <g fill="none" stroke="#181d16" stroke-width="0.75">
+      <ellipse cx="310" cy="680" rx="155" ry="88"  opacity="0.045"/>
+      <ellipse cx="310" cy="680" rx="120" ry="68"  opacity="0.052"/>
+      <ellipse cx="310" cy="680" rx="90"  ry="50"  opacity="0.058"/>
+      <ellipse cx="310" cy="680" rx="63"  ry="35"  opacity="0.064"/>
+      <ellipse cx="310" cy="680" rx="40"  ry="22"  opacity="0.070"/>
+      <ellipse cx="310" cy="680" rx="22"  ry="12"  opacity="0.076"/>
+    </g>
+
+    <!-- SECOND coastal knoll -->
+    <g fill="none" stroke="#181d16" stroke-width="0.75">
+      <ellipse cx="540" cy="900" rx="130" ry="76"  opacity="0.044"/>
+      <ellipse cx="540" cy="900" rx="100" ry="58"  opacity="0.050"/>
+      <ellipse cx="540" cy="900" rx="74"  ry="43"  opacity="0.056"/>
+      <ellipse cx="540" cy="900" rx="52"  ry="30"  opacity="0.062"/>
+      <ellipse cx="540" cy="900" rx="32"  ry="18"  opacity="0.068"/>
+      <ellipse cx="540" cy="900" rx="16"  ry="9"   opacity="0.074"/>
+    </g>
+
+    <!-- SLIEVE SNAGHT (E, lower half) -->
+    <g fill="none" stroke="#181d16" stroke-width="0.85">
+      <ellipse cx="1120" cy="1450" rx="250" ry="168" opacity="0.050"/>
+      <ellipse cx="1120" cy="1450" rx="206" ry="136" opacity="0.058"/>
+      <ellipse cx="1120" cy="1450" rx="166" ry="108" opacity="0.065"/>
+      <ellipse cx="1120" cy="1450" rx="130" ry="84"  opacity="0.072"/>
+      <ellipse cx="1120" cy="1450" rx="99"  ry="64"  opacity="0.078"/>
+      <ellipse cx="1120" cy="1450" rx="72"  ry="46"  opacity="0.084"/>
+      <ellipse cx="1120" cy="1450" rx="49"  ry="32"  opacity="0.090"/>
+      <ellipse cx="1120" cy="1450" rx="30"  ry="20"  opacity="0.096"/>
+      <ellipse cx="1120" cy="1450" rx="16"  ry="11"  opacity="0.11"/>
+      <ellipse cx="1120" cy="1450" rx="7"   ry="5"   opacity="0.14"/>
+    </g>
+    <text x="1128" y="1444" font-family="ui-monospace,monospace" font-size="9"
+          fill="#181d16" opacity="0.17" letter-spacing="0.5">615 m</text>
+
+    <!-- LOW COASTAL CONTOURS around the airport itself (very gentle, wide) -->
+    <!-- 10m / 20m / 30m contours — barely any relief, lines well spread -->
+    <path d="M0,560 C60,540 120,530 180,545 C240,560 260,590 300,600
+             C340,610 380,600 420,615 C460,630 470,660 440,680
+             C410,700 370,695 340,710 C310,725 300,750 270,760
+             C240,770 200,760 160,765 C120,770 80,780 40,790 L0,790 Z"
+          fill="none" stroke="#181d16" stroke-width="0.7" opacity="0.050"/>
+    <path d="M0,510 C70,490 140,480 190,498 C240,516 255,548 298,558
+             C341,568 385,555 430,572 C475,589 488,622 458,642
+             C428,662 384,655 352,672 C320,689 308,720 278,730
+             C248,740 206,728 168,734 C130,740 88,752 44,762 L0,762 Z"
+          fill="none" stroke="#181d16" stroke-width="0.7" opacity="0.044"/>
+    <path d="M0,462 C72,444 148,432 202,452 C256,472 266,506 308,516
+             C350,526 396,510 444,528 C492,546 508,582 476,604
+             C444,626 396,618 362,636 C328,654 314,688 282,698
+             C250,708 210,696 170,702 C130,708 86,722 42,734 L0,734 Z"
+          fill="none" stroke="#181d16" stroke-width="0.7" opacity="0.038"/>
+
+    <!-- ── AIRPORT mark (Carrickfinn runway, NW coast) ── -->
+    <!-- runway ~610m → shown as thin rect rotated to ~NW–SE bearing 130° -->
+    <g transform="translate(220,390) rotate(40)" opacity="0.28">
+      <rect x="-5" y="-38" width="10" height="76" rx="2"
+            fill="none" stroke="#a07840" stroke-width="1.5"/>
+      <!-- threshold marks -->
+      <line x1="-5" y1="-38" x2="5" y2="-38" stroke="#a07840" stroke-width="1.5"/>
+      <line x1="-5" y1=" 38" x2="5" y2=" 38" stroke="#a07840" stroke-width="1.5"/>
+    </g>
+    <!-- CFN label -->
+    <text transform="translate(248,382)"
+          font-family="ui-monospace,monospace" font-size="9.5" letter-spacing="0.8"
+          fill="#a07840" opacity="0.32">CFN</text>
+
+    <!-- ── compass rose (bottom-right corner) ── -->
+    <g transform="translate(1370,2340)" opacity="0.14">
+      <circle cx="0" cy="0" r="30" fill="none" stroke="#181d16" stroke-width="1.2"/>
+      <polygon points="0,-28 3,0 0,28 -3,0" fill="#181d16"/>
+      <polygon points="28,0 0,3 -28,0 0,-3" fill="#181d16" opacity="0.45"/>
+      <circle cx="0" cy="0" r="3.5" fill="#a07840"/>
+      <text x="0" y="-32" text-anchor="middle" font-family="ui-monospace,monospace"
+            font-size="8" fill="#181d16">N</text>
+    </g>
+
+    <!-- ── contour labels scattered (ink, very faint) ── -->
+    <text x="968" y="524" font-family="ui-monospace,monospace" font-size="8.5"
+          fill="#181d16" opacity="0.14" letter-spacing="0.4">200</text>
+    <text x="880" y="530" font-family="ui-monospace,monospace" font-size="8.5"
+          fill="#181d16" opacity="0.12" letter-spacing="0.4">100</text>
+    <text x="730" y="1130" font-family="ui-monospace,monospace" font-size="8.5"
+          fill="#181d16" opacity="0.14" letter-spacing="0.4">200</text>
+    <text x="1030" y="1480" font-family="ui-monospace,monospace" font-size="8.5"
+          fill="#181d16" opacity="0.14" letter-spacing="0.4">200</text>
+    <text x="1096" y="1486" font-family="ui-monospace,monospace" font-size="8.5"
+          fill="#181d16" opacity="0.12" letter-spacing="0.4">400</text>
+  </svg>
+
+  <!-- story chapters -->
+  <div class="chapter">
+    <span class="year">1978</span>
+    <div class="card">
+      <span class="kicker">Before the airport</span>
+      <h2>A grass strip on the dunes.</h2>
+      <p>The IDA needed an air link for the new industrial estate at Annagry. In March 1978, on a sandbar between the Atlantic and Mount Errigal, a 610-metre grass runway opened.</p>
+    </div>
+    <div class="photo-slot">foto</div>
+  </div>
+  <div class="chapter">
+    <span class="year">1985</span>
+    <div class="card">
+      <span class="kicker">Christmas Eve</span>
+      <h2>A lawyer, an Islander, an £85 ticket.</h2>
+      <p>On Christmas Eve 1985 Frank Cannon flew the first commercial service himself. A nine-seat Britten-Norman Islander, £85 one way to Glasgow.</p>
+    </div>
+    <div class="photo-slot">foto</div>
+  </div>
+  <div class="chapter">
+    <span class="year">2025</span>
+    <div class="card">
+      <span class="kicker">Today</span>
+      <h2>Greener than Dublin.</h2>
+      <p>In January 2025 Donegal became the first airport on the island of Ireland to reach Airport Carbon Accreditation Level 4 "Transformation".</p>
+    </div>
+    <div class="photo-slot">foto</div>
+  </div>
+</div>
+</body>
+</html>

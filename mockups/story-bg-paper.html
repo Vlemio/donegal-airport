@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Option 1 — Paper texture bg</title>
+<link href="https://api.fontshare.com/v2/css?f[]=switzer@300,400,500,600&display=swap" rel="stylesheet"/>
+<style>
+  :root{--ink:#181d16;--mute:#56605a;--sand:#a07840;--surface:#f3f2ee;--line:rgba(24,29,22,.11)}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:"Switzer",system-ui,sans-serif;color:var(--ink)}
+
+  /* ── PAPER background: same as web (background-blend-mode, scroll-safe) ── */
+  .story-section{
+    position:relative;
+    background-color:var(--surface);
+    background-image:
+      linear-gradient(rgba(243,242,238,0.86),rgba(243,242,238,0.86)),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='6' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='260' height='260' filter='url(%23f)'/%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='700' height='700'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.028' numOctaves='3'/%3E%3C/filter%3E%3Crect width='700' height='700' filter='url(%23g)'/%3E%3C/svg%3E");
+    background-size:auto,180px,580px;
+    background-blend-mode:normal,multiply,multiply;
+    overflow-x:clip;
+  }
+
+  /* ── chapter panels ── */
+  .chapter{
+    position:relative;
+    min-height:72vh;
+    display:flex;
+    align-items:center;
+    padding:64px 6vw;
+    border-bottom:1px solid var(--line);
+  }
+  .card{max-width:360px;position:relative;z-index:2}
+  .kicker{font-family:ui-monospace,monospace;font-size:.66rem;letter-spacing:.2em;text-transform:uppercase;color:var(--sand)}
+  .year{font-family:Georgia,serif;font-size:11rem;line-height:.8;color:var(--sand);opacity:.18;position:absolute;right:.06em;top:.05em;pointer-events:none}
+  h2{font-family:Georgia,serif;font-size:2.1rem;font-weight:400;margin:.3em 0 .5em;line-height:1.05}
+  p{color:var(--mute);font-size:.94rem;line-height:1.72}
+  .photo-slot{
+    position:absolute;right:-3%;top:50%;transform:translateY(-50%);
+    width:320px;height:200px;
+    background:linear-gradient(135deg,#cfd3c9,#b0b8a8);
+    border-radius:6px;
+    display:flex;align-items:center;justify-content:center;
+    font-family:monospace;font-size:.68rem;letter-spacing:.18em;color:#7a806f;
+    box-shadow:2px 8px 24px rgba(0,0,0,.10)
+  }
+  .label{
+    position:fixed;top:18px;left:50%;transform:translateX(-50%);
+    background:rgba(24,29,22,.82);color:#f3f2ee;
+    font-family:monospace;font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;
+    padding:7px 18px;border-radius:999px;z-index:100;pointer-events:none;
+  }
+</style>
+</head>
+<body>
+<div class="label">Opción 1 · Papel sutil (fondo actual)</div>
+<div class="story-section">
+  <div class="chapter">
+    <span class="year">1978</span>
+    <div class="card">
+      <span class="kicker">Before the airport</span>
+      <h2>A grass strip on the dunes.</h2>
+      <p>The IDA needed an air link for the new industrial estate at Annagry. In March 1978, on a sandbar between the Atlantic and Mount Errigal, a 610-metre grass runway opened.</p>
+    </div>
+    <div class="photo-slot">foto</div>
+  </div>
+  <div class="chapter">
+    <span class="year">1985</span>
+    <div class="card">
+      <span class="kicker">Christmas Eve</span>
+      <h2>A lawyer, an Islander, an £85 ticket.</h2>
+      <p>On Christmas Eve 1985 Frank Cannon flew the first commercial service himself. A nine-seat Britten-Norman Islander, £85 one way to Glasgow.</p>
+    </div>
+    <div class="photo-slot">foto</div>
+  </div>
+  <div class="chapter">
+    <span class="year">2025</span>
+    <div class="card">
+      <span class="kicker">Today</span>
+      <h2>Greener than Dublin.</h2>
+      <p>In January 2025 Donegal became the first airport on the island of Ireland to reach Airport Carbon Accreditation Level 4 "Transformation".</p>
+    </div>
+    <div class="photo-slot">foto</div>
+  </div>
+</div>
+</body>
+</html>
