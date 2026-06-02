@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { t } from "../i18n";
+import trim from "../data/video-trim.json";
 
 const locale = "en";
 const title = `${t("site.name", locale)} · ${t("site.tagline", locale)}`;
@@ -24,7 +25,7 @@ const heroDepartures = [
 ] as const;
 
 // Hero weather (static placeholder — wire to Met Éireann or METAR post-firma)
-const heroWeather = { tempC: 12, condition: "Scattered cloud", windDir: "WSW", windKt: 14, visKm: 10 };
+const heroWeather = { tempC: 12, condition: "Scattered cloud", windDir: "SW", windKt: 14, visKm: 10 };
 
 // Destinations — horizontal-scroll panels. Each panel is one viewport
 // wide on desktop; on mobile they stack vertically.
@@ -135,11 +136,11 @@ const news = [
         data-src="/video/hero.mp4"
         data-scrub-start="top top"
         data-scrub-end="bottom bottom"
-        data-video-start="0"
-        data-video-end="5"
+        data-video-start={String(trim.start)}
+        data-video-end={String(trim.end)}
         muted
         playsinline
-        preload="metadata"
+        preload="auto"
         class="absolute inset-0 hidden h-full w-full object-cover md:block"
       ></video>
       {/* Top scrim — protects nav + headline */}
@@ -162,6 +163,7 @@ const news = [
         <div class="flex min-w-0 flex-1 flex-col gap-7">
           <p
             data-animate="fade-up"
+            data-edit="hero-eyebrow"
             class="font-mono text-[13px] uppercase tracking-[0.26em]"
             style="color: var(--hi-soft)"
           >
@@ -171,6 +173,7 @@ const news = [
           <h1
             data-split
             data-split-delay="0.15"
+            data-edit="hero-h1"
             class="hero-display md:whitespace-nowrap"
           >
             Aerfort<br />Dhún na nGall
@@ -179,6 +182,7 @@ const news = [
           <p
             data-animate="fade-up"
             data-animate-delay="0.35"
+            data-edit="hero-lede"
             class="max-w-[440px] text-[21px] leading-[1.45]"
             style="color: var(--hi-soft)"
           >
@@ -191,10 +195,10 @@ const news = [
             data-animate-delay="0.5"
             class="flex items-center gap-[34px]"
           >
-            <a href="/flights" class="hero-cta hero-cta--primary">
+            <a href="/flights" class="hero-cta hero-cta--primary" data-edit="cta-primary">
               Today's flights <span class="arrow">→</span>
             </a>
-            <a href="/plan#parking" class="hero-cta">
+            <a href="/plan#parking" class="hero-cta" data-edit="cta-secondary">
               Parking &amp; getting here <span class="arrow">→</span>
             </a>
           </div>
@@ -203,34 +207,55 @@ const news = [
         {/* ── Live Ops Panel (right column, desktop only) ── */}
         <aside class="ops-panel hidden lg:flex lg:flex-col">
 
-          {/* Header row: title + live clock */}
-          <div class="flex items-baseline justify-between">
+          {/* Header row: title + live clock (local + UTC) */}
+          <div class="flex items-start justify-between">
             <span
               class="font-mono text-[12px] uppercase tracking-[0.18em]"
               style="color: var(--hi-amber)"
             >
               Inniu · Today
             </span>
-            <span
-              id="ops-clock"
-              class="font-mono text-[11px] tracking-[0.08em]"
-              style="color: var(--hi-faint)"
-            >
-              — — : — —
-            </span>
+            <div class="flex flex-col items-end gap-[3px]">
+              <span
+                id="ops-clock"
+                class="font-mono text-[11px] tracking-[0.08em]"
+                style="color: var(--hi-faint)"
+              >
+                — — : — —
+              </span>
+              <span
+                id="ops-clock-utc"
+                class="font-mono text-[10px] tracking-[0.06em]"
+                style="color: var(--hi-faint); opacity: 0.7"
+              >
+                — — : — — <span style="opacity:0.6">UTC</span>
+              </span>
+            </div>
           </div>
 
           {/* Weather row — updated every 10 min from Open-Meteo (CFN coords) */}
           <div
-            class="mt-[14px] flex items-baseline gap-[9px] pb-[18px] font-mono text-[12px] tracking-[0.04em]"
-            style="border-bottom: 1px solid var(--hi-line); color: var(--hi-soft)"
+            class="mt-[14px] pb-[18px]"
+            style="border-bottom: 1px solid var(--hi-line)"
           >
-            <span id="wx-temp" class="ops-temp">{heroWeather.tempC}°</span>
-            <span id="wx-cond" style="color: var(--hi)">{heroWeather.condition}</span>
-            <span style="color: var(--hi-faint)">·</span>
-            <span id="wx-wind">{heroWeather.windDir} {heroWeather.windKt} kt</span>
-            <span style="color: var(--hi-faint)">·</span>
-            <span id="wx-vis">Vis {heroWeather.visKm} km</span>
+            {/* Line 1 — temperature + condition (big) */}
+            <div class="flex items-baseline gap-[10px]">
+              <span id="wx-temp" class="ops-temp">{heroWeather.tempC}°C</span>
+              <span
+                id="wx-cond"
+                class="font-mono text-[17px] leading-none"
+                style="color: var(--hi)"
+              >{heroWeather.condition}</span>
+            </div>
+            {/* Line 2 — wind + visibility (smaller detail) */}
+            <div
+              class="mt-[7px] flex items-baseline gap-[8px] font-mono text-[13px] tracking-[0.04em]"
+              style="color: var(--hi-soft)"
+            >
+              <span id="wx-wind">{heroWeather.windDir} {heroWeather.windKt} kt</span>
+              <span style="color: var(--hi-faint)">·</span>
+              <span id="wx-vis" class="text-[13px]">Vis {heroWeather.visKm} km</span>
+            </div>
           </div>
 
           {/* Section label: "Next departures" + Live chip */}
@@ -288,20 +313,26 @@ const news = [
       </div>
     </div>
 
-    {/* Live clock script — ticks every minute */}
+    {/* Live clock script — ticks every minute, shows local + UTC */}
     <script>
       (function () {
-        const el = document.getElementById('ops-clock');
+        const el    = document.getElementById('ops-clock');
+        const utcEl = document.getElementById('ops-clock-utc');
         if (!el) return;
-        const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+        const days   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
         const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         function tick() {
-          const d = new Date();
+          const d  = new Date();
           const hh = String(d.getHours()).padStart(2,'0');
           const mm = String(d.getMinutes()).padStart(2,'0');
           el.textContent =
             days[d.getDay()] + ' ' + d.getDate() + ' ' +
             months[d.getMonth()] + ' · ' + hh + ':' + mm;
+          if (utcEl) {
+            const uh = String(d.getUTCHours()).padStart(2,'0');
+            const um = String(d.getUTCMinutes()).padStart(2,'0');
+            utcEl.innerHTML = uh + ':' + um + ' <span style="opacity:0.6">UTC</span>';
+          }
         }
         tick();
         setInterval(tick, 60_000);
@@ -325,10 +356,9 @@ const news = [
           85:'Snow showers', 86:'Heavy snow showers',
           95:'Thunderstorm', 96:'Storm & hail', 99:'Storm & heavy hail',
         };
-        // 16-point compass rose from degrees
-        const DIRS = ['N','NNE','NE','ENE','E','ESE','SE','SSE',
-                      'S','SSW','SW','WSW','W','WNW','NW','NNW'];
-        const compassDir = (deg) => DIRS[Math.round(deg / 22.5) % 16];
+        // 8-point compass rose — readable for general public (vs 16-point WSW/NNE)
+        const DIRS = ['N','NE','E','SE','S','SW','W','NW'];
+        const compassDir = (deg) => DIRS[Math.round(deg / 45) % 8];
 
         // Open-Meteo endpoint — free, no auth, CORS open
         const URL =
@@ -346,7 +376,7 @@ const news = [
           const visEl  = document.getElementById('wx-vis');
           if (!tempEl) return;
 
-          tempEl.textContent = Math.round(c.temperature_2m) + '°';
+          tempEl.textContent = Math.round(c.temperature_2m) + '°C';
           condEl.textContent = WMO[c.weather_code] ?? 'Variable';
 
           // km/h → knots (÷ 1.852)

@@ -3,284 +3,541 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Video Trim Tool — hero.mp4</title>
+<title>CFN · Video Trim Tool</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:     #0d1117;
+    --panel:  #161b22;
+    --line:   #21262d;
+    --line2:  #30363d;
+    --mute:   #7d8590;
+    --text:   #e6edf3;
+    --amber:  #c49a50;
+    --amber2: #d4ab65;
+    --green:  #56d364;
+    --red:    #f85149;
+  }
+
   body {
-    font-family: ui-monospace, "SF Mono", Menlo, monospace;
-    background: #0d1117;
-    color: #e6edf3;
+    font-family: "Space Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    background: var(--bg);
+    color: var(--text);
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 2rem 1rem;
-    gap: 1.5rem;
+    padding: 2rem 1.5rem 4rem;
+    gap: 0;
   }
-  h1 { font-size: 0.85rem; letter-spacing: 0.2em; text-transform: uppercase; color: #7d8590; }
 
-  .video-wrap {
-    position: relative;
+  /* ── Header ── */
+  header {
     width: 100%;
-    max-width: 900px;
+    max-width: 960px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--line2);
+    margin-bottom: 1.5rem;
+  }
+  .logo { display: flex; flex-direction: column; gap: 3px; }
+  .logo-main  { font-size: 0.75rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--amber); }
+  .logo-sub   { font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mute); }
+  .kb-hint {
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--mute);
+    text-align: right;
+    line-height: 1.7;
+  }
+  .kb-hint kbd {
+    display: inline-block;
+    background: var(--line);
+    border: 1px solid var(--line2);
+    border-radius: 3px;
+    padding: 0 4px;
+    font-size: 0.6rem;
+    font-family: inherit;
+    color: var(--text);
+  }
+
+  /* ── Video ── */
+  .video-wrap {
+    width: 100%; max-width: 960px;
     aspect-ratio: 16/9;
     background: #000;
-    border-radius: 8px;
+    border-radius: 6px;
     overflow: hidden;
+    position: relative;
+    margin-bottom: 0.75rem;
   }
   video { width: 100%; height: 100%; display: block; }
 
-  /* Progress bar showing the selected range */
+  /* Loading overlay */
+  .loading-overlay {
+    position: absolute; inset: 0;
+    background: #000;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mute);
+    transition: opacity 0.3s;
+  }
+  .loading-overlay.hidden { opacity: 0; pointer-events: none; }
+
+  /* ── Timeline ── */
+  .timeline-wrap {
+    width: 100%; max-width: 960px;
+    display: flex; flex-direction: column; gap: 6px;
+    margin-bottom: 1.5rem;
+  }
   .timeline {
-    width: 100%;
-    max-width: 900px;
-    height: 6px;
-    background: #30363d;
-    border-radius: 3px;
-    position: relative;
+    width: 100%; height: 8px;
+    background: var(--line2); border-radius: 4px;
+    position: relative; cursor: pointer;
   }
-  .timeline__range {
-    position: absolute;
-    height: 100%;
-    background: #c49a50;
-    border-radius: 3px;
-    transition: left 0.05s, width 0.05s;
+  .tl-range {
+    position: absolute; height: 100%;
+    background: var(--amber); border-radius: 4px;
+    transition: left 0.04s, width 0.04s;
+    opacity: 0.7;
   }
-  .timeline__cursor {
-    position: absolute;
-    width: 2px;
-    height: 100%;
-    background: #fff;
-    border-radius: 1px;
-    transform: translateX(-50%);
-    pointer-events: none;
+  .tl-cursor {
+    position: absolute; width: 2px; height: 200%; top: -50%;
+    background: #fff; border-radius: 1px;
+    transform: translateX(-50%); pointer-events: none;
+    transition: left 0.05s linear;
+  }
+  .tl-handle {
+    position: absolute; top: 50%;
+    width: 14px; height: 14px;
+    background: var(--amber); border-radius: 50%;
+    transform: translate(-50%, -50%);
+    cursor: ew-resize;
+    box-shadow: 0 0 0 3px var(--bg);
+    transition: background 0.15s, box-shadow 0.15s;
+    z-index: 2;
+  }
+  .tl-handle:hover, .tl-handle.dragging { background: var(--amber2); box-shadow: 0 0 0 3px var(--bg), 0 0 0 5px var(--amber); }
+  .tl-timestamps {
+    display: flex; justify-content: space-between;
+    font-size: 0.6rem; letter-spacing: 0.1em; color: var(--mute);
   }
 
+  /* ── Controls grid ── */
   .controls {
-    width: 100%;
-    max-width: 900px;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-  }
-  .control-group { display: flex; flex-direction: column; gap: 0.5rem; }
-  label {
-    font-size: 0.7rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: #7d8590;
-  }
-  .value { font-size: 1.1rem; color: #c49a50; }
-  input[type=range] {
-    width: 100%;
-    accent-color: #c49a50;
-    height: 4px;
-    cursor: pointer;
-  }
-
-  .buttons {
-    display: flex;
+    width: 100%; max-width: 960px;
+    display: grid; grid-template-columns: 1fr 1fr;
     gap: 1rem;
-    flex-wrap: wrap;
-    justify-content: center;
+    margin-bottom: 1.25rem;
   }
-  button {
-    background: #21262d;
-    border: 1px solid #30363d;
-    color: #e6edf3;
-    font-family: inherit;
-    font-size: 0.75rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 0.6rem 1.4rem;
+  .ctrl-card {
+    background: var(--panel);
+    border: 1px solid var(--line2);
     border-radius: 6px;
-    cursor: pointer;
+    padding: 1rem 1.25rem;
+    display: flex; flex-direction: column; gap: 0.75rem;
+  }
+  .ctrl-label {
+    font-size: 0.65rem; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--mute); display: flex; align-items: center; justify-content: space-between;
+  }
+  .ctrl-label span { color: var(--text); font-size: 0.8rem; }
+  .ctrl-value {
+    font-size: 1.5rem; color: var(--amber); letter-spacing: 0.04em; line-height: 1;
+  }
+  .ctrl-value sup { font-size: 0.75rem; color: var(--mute); margin-left: 2px; }
+  input[type=range] {
+    width: 100%; accent-color: var(--amber); cursor: pointer;
+    height: 3px;
+  }
+  .step-btns {
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+  .step-btn {
+    background: var(--line); border: 1px solid var(--line2);
+    color: var(--mute); font-family: inherit;
+    font-size: 0.62rem; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 4px 8px; border-radius: 4px; cursor: pointer;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+  }
+  .step-btn:hover { background: var(--line2); color: var(--text); border-color: var(--mute); }
+
+  /* ── Action row ── */
+  .actions {
+    width: 100%; max-width: 960px;
+    display: flex; gap: 0.75rem; flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+  .btn {
+    background: var(--panel); border: 1px solid var(--line2);
+    color: var(--text); font-family: inherit;
+    font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 0.65rem 1.25rem; border-radius: 6px; cursor: pointer;
     transition: background 0.15s, border-color 0.15s;
+    white-space: nowrap;
   }
-  button:hover { background: #30363d; border-color: #8b949e; }
-  button.primary { background: #c49a50; border-color: #c49a50; color: #0d1117; font-weight: 600; }
-  button.primary:hover { background: #d4ab65; border-color: #d4ab65; }
+  .btn:hover { background: var(--line2); }
+  .btn.primary {
+    background: var(--amber); border-color: var(--amber); color: var(--bg); font-weight: 700;
+    flex: 1; font-size: 0.8rem; padding: 0.75rem 1.5rem;
+  }
+  .btn.primary:hover { background: var(--amber2); border-color: var(--amber2); }
+  .btn.primary:disabled {
+    background: var(--line2); border-color: var(--line2); color: var(--mute); cursor: not-allowed;
+  }
 
-  .output {
-    width: 100%;
-    max-width: 900px;
-    background: #161b22;
-    border: 1px solid #30363d;
-    border-radius: 8px;
-    padding: 1.25rem 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
+  /* ── Code output ── */
+  .output-card {
+    width: 100%; max-width: 960px;
+    background: var(--panel); border: 1px solid var(--line2);
+    border-radius: 6px; overflow: hidden;
+    margin-bottom: 1.5rem;
   }
-  .output h2 { font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; color: #7d8590; }
+  .output-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--line2);
+    font-size: 0.65rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--mute);
+  }
+  .copy-btn {
+    background: none; border: 1px solid var(--line2);
+    color: var(--mute); font-family: inherit;
+    font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 4px; cursor: pointer;
+    transition: color 0.12s, border-color 0.12s;
+  }
+  .copy-btn:hover { color: var(--text); border-color: var(--mute); }
+  .copy-btn.copied { color: var(--green); border-color: var(--green); }
   .code-block {
-    background: #0d1117;
-    border: 1px solid #30363d;
-    border-radius: 6px;
-    padding: 1rem;
-    font-size: 0.78rem;
-    line-height: 1.7;
+    padding: 1rem 1.25rem;
+    font-size: 0.8rem; line-height: 1.8;
     color: #a5d6ff;
-    white-space: pre-wrap;
-    word-break: break-all;
-    cursor: pointer;
-    position: relative;
+    white-space: pre;
+    background: var(--bg);
   }
-  .code-block:hover::after {
-    content: 'Click to copy';
-    position: absolute;
-    top: 0.5rem; right: 0.75rem;
-    font-size: 0.65rem;
-    color: #7d8590;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-  .copied { color: #56d364 !important; }
 
-  .note { font-size: 0.7rem; color: #7d8590; text-align: center; line-height: 1.6; max-width: 600px; }
+  /* ── Toast ── */
+  #toast {
+    position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--panel); border: 1px solid var(--line2);
+    border-radius: 8px; padding: 0.85rem 1.5rem;
+    font-size: 0.75rem; letter-spacing: 0.1em; text-transform: uppercase;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s;
+    opacity: 0; pointer-events: none; white-space: nowrap; z-index: 999;
+  }
+  #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  #toast.ok   { border-color: var(--green); }
+  #toast.err  { border-color: var(--red);   }
+  #toast .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  #toast.ok  .dot { background: var(--green); }
+  #toast.err .dot { background: var(--red);   }
+
+  /* ── Divider ── */
+  hr { width: 100%; max-width: 960px; border: none; border-top: 1px solid var(--line2); margin: 0.25rem 0 1.25rem; }
+
+  .info {
+    width: 100%; max-width: 960px;
+    font-size: 0.65rem; letter-spacing: 0.06em; color: var(--mute);
+    line-height: 1.8;
+  }
 </style>
 </head>
 <body>
 
-<h1>Hero Video · Trim Tool</h1>
+<header>
+  <div class="logo">
+    <span class="logo-main">Aerfort Dhún na nGall · CFN</span>
+    <span class="logo-sub">Hero Video · Trim Tool</span>
+  </div>
+  <div class="kb-hint">
+    <kbd>Space</kbd> play/pause &nbsp;·&nbsp;
+    <kbd>←</kbd><kbd>→</kbd> ±0.1 s &nbsp;·&nbsp;
+    <kbd>S</kbd> set start &nbsp;·&nbsp;
+    <kbd>E</kbd> set end
+  </div>
+</header>
 
 <div class="video-wrap">
   <video id="vid" src="/video/hero.mp4" preload="auto" muted playsinline></video>
+  <div class="loading-overlay" id="loadOverlay">Loading video…</div>
 </div>
 
-<div class="timeline">
-  <div class="timeline__range" id="tlRange"></div>
-  <div class="timeline__cursor" id="tlCursor"></div>
+<div class="timeline-wrap">
+  <div class="timeline" id="tl">
+    <div class="tl-range"  id="tlRange"></div>
+    <div class="tl-handle" id="tlHandleS" title="Drag to set start"></div>
+    <div class="tl-handle" id="tlHandleE" title="Drag to set end" style="background:#e6edf3; box-shadow:0 0 0 3px #0d1117;"></div>
+    <div class="tl-cursor" id="tlCursor"></div>
+  </div>
+  <div class="tl-timestamps">
+    <span id="tsLeft">0.00 s</span>
+    <span id="tsCenter" style="color:var(--amber)">— s selected</span>
+    <span id="tsRight">— s</span>
+  </div>
 </div>
 
 <div class="controls">
-  <div class="control-group">
-    <label>Start time</label>
-    <span class="value" id="startVal">0.00 s</span>
-    <input type="range" id="startSlider" min="0" max="5" step="0.05" value="0">
+  <div class="ctrl-card">
+    <div class="ctrl-label">Start point <span id="startVal">0.00 s</span></div>
+    <div class="ctrl-value" id="startBig">0.00 <sup>s</sup></div>
+    <input type="range" id="startSlider" min="0" max="10" step="0.05" value="0">
+    <div class="step-btns">
+      <button class="step-btn" onclick="nudge('s',-1)">−1 s</button>
+      <button class="step-btn" onclick="nudge('s',-0.1)">−0.1</button>
+      <button class="step-btn" onclick="nudge('s', 0.1)">+0.1</button>
+      <button class="step-btn" onclick="nudge('s', 1)">+1 s</button>
+    </div>
   </div>
-  <div class="control-group">
-    <label>End time</label>
-    <span class="value" id="endVal">5.00 s</span>
-    <input type="range" id="endSlider" min="0" max="5" step="0.05" value="5">
+  <div class="ctrl-card">
+    <div class="ctrl-label">End point <span id="endVal">5.00 s</span></div>
+    <div class="ctrl-value" id="endBig">5.00 <sup>s</sup></div>
+    <input type="range" id="endSlider" min="0" max="10" step="0.05" value="5">
+    <div class="step-btns">
+      <button class="step-btn" onclick="nudge('e',-1)">−1 s</button>
+      <button class="step-btn" onclick="nudge('e',-0.1)">−0.1</button>
+      <button class="step-btn" onclick="nudge('e', 0.1)">+0.1</button>
+      <button class="step-btn" onclick="nudge('e', 1)">+1 s</button>
+    </div>
   </div>
 </div>
 
-<div class="buttons">
-  <button onclick="previewRange()">▶ Preview range</button>
-  <button onclick="jumpStart()">⏮ Jump to start</button>
-  <button onclick="jumpEnd()">⏭ Jump to end</button>
-  <button class="primary" onclick="stopPreview()">■ Stop</button>
+<div class="actions">
+  <button class="btn" onclick="previewRange()">▶ Preview range</button>
+  <button class="btn" onclick="jumpStart()">⏮ Go to start</button>
+  <button class="btn" onclick="jumpEnd()">⏭ Go to end</button>
+  <button class="btn" onclick="stopPreview()">■ Stop</button>
+  <button class="btn primary" id="applyBtn" onclick="applyToSite()">
+    ✓ &nbsp;Apply to site
+  </button>
 </div>
 
-<div class="output">
-  <h2>Copy these values into index.astro</h2>
-  <div class="code-block" id="codeOut" onclick="copyCode(this)"></div>
+<div class="output-card">
+  <div class="output-header">
+    <span>Code — paste into index.astro if needed</span>
+    <button class="copy-btn" id="copyBtn" onclick="copyCode()">Copy</button>
+  </div>
+  <div class="code-block" id="codeOut"></div>
 </div>
 
-<p class="note">
-  Adjust the sliders to set the in/out points.<br>
-  The highlighted section on the timeline shows the active range.<br>
-  Click the code block to copy it directly.
-</p>
+<hr>
+
+<div class="info">
+  <strong style="color:var(--text)">How it works:</strong>
+  Adjust start &amp; end, then click <strong style="color:var(--amber)">Apply to site</strong>.
+  The dev server writes the values to <code>src/data/video-trim.json</code> and Astro reloads the home page automatically — no copy-paste needed.<br>
+  This tool only works with <code>npm run dev</code> running. In production, the last saved values are baked into the build.
+</div>
+
+<div id="toast"><span class="dot"></span><span id="toastMsg"></span></div>
 
 <script>
-  const vid     = document.getElementById('vid');
-  const startSl = document.getElementById('startSlider');
-  const endSl   = document.getElementById('endSlider');
-  const startV  = document.getElementById('startVal');
-  const endV    = document.getElementById('endVal');
-  const tlRange = document.getElementById('tlRange');
-  const tlCursor= document.getElementById('tlCursor');
-  const codeOut = document.getElementById('codeOut');
+  const vid       = document.getElementById('vid');
+  const startSl   = document.getElementById('startSlider');
+  const endSl     = document.getElementById('endSlider');
+  const startVal  = document.getElementById('startVal');
+  const endVal    = document.getElementById('endVal');
+  const startBig  = document.getElementById('startBig');
+  const endBig    = document.getElementById('endBig');
+  const tlRange   = document.getElementById('tlRange');
+  const tlCursor  = document.getElementById('tlCursor');
+  const tlHandleS = document.getElementById('tlHandleS');
+  const tlHandleE = document.getElementById('tlHandleE');
+  const tsLeft    = document.getElementById('tsLeft');
+  const tsRight   = document.getElementById('tsRight');
+  const tsCenter  = document.getElementById('tsCenter');
+  const codeOut   = document.getElementById('codeOut');
+  const applyBtn  = document.getElementById('applyBtn');
+  const loadOverlay = document.getElementById('loadOverlay');
 
   let previewRaf = null;
+  let dragging   = null;  // 's' | 'e' | null
 
-  // Initialise max once metadata is loaded
+  const fmt = (s) => parseFloat(s).toFixed(2);
+
+  // ── Load current values from dev server ──────────────────────────────
+  fetch('/api/trim')
+    .then(r => r.json())
+    .then(d => {
+      startSl.value = d.start;
+      endSl.value   = d.end;
+      update();
+    })
+    .catch(() => {}); // fallback to defaults
+
+  // ── Video metadata ────────────────────────────────────────────────────
   vid.addEventListener('loadedmetadata', () => {
     const dur = vid.duration;
     startSl.max = dur;
     endSl.max   = dur;
-    endSl.value = dur;
+    tsRight.textContent = fmt(dur) + ' s';
+    loadOverlay.classList.add('hidden');
     update();
   });
 
-  function fmt(s) { return s.toFixed(2); }
-
+  // ── Update all UI from slider values ─────────────────────────────────
   function update() {
-    const s = parseFloat(startSl.value);
-    const e = parseFloat(endSl.value);
-    const dur = vid.duration || 5;
+    const s   = parseFloat(startSl.value);
+    const e   = parseFloat(endSl.value);
+    const dur = vid.duration || parseFloat(endSl.max) || 10;
 
-    // Clamp: start must be < end
-    if (s >= e) {
-      startSl.value = Math.max(0, e - 0.1);
-    }
+    startVal.textContent  = fmt(s) + ' s';
+    endVal.textContent    = fmt(e) + ' s';
+    startBig.innerHTML    = fmt(s) + ' <sup>s</sup>';
+    endBig.innerHTML      = fmt(e) + ' <sup>s</sup>';
+    tsLeft.textContent    = fmt(s) + ' s';
+    tsCenter.textContent  = fmt(e - s) + ' s selected';
 
-    startV.textContent = fmt(parseFloat(startSl.value)) + ' s';
-    endV.textContent   = fmt(parseFloat(endSl.value)) + ' s';
+    const sp = s / dur * 100;
+    const ep = e / dur * 100;
+    tlRange.style.left    = sp + '%';
+    tlRange.style.width   = (ep - sp) + '%';
+    tlHandleS.style.left  = sp + '%';
+    tlHandleE.style.left  = ep + '%';
 
-    // Timeline bar
-    const s2 = parseFloat(startSl.value);
-    const e2 = parseFloat(endSl.value);
-    tlRange.style.left  = (s2 / dur * 100) + '%';
-    tlRange.style.width = ((e2 - s2) / dur * 100) + '%';
-
-    // Code output
-    codeOut.classList.remove('copied');
     codeOut.textContent =
-`data-video-start="${fmt(s2)}"
-data-video-end="${fmt(e2)}"`;
+`data-video-start="${fmt(s)}"\ndata-video-end="${fmt(e)}"`;
   }
 
-  startSl.addEventListener('input', update);
-  endSl.addEventListener('input', update);
+  startSl.addEventListener('input', () => {
+    if (parseFloat(startSl.value) >= parseFloat(endSl.value))
+      startSl.value = Math.max(0, parseFloat(endSl.value) - 0.1);
+    update();
+  });
+  endSl.addEventListener('input', () => {
+    if (parseFloat(endSl.value) <= parseFloat(startSl.value))
+      endSl.value = Math.min(parseFloat(endSl.max), parseFloat(startSl.value) + 0.1);
+    update();
+  });
 
-  // Live cursor position while video plays
+  // ── Draggable handles on timeline ────────────────────────────────────
+  function startDrag(which) {
+    return (e) => {
+      dragging = which;
+      document.getElementById(which === 's' ? 'tlHandleS' : 'tlHandleE').classList.add('dragging');
+      e.preventDefault();
+    };
+  }
+  tlHandleS.addEventListener('mousedown', startDrag('s'));
+  tlHandleE.addEventListener('mousedown', startDrag('e'));
+
+  document.addEventListener('mousemove', (e) => {
+    if (!dragging) return;
+    const tl  = document.getElementById('tl');
+    const dur = vid.duration || parseFloat(endSl.max) || 10;
+    const rect = tl.getBoundingClientRect();
+    const pct  = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    const t    = pct * dur;
+    if (dragging === 's') {
+      startSl.value = Math.min(t, parseFloat(endSl.value) - 0.1);
+    } else {
+      endSl.value = Math.max(t, parseFloat(startSl.value) + 0.1);
+    }
+    update();
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!dragging) return;
+    document.querySelectorAll('.tl-handle').forEach(h => h.classList.remove('dragging'));
+    dragging = null;
+  });
+
+  // ── Playhead cursor ───────────────────────────────────────────────────
   vid.addEventListener('timeupdate', () => {
-    const dur = vid.duration || 5;
+    const dur = vid.duration || 1;
     tlCursor.style.left = (vid.currentTime / dur * 100) + '%';
   });
 
+  // ── Nudge by step ─────────────────────────────────────────────────────
+  function nudge(which, delta) {
+    const sl = which === 's' ? startSl : endSl;
+    sl.value = Math.max(0, Math.min(parseFloat(sl.max), parseFloat(sl.value) + delta));
+    sl.dispatchEvent(new Event('input'));
+  }
+
+  // ── Playback controls ─────────────────────────────────────────────────
   function previewRange() {
     stopPreview();
     const s = parseFloat(startSl.value);
     const e = parseFloat(endSl.value);
     vid.currentTime = s;
     vid.play();
-
     function checkEnd() {
       if (vid.currentTime >= e) {
-        vid.pause();
-        vid.currentTime = parseFloat(startSl.value);
-        return;
+        vid.pause(); vid.currentTime = parseFloat(startSl.value); return;
       }
       previewRaf = requestAnimationFrame(checkEnd);
     }
     previewRaf = requestAnimationFrame(checkEnd);
   }
+  function stopPreview()  { if (previewRaf) cancelAnimationFrame(previewRaf); vid.pause(); }
+  function jumpStart()    { stopPreview(); vid.currentTime = parseFloat(startSl.value); }
+  function jumpEnd()      { stopPreview(); vid.currentTime = parseFloat(endSl.value); }
 
-  function stopPreview() {
-    if (previewRaf) cancelAnimationFrame(previewRaf);
-    vid.pause();
-  }
+  // ── Keyboard shortcuts ────────────────────────────────────────────────
+  document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT') return;
+    if (e.code === 'Space')      { e.preventDefault(); vid.paused ? vid.play() : vid.pause(); }
+    if (e.code === 'ArrowLeft')  { vid.currentTime = Math.max(0, vid.currentTime - 0.1); }
+    if (e.code === 'ArrowRight') { vid.currentTime = Math.min(vid.duration, vid.currentTime + 0.1); }
+    if (e.key  === 's' || e.key === 'S') { startSl.value = vid.currentTime; startSl.dispatchEvent(new Event('input')); }
+    if (e.key  === 'e' || e.key === 'E') { endSl.value   = vid.currentTime; endSl.dispatchEvent(new Event('input')); }
+  });
 
-  function jumpStart() {
-    stopPreview();
-    vid.currentTime = parseFloat(startSl.value);
-  }
+  // ── Apply to site via API ─────────────────────────────────────────────
+  function applyToSite() {
+    const start = parseFloat(startSl.value);
+    const end   = parseFloat(endSl.value);
+    applyBtn.disabled    = true;
+    applyBtn.textContent = '⏳  Saving…';
 
-  function jumpEnd() {
-    stopPreview();
-    vid.currentTime = parseFloat(endSl.value);
-  }
-
-  function copyCode(el) {
-    navigator.clipboard.writeText(el.textContent.trim()).then(() => {
-      el.classList.add('copied');
-      el.textContent = '✓  Copied to clipboard!';
-      setTimeout(() => { el.classList.remove('copied'); update(); }, 1800);
+    fetch('/api/trim', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ start, end }),
+    })
+    .then(r => r.json())
+    .then(d => {
+      if (d.ok) {
+        showToast('ok', `✓  Saved — start ${fmt(start)} s · end ${fmt(end)} s — page reloading…`);
+        applyBtn.textContent = '✓  Applied!';
+        setTimeout(() => {
+          applyBtn.disabled    = false;
+          applyBtn.textContent = '✓  Apply to site';
+        }, 3000);
+      } else {
+        throw new Error(d.error || 'Unknown error');
+      }
+    })
+    .catch(err => {
+      showToast('err', '✗  Could not save — is npm run dev running?');
+      applyBtn.disabled    = false;
+      applyBtn.textContent = '✓  Apply to site';
     });
+  }
+
+  // ── Copy code ─────────────────────────────────────────────────────────
+  function copyCode() {
+    const btn = document.getElementById('copyBtn');
+    navigator.clipboard.writeText(codeOut.textContent.trim()).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1800);
+    });
+  }
+
+  // ── Toast ─────────────────────────────────────────────────────────────
+  let toastTimer = null;
+  function showToast(type, msg) {
+    const t = document.getElementById('toast');
+    t.className = 'show ' + type;
+    document.getElementById('toastMsg').textContent = msg;
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.className = ''; }, 4000);
   }
 
   update();
