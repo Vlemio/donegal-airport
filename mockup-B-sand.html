@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup B — Sand Gold</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #0a0f1a;
+    color: #fff;
+  }
+
+  /* ── HERO ─────────────────────────────────────────────────── */
+  .hero {
+    position: relative;
+    height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    overflow: hidden;
+  }
+
+  /* Simulated video background — same as A */
+  .hero__bg {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to bottom,
+        rgba(8,14,28,0.52) 0%,
+        rgba(8,14,28,0.15) 35%,
+        transparent        60%),
+      linear-gradient(to top,
+        rgba(8,14,28,0.62) 0%,
+        rgba(8,14,28,0.12) 35%,
+        transparent        60%),
+      linear-gradient(160deg,
+        #b8cfe0 0%,
+        #d4e4ef 20%,
+        #e8f0f5 35%,
+        #c5d8e5 50%,
+        #7aa5be 65%,
+        #3d7a96 80%,
+        #2a5c73 100%
+      );
+    background-size: cover;
+  }
+  .hero__bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 50% at 30% 20%, rgba(255,255,255,0.55) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 70% 10%, rgba(255,255,255,0.45) 0%, transparent 55%),
+      radial-gradient(ellipse 40% 30% at 55% 35%, rgba(255,255,255,0.25) 0%, transparent 50%);
+  }
+
+  /* ── NAV ───────────────────────────────────────────────────── */
+  .nav {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 2.5rem;
+    height: 4.75rem;
+  }
+  .nav__logo {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    /* ═══ OPTION B: logo in sand gold ═══ */
+    color: #c49a50;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.5);
+  }
+  .nav__links {
+    display: flex;
+    gap: 2rem;
+    list-style: none;
+  }
+  .nav__links li a {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #ffffff;
+    text-decoration: none;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+    opacity: 0.9;
+  }
+
+  /* ── HERO CONTENT ──────────────────────────────────────────── */
+  .hero__content {
+    position: relative;
+    z-index: 5;
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: calc(4.75rem + 2rem) 2.5rem 4rem;
+  }
+
+  .hero__eyebrow {
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    /* ═══ eyebrow in cream ═══ */
+    color: rgba(255,255,255,0.75);
+    text-shadow: 0 1px 8px rgba(0,0,0,0.5);
+    margin-bottom: 1.25rem;
+  }
+
+  .hero__title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3.5rem, 9vw, 10rem);
+    font-weight: 400;
+    line-height: 0.92;
+    letter-spacing: -0.02em;
+    /* ═══ OPTION B: Sand / Bogland Gold ═══ */
+    color: #c49a50;
+    text-shadow:
+      0 2px 32px rgba(0,0,0,0.6),
+      0 1px 8px  rgba(0,0,0,0.45),
+      0 0  2px   rgba(0,0,0,0.3);
+    max-width: 14ch;
+    margin-bottom: 2rem;
+  }
+
+  .hero__sub {
+    font-size: 1rem;
+    line-height: 1.65;
+    color: rgba(255,255,255,0.82);
+    text-shadow: 0 1px 10px rgba(0,0,0,0.5);
+    max-width: 42ch;
+    margin-bottom: 2.5rem;
+  }
+
+  .hero__ctas {
+    display: flex;
+    gap: 2.5rem;
+    align-items: center;
+  }
+  .cta-primary {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    /* ═══ CTA primary in sand gold ═══ */
+    color: #c49a50;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(196,154,80,0.65);
+    padding-bottom: 3px;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.4);
+  }
+  .cta-secondary {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.65);
+    text-decoration: none;
+    text-shadow: 0 1px 8px rgba(0,0,0,0.4);
+  }
+
+  /* ── LABEL ─────────────────────────────────────────────────── */
+  .label {
+    position: absolute;
+    bottom: 2rem; left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    font-size: 0.8rem;
+    padding: 0.4rem 1rem;
+    border-radius: 4px;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+  }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="hero__bg"></div>
+
+  <nav class="nav">
+    <span class="nav__logo">Donegal Airport · CFN</span>
+    <ul class="nav__links">
+      <li><a href="#">Flights</a></li>
+      <li><a href="#">Plan</a></li>
+      <li><a href="#">About</a></li>
+      <li><a href="#">Pilots</a></li>
+    </ul>
+  </nav>
+
+  <div class="hero__content">
+    <p class="hero__eyebrow">Donegal Airport · Co. Donegal · CFN</p>
+
+    <h1 class="hero__title">Aerfort Dhún na nGall</h1>
+
+    <p class="hero__sub">
+      Dublin daily. Glasgow on weekends — and select summer weekdays.<br>
+      The Atlantic on both sides of the runway.
+    </p>
+
+    <div class="hero__ctas">
+      <a href="#" class="cta-primary">Today's flights →</a>
+      <a href="#" class="cta-secondary">Parking & getting here →</a>
+    </div>
+  </div>
+
+  <div class="label">Mockup B — Sand Gold (#c49a50)</div>
+</section>
+
+</body>
+</html>

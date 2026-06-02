@@ -6,6 +6,8 @@
    Swap to a self-hosted @font-face block post-firma; see README in
    /public/fonts/. */
 @import url("https://api.fontshare.com/v2/css?f[]=switzer@200,300,400,500,600,700,800,900&display=swap");
+/* Space Mono — typewriter mono face for airport-style labels */
+@import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap");
 
 /*
   PP Editorial New — display face. Personal-use free, paid for
@@ -60,7 +62,7 @@
     ui-serif, Georgia, serif;
   --font-sans: "Switzer", "Inter Variable", ui-sans-serif, system-ui,
     sans-serif;
-  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+  --font-mono: "Space Mono", ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
 
   /* Surfaces — bleached limestone / coastal white */
   --color-surface:    #f3f2ee;
@@ -185,9 +187,13 @@
   -webkit-backdrop-filter: none;
   border-bottom-color: transparent;
   box-shadow: none;
-  --color-ink:  rgba(240, 238, 230, 0.92);
-  --color-mute: rgba(240, 238, 230, 0.65);
-  --color-line: rgba(240, 238, 230, 0.18);
+  --color-ink:      #ffffff;
+  --color-mute:     rgba(255, 255, 255, 0.82);
+  --color-line:     rgba(255, 255, 255, 0.28);
+  /* Remap hover colour: hover:text-atlantic would be dark navy — invisible
+     on the video. Override to sand-gold so it's always readable.          */
+  --color-atlantic:        #c49a50;
+  --color-atlantic-bright: #d4ab65;
 }
 
 /* Scroll hint at the bottom of the hero */
@@ -371,23 +377,183 @@
   color: transparent;
 }
 
-/* Hero inverse-tokens wrapper — the hero overlays a video/photo
-   so inside the hero we want light text on dark imagery
-   regardless of the page tone. Custom properties cascade by
-   element distance, so setting them on the wrapper wins. */
+/* ============================================================
+   HERO — "Live Ops" design (Distribution A)
+   Color tokens scoped to the hero wrapper so they never bleed
+   to the rest of the page.
+   ============================================================ */
 .cfn-hero-content {
+  /* Design tokens */
+  --hi:       #f3f0ea;                    /* primary warm off-white  */
+  --hi-soft:  rgba(243,240,234,0.74);     /* secondary text          */
+  --hi-faint: rgba(243,240,234,0.50);     /* tertiary / muted        */
+  --hi-amber: oklch(0.81 0.115 73);       /* warm gold ≈ #E7AC5B     */
+  --hi-green: #6bcf90;                    /* live / on-time status   */
+  --hi-panel: rgba(19,24,31,0.46);        /* frosted-glass fill      */
+  --hi-line:  rgba(243,240,234,0.14);     /* dividers / borders      */
+  /* Override global tokens so Tailwind text-ink / text-mute etc.
+     resolve to light values inside the hero wrapper.            */
   --color-surface:    #090f1c;
   --color-surface-hi: #0d1a2e;
-  --color-ink:        #f0eee6;
-  --color-mute:       rgba(240, 238, 230, 0.88);
-  --color-line:       rgba(240, 238, 230, 0.16);
+  --color-ink:        var(--hi);
+  --color-mute:       var(--hi-soft);
+  --color-line:       var(--hi-line);
 }
-/* Text shadow so headlines stay legible over bright clouds */
-.cfn-hero-content h1 {
-  text-shadow: 0 2px 24px rgba(0,0,0,0.45), 0 1px 6px rgba(0,0,0,0.3);
+
+/* H1 — Bricolage Grotesque 800 (matches design spec; PP Editorial is
+   the page display face but this hero calls for the bold geometric). */
+.cfn-hero-content .hero-display {
+  font-family: "Bricolage Grotesque Variable", "Bricolage Grotesque",
+               system-ui, sans-serif;
+  font-size: clamp(2.6rem, 5.3vw, 76px);
+  font-weight: 800;
+  line-height: 0.96;
+  letter-spacing: -0.025em;
+  color: var(--hi);
+  text-shadow:
+    0 2px 32px rgba(0,0,0,0.65),
+    0 1px 8px  rgba(0,0,0,0.50),
+    0 0  2px   rgba(0,0,0,0.35);
 }
-.cfn-hero-content p {
-  text-shadow: 0 1px 8px rgba(0,0,0,0.35);
+/* Text shadows for legibility across all hero text nodes */
+.cfn-hero-content p,
+.cfn-hero-content a,
+.cfn-hero-content span:not(.live-dot):not(.ops-badge) {
+  text-shadow: 0 1px 12px rgba(0,0,0,0.50), 0 1px 4px rgba(0,0,0,0.35);
+}
+/* Ops panel interior — no extra shadow (panel has its own backdrop) */
+.ops-panel,
+.ops-panel p,
+.ops-panel span,
+.ops-panel a {
+  text-shadow: none !important;
+}
+
+/* ── Hero CTAs ───────────────────────────────────────────────── */
+.hero-cta {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--hi);
+  text-decoration: none;
+  padding-bottom: 6px;
+  border-bottom: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.4);
+}
+.hero-cta .arrow { transition: transform 0.2s ease; }
+.hero-cta:hover .arrow { transform: translateX(4px); }
+.hero-cta--primary {
+  color: var(--hi-amber);
+  border-bottom-color: var(--hi-amber);
+}
+
+/* ── Live Ops Panel ──────────────────────────────────────────── */
+.ops-panel {
+  flex: 0 0 396px;
+  align-self: center;
+  background: var(--hi-panel);
+  border: 1px solid var(--hi-line);
+  border-radius: 5px;
+  padding: 24px 26px 20px;
+  color: var(--hi);
+  backdrop-filter: blur(16px) saturate(1.15);
+  -webkit-backdrop-filter: blur(16px) saturate(1.15);
+  box-shadow: 0 36px 70px -34px rgba(0,0,0,0.65);
+}
+/* Board: each row is a 3-col grid */
+.ops-board-row {
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  column-gap: 16px;
+  row-gap: 2px;
+  align-items: center;
+  padding: 13px 0;
+  border-top: 1px solid var(--hi-line);
+}
+.ops-board-row .b-time {
+  grid-row: span 2;
+  font-family: var(--font-mono);
+  font-size: 21px;
+  color: var(--hi);
+}
+.ops-board-row .b-dest {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--hi);
+}
+.ops-board-row .b-flight {
+  grid-column: 2;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  color: var(--hi-faint);
+}
+.ops-board-row .b-status {
+  grid-column: 3;
+  grid-row: span 2;
+  justify-self: end;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.b-status.ok   { color: var(--hi-green); }
+.b-status.wknd { color: var(--hi-amber); }
+/* Temperature display in ops panel */
+.ops-temp {
+  font-family: "Bricolage Grotesque Variable", "Bricolage Grotesque", system-ui, sans-serif;
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--hi);
+}
+
+/* Ops "Full board →" CTA */
+.ops-cta-link {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--hi);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.ops-cta-link .arrow { transition: transform 0.2s ease; }
+.ops-cta-link:hover .arrow { transform: translateX(3px); }
+
+/* ── Live dot (pulsing ring) ─────────────────────────────────── */
+.live-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--hi-green);
+  box-shadow: 0 0 0 0 rgba(107,207,144,0.5);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .live-dot { animation: pulse-live 2.2s infinite; }
+}
+@keyframes pulse-live {
+  0%   { box-shadow: 0 0 0 0   rgba(107,207,144,0.5); }
+  70%  { box-shadow: 0 0 0 7px rgba(107,207,144,0);   }
+  100% { box-shadow: 0 0 0 0   rgba(107,207,144,0);   }
+}
+
+/* ── Scroll-hint bob ─────────────────────────────────────────── */
+.hero-bob { display: inline-block; }
+@media (prefers-reduced-motion: no-preference) {
+  .hero-bob { animation: hero-bob 2.4s ease-in-out infinite; }
+}
+@keyframes hero-bob {
+  0%, 100% { transform: translateY(0);   }
+  50%      { transform: translateY(4px); }
 }
 /* Hide Ken Burns fallback on desktop once video is playing */
 @media (min-width: 768px) {

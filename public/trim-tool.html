@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Trim Tool — hero.mp4</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    background: #0d1117;
+    color: #e6edf3;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem 1rem;
+    gap: 1.5rem;
+  }
+  h1 { font-size: 0.85rem; letter-spacing: 0.2em; text-transform: uppercase; color: #7d8590; }
+
+  .video-wrap {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    aspect-ratio: 16/9;
+    background: #000;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  video { width: 100%; height: 100%; display: block; }
+
+  /* Progress bar showing the selected range */
+  .timeline {
+    width: 100%;
+    max-width: 900px;
+    height: 6px;
+    background: #30363d;
+    border-radius: 3px;
+    position: relative;
+  }
+  .timeline__range {
+    position: absolute;
+    height: 100%;
+    background: #c49a50;
+    border-radius: 3px;
+    transition: left 0.05s, width 0.05s;
+  }
+  .timeline__cursor {
+    position: absolute;
+    width: 2px;
+    height: 100%;
+    background: #fff;
+    border-radius: 1px;
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+
+  .controls {
+    width: 100%;
+    max-width: 900px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  .control-group { display: flex; flex-direction: column; gap: 0.5rem; }
+  label {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #7d8590;
+  }
+  .value { font-size: 1.1rem; color: #c49a50; }
+  input[type=range] {
+    width: 100%;
+    accent-color: #c49a50;
+    height: 4px;
+    cursor: pointer;
+  }
+
+  .buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  button {
+    background: #21262d;
+    border: 1px solid #30363d;
+    color: #e6edf3;
+    font-family: inherit;
+    font-size: 0.75rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.6rem 1.4rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  button:hover { background: #30363d; border-color: #8b949e; }
+  button.primary { background: #c49a50; border-color: #c49a50; color: #0d1117; font-weight: 600; }
+  button.primary:hover { background: #d4ab65; border-color: #d4ab65; }
+
+  .output {
+    width: 100%;
+    max-width: 900px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .output h2 { font-size: 0.7rem; letter-spacing: 0.18em; text-transform: uppercase; color: #7d8590; }
+  .code-block {
+    background: #0d1117;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    padding: 1rem;
+    font-size: 0.78rem;
+    line-height: 1.7;
+    color: #a5d6ff;
+    white-space: pre-wrap;
+    word-break: break-all;
+    cursor: pointer;
+    position: relative;
+  }
+  .code-block:hover::after {
+    content: 'Click to copy';
+    position: absolute;
+    top: 0.5rem; right: 0.75rem;
+    font-size: 0.65rem;
+    color: #7d8590;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .copied { color: #56d364 !important; }
+
+  .note { font-size: 0.7rem; color: #7d8590; text-align: center; line-height: 1.6; max-width: 600px; }
+</style>
+</head>
+<body>
+
+<h1>Hero Video · Trim Tool</h1>
+
+<div class="video-wrap">
+  <video id="vid" src="/video/hero.mp4" preload="auto" muted playsinline></video>
+</div>
+
+<div class="timeline">
+  <div class="timeline__range" id="tlRange"></div>
+  <div class="timeline__cursor" id="tlCursor"></div>
+</div>
+
+<div class="controls">
+  <div class="control-group">
+    <label>Start time</label>
+    <span class="value" id="startVal">0.00 s</span>
+    <input type="range" id="startSlider" min="0" max="5" step="0.05" value="0">
+  </div>
+  <div class="control-group">
+    <label>End time</label>
+    <span class="value" id="endVal">5.00 s</span>
+    <input type="range" id="endSlider" min="0" max="5" step="0.05" value="5">
+  </div>
+</div>
+
+<div class="buttons">
+  <button onclick="previewRange()">▶ Preview range</button>
+  <button onclick="jumpStart()">⏮ Jump to start</button>
+  <button onclick="jumpEnd()">⏭ Jump to end</button>
+  <button class="primary" onclick="stopPreview()">■ Stop</button>
+</div>
+
+<div class="output">
+  <h2>Copy these values into index.astro</h2>
+  <div class="code-block" id="codeOut" onclick="copyCode(this)"></div>
+</div>
+
+<p class="note">
+  Adjust the sliders to set the in/out points.<br>
+  The highlighted section on the timeline shows the active range.<br>
+  Click the code block to copy it directly.
+</p>
+
+<script>
+  const vid     = document.getElementById('vid');
+  const startSl = document.getElementById('startSlider');
+  const endSl   = document.getElementById('endSlider');
+  const startV  = document.getElementById('startVal');
+  const endV    = document.getElementById('endVal');
+  const tlRange = document.getElementById('tlRange');
+  const tlCursor= document.getElementById('tlCursor');
+  const codeOut = document.getElementById('codeOut');
+
+  let previewRaf = null;
+
+  // Initialise max once metadata is loaded
+  vid.addEventListener('loadedmetadata', () => {
+    const dur = vid.duration;
+    startSl.max = dur;
+    endSl.max   = dur;
+    endSl.value = dur;
+    update();
+  });
+
+  function fmt(s) { return s.toFixed(2); }
+
+  function update() {
+    const s = parseFloat(startSl.value);
+    const e = parseFloat(endSl.value);
+    const dur = vid.duration || 5;
+
+    // Clamp: start must be < end
+    if (s >= e) {
+      startSl.value = Math.max(0, e - 0.1);
+    }
+
+    startV.textContent = fmt(parseFloat(startSl.value)) + ' s';
+    endV.textContent   = fmt(parseFloat(endSl.value)) + ' s';
+
+    // Timeline bar
+    const s2 = parseFloat(startSl.value);
+    const e2 = parseFloat(endSl.value);
+    tlRange.style.left  = (s2 / dur * 100) + '%';
+    tlRange.style.width = ((e2 - s2) / dur * 100) + '%';
+
+    // Code output
+    codeOut.classList.remove('copied');
+    codeOut.textContent =
+`data-video-start="${fmt(s2)}"
+data-video-end="${fmt(e2)}"`;
+  }
+
+  startSl.addEventListener('input', update);
+  endSl.addEventListener('input', update);
+
+  // Live cursor position while video plays
+  vid.addEventListener('timeupdate', () => {
+    const dur = vid.duration || 5;
+    tlCursor.style.left = (vid.currentTime / dur * 100) + '%';
+  });
+
+  function previewRange() {
+    stopPreview();
+    const s = parseFloat(startSl.value);
+    const e = parseFloat(endSl.value);
+    vid.currentTime = s;
+    vid.play();
+
+    function checkEnd() {
+      if (vid.currentTime >= e) {
+        vid.pause();
+        vid.currentTime = parseFloat(startSl.value);
+        return;
+      }
+      previewRaf = requestAnimationFrame(checkEnd);
+    }
+    previewRaf = requestAnimationFrame(checkEnd);
+  }
+
+  function stopPreview() {
+    if (previewRaf) cancelAnimationFrame(previewRaf);
+    vid.pause();
+  }
+
+  function jumpStart() {
+    stopPreview();
+    vid.currentTime = parseFloat(startSl.value);
+  }
+
+  function jumpEnd() {
+    stopPreview();
+    vid.currentTime = parseFloat(endSl.value);
+  }
+
+  function copyCode(el) {
+    navigator.clipboard.writeText(el.textContent.trim()).then(() => {
+      el.classList.add('copied');
+      el.textContent = '✓  Copied to clipboard!';
+      setTimeout(() => { el.classList.remove('copied'); update(); }, 1800);
+    });
+  }
+
+  update();
+</script>
+</body>
+</html>

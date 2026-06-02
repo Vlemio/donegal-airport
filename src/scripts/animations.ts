@@ -199,11 +199,21 @@ function setupHeaderReveal(): void {
   const header = document.querySelector<HTMLElement>("[data-header]");
   if (!header) return;
 
-  const SCROLLED_PX = 60;
+  // On cinematic-hero pages (homepage) the header must stay transparent
+  // for the full hero scrub-video section (h-[300vh]).  Only reveal the
+  // glass background once the user has scrolled past that section and is
+  // reading real page content.  On every other page fall back to 60 px.
+  const heroSection = document.querySelector<HTMLElement>("[data-hero-scroll]");
   let ticking = false;
 
   const apply = (): void => {
-    header.classList.toggle("is-scrolled", window.scrollY > SCROLLED_PX);
+    const threshold = heroSection
+      ? Math.max(
+          60,
+          heroSection.offsetTop + heroSection.offsetHeight - window.innerHeight - 20,
+        )
+      : 60;
+    header.classList.toggle("is-scrolled", window.scrollY > threshold);
   };
 
   const onScroll = (): void => {
