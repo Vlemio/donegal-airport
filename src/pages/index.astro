@@ -131,18 +131,23 @@ const news = [
         fetchpriority="high"
         decoding="async"
       />
-      <video
-        data-scrub-video
-        data-src="/video/hero.mp4"
+      {/* Scrub "video" is a frame sequence painted to a <canvas>, not an
+          <video>. Seeking an <video> via currentTime stutters on scroll
+          deceleration (the decoder isn't built for random access); painting
+          a pre-decoded WebP frame is instant and never stutters. Frames live
+          in /public/video/frames/. data-video-start/-end (seconds, from the
+          trim tool) map to frame indices via data-fps. Mobile keeps poster. */}
+      <canvas
+        data-scrub-canvas
+        data-frames="121"
+        data-fps="24"
+        data-frame-path="/video/frames/frame-"
         data-scrub-start="top top"
         data-scrub-end="bottom bottom"
         data-video-start={String(trim.start)}
         data-video-end={String(trim.end)}
-        muted
-        playsinline
-        preload="auto"
-        class="absolute inset-0 hidden h-full w-full object-cover md:block"
-      ></video>
+        class="absolute inset-0 hidden h-full w-full md:block"
+      ></canvas>
       {/* Top scrim — protects nav + headline */}
       <div class="absolute inset-x-0 top-0 h-[220px] bg-gradient-to-b from-[rgba(18,22,29,0.60)] to-transparent" />
       {/* Left scrim — protects text column (matches design: 62% width) */}

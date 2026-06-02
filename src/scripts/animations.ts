@@ -14,7 +14,12 @@ let lenisTickerAdded = false;
 function initSmoothScroll(): void {
   if (lenis || prefersReducedMotion()) return;
 
-  lenis = new Lenis({ duration: 1.1, smoothWheel: true });
+  // Lenis momentum is the real source of the hero scrub stutter: after
+  // the wheel stops, Lenis keeps animating the scroll position for the
+  // duration, decelerating — and during that slow tail the frame
+  // sequence advances in visible discrete steps. A short duration (0.4)
+  // makes the scroll settle quickly so there's almost no coast tail.
+  lenis = new Lenis({ duration: 0.4, smoothWheel: true });
   lenis.on("scroll", () => ScrollTrigger.update());
 
   // gsap.ticker is global to the page; only add the lenis.raf callback
@@ -262,99 +267,153 @@ function watchNav(): void {
   });
 }
 
-/* ---------- Scroll-driven scrub videos (desktop only) ----------
-   The drone hero video lives here. Each video's currentTime is tied
-   to scroll progress through its nearest [data-scrub-trigger]
-   ancestor. The .mp4 must be encoded with a keyframe at every frame
-   (ffmpeg -g 1 -keyint_min 1 -sc_threshold 0 -movflags +faststart
-   -an) or the scrub stutters as the decoder reconstructs frames.
-   Mobile keeps the poster image; videos are never loaded there. */
+/* ---------- Scroll-driven scrub "video" (desktop only) ----------
+   The drone hero is a FRAME SEQUENCE painted to a <canvas>, not an
+   <video>. Seeking an <video> via currentTime stutters whenever the
+   scroll decelerates — the decoder is built for linear playback, not
+   random access, so each near-stop sub-frame seek queues and arrives
+   in irregular bursts. Painting a pre-decoded WebP frame to a canvas
+   has no decoder in the loop: it's an instant drawImage that can never
+   stutter. This is the technique Apple-style product pages use.
+
+   Frames live in /public/video/frames/frame-0001.webp … and are
+   regenerated from the source with:
+     ffmpeg -i source.mp4 -vf "scale=1920:1080:flags=lanczos" \
+       -c:v libwebp -quality 80 -compression_level 6 frame-%04d.webp
+
+   data-video-start / data-video-end (seconds, written by the trim
+   tool) map to frame indices via data-fps, so the trim workflow is
+   unchanged. Mobile keeps the Ken Burns poster; frames never load. */
 function setupScrubVideo(): void {
-  const videos = document.querySelectorAll<HTMLVideoElement>("[data-scrub-video]");
-  if (!videos.length) return;
+  const canvases = document.querySelectorAll<HTMLCanvasElement>("[data-scrub-canvas]");
+  if (!canvases.length) return;
   if (!window.matchMedia("(min-width: 768px)").matches) return;
 
-  videos.forEach((video) => {
+  canvases.forEach((canvas) => {
     const section =
-      video.closest<HTMLElement>("[data-scrub-trigger]") ??
-      video.closest<HTMLElement>("[data-hero-scroll]");
+      canvas.closest<HTMLElement>("[data-scrub-trigger]") ??
+      canvas.closest<HTMLElement>("[data-hero-scroll]");
     if (!section) return;
 
-    const src = video.dataset.src;
-    if (src && !video.getAttribute("src")) {
-      video.setAttribute("src", src);
-      video.load();
-    }
+    const total = parseInt(canvas.dataset.frames ?? "0", 10);
+    const fps = parseFloat(canvas.dataset.fps ?? "24");
+    const prefix = canvas.dataset.framePath ?? "";
+    const pad = parseInt(canvas.dataset.framePad ?? "4", 10);
+    const ctx = canvas.getContext("2d", { alpha: false });
+    if (!total || !ctx) return;
 
-    const wire = (): void => {
-      // On desktop, hide the Ken Burns fallback image now that the
-      // video has loaded and taken over the background.
-      const kbImg = section?.querySelector<HTMLElement>("[data-ken-burns]");
-      if (kbImg && window.matchMedia("(min-width: 768px)").matches) {
-        kbImg.classList.add("is-hidden");
+    // Map trim window (seconds) → 1-indexed frame range.
+    const startSec = parseFloat(canvas.dataset.videoStart ?? "0");
+    const endSec = parseFloat(canvas.dataset.videoEnd ?? String(total / fps));
+    const startFrame = Math.min(total, Math.max(1, Math.round(startSec * fps) || 1));
+    const endFrame = Math.min(total, Math.max(startFrame + 1, Math.round(endSec * fps) || total));
+    const frameRange = endFrame - startFrame;
+
+    const frameUrl = (i: number): string => `${prefix}${String(i).padStart(pad, "0")}.webp`;
+    const images: HTMLImageElement[] = new Array(total + 1);
+    let lastPos = -1;       // last float frame position drawn
+    let revealed = false;
+
+    // Return frame i if decoded, else walk backwards to the last ready
+    // one so the canvas never flashes blank during fast scroll.
+    const ready = (i: number): HTMLImageElement | undefined => {
+      const img = images[i];
+      if (img?.complete && img.naturalWidth) return img;
+      for (let j = i - 1; j >= startFrame; j--) {
+        const c = images[j];
+        if (c?.complete && c.naturalWidth) return c;
       }
+      return undefined;
+    };
 
-      const totalDuration = video.duration || 7;
-      // data-video-start / data-video-end let you trim the playback
-      // window without re-encoding the file. Change those two numbers
-      // in index.astro to adjust how much of the video the scrub uses.
-      const videoStart = parseFloat(video.dataset.videoStart ?? "0");
-      const videoEnd   = parseFloat(video.dataset.videoEnd   ?? String(totalDuration));
-      const playRange  = Math.max(0.1, videoEnd - videoStart);
+    // Cover-fit blit (canvas CSS object-fit doesn't apply to drawn bitmaps,
+    // so we compute the cover transform ourselves).
+    const cover = (img: HTMLImageElement): void => {
+      const cw = canvas.width, ch = canvas.height;
+      const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
+      const dw = img.naturalWidth * scale;
+      const dh = img.naturalHeight * scale;
+      ctx.drawImage(img, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
+    };
 
-      video.classList.add("is-playing");
+    // Sub-frame interpolation: `pos` is a FLOAT frame position (e.g. 34.7).
+    // Paint frame 34 fully, then cross-fade frame 35 on top at alpha 0.7.
+    // With drone footage (tiny motion between 24 fps frames) this reads as
+    // continuous motion at any scroll speed — no discrete frame stepping
+    // when the scroll slows down, which is what a hard round() shows.
+    const draw = (pos: number): void => {
+      const f0 = Math.floor(pos);
+      const t = pos - f0;
+      const imgA = ready(f0);
+      if (!imgA) return;
+      ctx.globalAlpha = 1;
+      cover(imgA);
+      if (t > 0.001 && f0 < endFrame) {
+        const imgB = ready(f0 + 1);
+        if (imgB && imgB !== imgA) {
+          ctx.globalAlpha = t;
+          cover(imgB);
+          ctx.globalAlpha = 1;
+        }
+      }
+      lastPos = pos;
+    };
 
-      // Coalesce seeks: never start a new seek while one is still
-      // in flight. Scrolling fast otherwise queues dozens of seeks
-      // and saturates the decoder, stuttering the whole page.
-      let target = videoStart;
-      let seeking = false;
-      const applySeek = (): void => {
-        if (seeking || Math.abs(video.currentTime - target) < 1 / 24) return;
-        seeking = true;
-        video.currentTime = target;
-      };
-      video.addEventListener("seeked", () => {
-        seeking = false;
-        applySeek();
-      });
+    const resize = (): void => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const r = canvas.getBoundingClientRect();
+      canvas.width = Math.round(r.width * dpr);
+      canvas.height = Math.round(r.height * dpr);
+      if (lastPos >= 0) draw(lastPos);
+    };
 
-      const startPos = video.dataset.scrubStart ?? "top top";
-      const endPos = video.dataset.scrubEnd ?? "bottom bottom";
-
-      ScrollTrigger.create({
-        trigger: section,
-        start: startPos,
-        end: endPos,
-        scrub: 0.4,
-        onUpdate: (self) => {
-          target = videoStart + self.progress * playRange;
-          if (Number.isFinite(target)) applySeek();
-        },
-      });
-
-      const panRaw = parseFloat(video.dataset.scrubPan ?? "0");
-      const pan = Math.min(0.5, Math.max(0, panRaw));
-      if (pan > 0) {
-        gsap.fromTo(
-          video,
-          { yPercent: -pan * 100 },
-          {
-            yPercent: 0,
-            ease: "none",
-            scrollTrigger: {
-              trigger: section,
-              start: startPos,
-              end: endPos,
-              scrub: 0.4,
-            },
-          },
-        );
+    const load = (i: number): void => {
+      if (images[i]) return;
+      const img = new Image();
+      img.decoding = "async";
+      img.src = frameUrl(i);
+      images[i] = img;
+      // First frame ready → size the canvas, paint, fade in, drop poster.
+      if (i === startFrame) {
+        img.onload = (): void => {
+          if (revealed) return;
+          revealed = true;
+          resize();
+          draw(startFrame);
+          canvas.classList.add("is-playing");
+          const kbImg = section?.querySelector<HTMLElement>("[data-ken-burns]");
+          if (kbImg) kbImg.classList.add("is-hidden");
+        };
       }
     };
 
-    if (video.readyState >= 1) wire();
-    else video.addEventListener("loadedmetadata", wire, { once: true });
+    // Kick the first frame, then eagerly queue the rest of the range.
+    // Frames are ~52 KB WebP, so the whole 121-frame set (~6 MB) loads
+    // in the background well before the user finishes reading the hero.
+    load(startFrame);
+    for (let i = startFrame; i <= endFrame; i++) load(i);
+
+    window.addEventListener("resize", resize);
+    document.addEventListener("astro:after-swap", () => window.removeEventListener("resize", resize));
+
+    const startPos = canvas.dataset.scrubStart ?? "top top";
+    const endPos = canvas.dataset.scrubEnd ?? "bottom bottom";
+
+    ScrollTrigger.create({
+      trigger: section,
+      start: startPos,
+      end: endPos,
+      // scrub: true (not a number) — the canvas paints instantly, so we
+      // want the frame to track the scroll position with zero added lag.
+      // A numeric scrub would re-introduce a coast tail on top of Lenis.
+      scrub: true,
+      onUpdate: (self) => {
+        // Float position (not round()) so draw() can cross-fade between
+        // the two nearest frames for smooth motion at any scroll speed.
+        const pos = startFrame + self.progress * frameRange;
+        if (Math.abs(pos - lastPos) > 0.002) draw(Math.max(startFrame, Math.min(endFrame, pos)));
+      },
+    });
   });
 }
 

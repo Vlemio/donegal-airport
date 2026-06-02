@@ -227,11 +227,13 @@
   here; the .mp4 lives in /public/video/ once generated.
   ============================================================
 */
-[data-scrub-video] {
+[data-scrub-video],
+[data-scrub-canvas] {
   opacity: 0;
   transition: opacity 1s ease;
 }
-[data-scrub-video].is-playing {
+[data-scrub-video].is-playing,
+[data-scrub-canvas].is-playing {
   opacity: 1;
 }
 
