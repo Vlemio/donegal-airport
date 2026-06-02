@@ -39,15 +39,18 @@
 
 ## Tipografía
 
-- **Display/serif:** Georgia (headings editoriales, años watermark)
-- **Sans:** Switzer (cuerpo de texto, UI)
-- **Mono:** `ui-monospace` / IBM Plex Mono (eyebrows, datos, labels, captions)
+- **Display/serif (page):** PP Editorial New → fallback Bricolage Grotesque Variable
+- **Display/bold (hero H1):** Bricolage Grotesque Variable 800 — solo en el hero
+- **Sans:** Switzer (Fontshare) — cuerpo, lede, UI
+- **Mono:** Space Mono 400 (Google Fonts) — eyebrows, datos, labels, captions, nav
+  - Era `ui-monospace`; cambiado a Space Mono jun-2026 para look "airport terminal"
 
 **Jerarquía tipo:**
-1. Eyebrow mono uppercase tracking-[0.2em+] en `--color-sand`
-2. Heading serif grande, font-weight 400, line-height 0.9–1.05
-3. Body sans 0.94–0.97rem, line-height 1.72, color `--color-mute`
-4. Caption mono 0.6rem uppercase tracking-[0.2em]
+1. Eyebrow mono uppercase tracking-[0.26em] color soft/muted
+2. Hero H1: Bricolage Grotesque 800, clamp(2.6rem,5.3vw,76px), leading-[0.96]
+3. Page headings: PP Editorial New/Bricolage, font-weight 300–400, line-height 0.95–1.05
+4. Body sans 0.94–0.97rem, line-height 1.72, color `--color-mute`
+5. Caption mono 0.6rem uppercase tracking-[0.2em]
 
 ---
 
@@ -208,7 +211,7 @@ tenga los archivos oficiales. Campo `logo` en el array de airlines.
 ### Secciones implementadas
 | Sección | Estado | Notas |
 |---------|--------|-------|
-| Hero scrub | ✅ | `hero.mp4` 5s Kling puro, 1920×1080 bt709, SAR 1:1 |
+| Hero scrub — "Live Ops" | ✅ | Diseño Distribution A, ops panel derecha |
 | Editorial intro | ⚠️ | Gradiente placeholder — falta foto portrait |
 | Flights table | ✅ | Mock data, diseño mono editorial |
 | Destinations H-scroll | ✅ | Dublin + Glasgow con fotos reales |
@@ -216,36 +219,61 @@ tenga los archivos oficiales. Campo `logo` en el array de airlines.
 | News | ✅ | DD.MM.YYYY list |
 | CTA | ✅ | Wild Atlantic Way |
 
-### Hero layout (arquitectura actual — jun 2026)
+### Hero layout — "Live Ops" Distribution A (jun 2026)
 ```
-<section h-[300vh] relative data-scrub-trigger>
-  <!-- Layer 1: sticky background (video + Ken Burns foto) -->
+<section h-[300vh] relative data-scrub-trigger data-hero-scroll>
+  <!-- Layer 1: sticky background -->
   <div sticky top-0 h-screen overflow-hidden aria-hidden>
-    <img data-ken-burns />          ← fallback mobile / fades out en desktop
-    <video data-scrub-video />      ← 5s Kling, scrub 0→200vh scroll
-    <div gradients />               ← bottom dark + top dark (nubes)
+    <img data-ken-burns />             ← fallback mobile, fades out en desktop
+    <video data-scrub-video />         ← hero.mp4 5s, scrub 0→200vh
+    <div scrim-top h-[220px] />        ← protege nav + headline
+    <div scrim-left w-[65%] />         ← protege columna de texto
+    <div scrim-bottom h-[160px] />     ← ancla la imagen
   </div>
-  <!-- Layer 2: texto — absolute top-0, scrolls con la página -->
-  <div absolute top-0 style="padding-top: calc(var(--header-h) + 2rem)">
-    <div cfn-hero-content>...</div>
+  <!-- Layer 2: contenido h-screen, scrolls con la página -->
+  <div cfn-hero-content absolute top-0 h-screen flex flex-col
+       style="padding: calc(var(--header-h)+3rem) 3.5rem 2.5rem">
+    <!-- SPLIT ROW: lead (izquierda) + ops panel (derecha) -->
+    <div flex flex-1 items-center justify-between gap-[60px]>
+      <div hero-lead>  eyebrow → H1 → lede → CTAs  </div>
+      <aside ops-panel hidden lg:flex>
+        reloj · tiempo · tablero salidas
+      </aside>
+    </div>
+    <div scroll-hint>Scroll to reveal ↓</div>
   </div>
 </section>
 ```
-- **300vh** = 200vh de scroll para los 5s de vídeo
-- Texto sale de pantalla al hacer scroll — el vídeo queda solo
-- `data-cinematic-hero` en `<html>` hace el header transparente al inicio
 
-### Hero copy (homepage)
-- **Eyebrow:** "Carrickfinn · Co. Donegal · CFN" — `text-mute`
-- **H1:** "The world's most scenic approach to landing."
-- **Subtext:** "Dublin daily. Glasgow on weekends — and select summer weekdays. The Atlantic on both sides of the runway."
-- **CTAs:** `text-sm` (antes xs)
+### Hero copy
+- **Eyebrow:** "Donegal Airport · Co. Donegal · CFN" — Space Mono 13px, color soft
+- **H1:** "Aerfort / Dhún na nGall" — Bricolage Grotesque 800, dos líneas, `md:whitespace-nowrap`
+- **Lede:** "Dublin daily. Glasgow at weekends — and select summer weekdays. The Atlantic on both sides of the runway." — 21px, color soft
+- **CTA primary:** "Today's flights →" — amber + underline
+- **CTA secondary:** "Parking & getting here →" — white/ink
+
+### Ops panel (frosted glass, desktop only)
+- Datos en `index.astro` frontmatter: `heroDepartures[]` y `heroWeather{}`
+- **Reloj:** JS inline, `setInterval(tick, 60_000)`, formato "Mon 2 Jun · 09:41"
+- **Tiempo:** Open-Meteo fetch, coordenadas CFN (55.0441°N, 8.3411°W)
+  - Mismo sistema que dashboard Bunbeg Coast Guard
+  - Campos: `temperature_2m`, `weather_code`→texto, `wind_speed_10m`→kt, `visibility`→km
+  - Refresco cada 10 min. IDs: `wx-temp`, `wx-cond`, `wx-wind`, `wx-vis`
+  - Error → fallback a valores estáticos silenciosamente
+- **Vuelos:** estáticos en `heroDepartures[]` — pendiente conectar al panel FIDS de Jose Manuel
+- **Live dot:** pulsing ring CSS, `prefers-reduced-motion` safe
+- **CSS custom properties dentro de `.cfn-hero-content`:**
+  `--hi`, `--hi-soft`, `--hi-faint`, `--hi-amber`, `--hi-green`, `--hi-panel`, `--hi-line`
 
 ### Header transparente (homepage only)
 - `data-cinematic-hero` en `<html>` via `<script>` en index.astro
-- CSS: `:root[data-cinematic-hero] [data-header]:not(.is-scrolled)` → transparent + vars de color claros
-- Al hacer scroll 60px → `is-scrolled` → glass background aparece con transición 0.45s
-- Se limpia en `astro:before-swap` para no afectar otras páginas
+- CSS: `:root[data-cinematic-hero] [data-header]:not(.is-scrolled)` → transparent
+  - `--color-ink: #ffffff` (antes cream — ahora puro blanco)
+  - `--color-atlantic: #c49a50` (remapeado a sand-gold para que hover sea visible sobre vídeo)
+- **Header reveal:** espera hasta que la sección hero (300vh) termine de pasar
+  - `setupHeaderReveal()` en animations.ts — threshold = `heroSection.offsetTop + offsetHeight - window.innerHeight`
+  - Antes era 60px fijo, ahora espera hasta que el vídeo acabe
+- Se limpia en `astro:before-swap`
 
 ### Fotos homepage
 | Archivo | Uso | Estado |
@@ -286,6 +314,7 @@ Kling usa el drone-frame como end-keyframe → el aeropuerto que aparece es el R
 
 ## Pendientes conocidos
 
+- [ ] **Vuelos en vivo ops panel** — Jose Manuel terminando el FIDS. Cuando tenga URL+formato JSON → conectar con `fetch()` poll 60s en `index.astro`
 - [ ] Homepage intro editorial — foto portrait del aeropuerto (desde tierra/terminal)
 - [ ] Dublin dest foto — quitar personas con cleanup.pictures
 - [ ] Anthony Gillespie — tira de cita entre ch1 y ch2 (fotos pendientes de Jose Manuel)
@@ -294,6 +323,17 @@ Kling usa el drone-frame como end-keyframe → el aeropuerto que aparece es el R
 - [ ] `/flights`, `/plan`, `/pilots`, `/contact` — páginas stub
 - [ ] 21st.dev MCP — pendiente de instalar (API key)
 - [ ] Playwright MCP — pendiente de instalar
+- [ ] **Story page redesign** — handoff entregado al designer en `Downloads/Aerofot/design_handoff_story/`. Esperar nuevo HTML reference antes de implementar
+
+## Design handoff workflow
+
+Proceso establecido en jun-2026:
+1. Claude crea `design_handoff_<sección>/` con HTML standalone + README de specs
+2. Designer abre en browser, rediseña, entrega nuevo HTML reference
+3. Claude implementa el nuevo diseño en el codebase Astro
+4. Archivos de handoff: `Downloads/Aerofot/`
+   - `design_handoff_hero_live_ops/` — Hero Distribution A ✅ implementado (commit f8155c3)
+   - `design_handoff_story/` — Story page ⏳ esperando diseño del designer
 
 ---
 
