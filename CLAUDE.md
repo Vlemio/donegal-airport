@@ -208,7 +208,7 @@ tenga los archivos oficiales. Campo `logo` en el array de airlines.
 ### Secciones implementadas
 | Sección | Estado | Notas |
 |---------|--------|-------|
-| Hero scrub | ✅ | `hero.mp4` 13s: nubes→airport reveal + drone real |
+| Hero scrub | ✅ | `hero.mp4` 5s Kling puro, 1920×1080 bt709, SAR 1:1 |
 | Editorial intro | ⚠️ | Gradiente placeholder — falta foto portrait |
 | Flights table | ✅ | Mock data, diseño mono editorial |
 | Destinations H-scroll | ✅ | Dublin + Glasgow con fotos reales |
@@ -216,33 +216,73 @@ tenga los archivos oficiales. Campo `logo` en el array de airlines.
 | News | ✅ | DD.MM.YYYY list |
 | CTA | ✅ | Wild Atlantic Way |
 
+### Hero layout (arquitectura actual — jun 2026)
+```
+<section h-[300vh] relative data-scrub-trigger>
+  <!-- Layer 1: sticky background (video + Ken Burns foto) -->
+  <div sticky top-0 h-screen overflow-hidden aria-hidden>
+    <img data-ken-burns />          ← fallback mobile / fades out en desktop
+    <video data-scrub-video />      ← 5s Kling, scrub 0→200vh scroll
+    <div gradients />               ← bottom dark + top dark (nubes)
+  </div>
+  <!-- Layer 2: texto — absolute top-0, scrolls con la página -->
+  <div absolute top-0 style="padding-top: calc(var(--header-h) + 2rem)">
+    <div cfn-hero-content>...</div>
+  </div>
+</section>
+```
+- **300vh** = 200vh de scroll para los 5s de vídeo
+- Texto sale de pantalla al hacer scroll — el vídeo queda solo
+- `data-cinematic-hero` en `<html>` hace el header transparente al inicio
+
+### Hero copy (homepage)
+- **Eyebrow:** "Carrickfinn · Co. Donegal · CFN" — `text-mute`
+- **H1:** "The world's most scenic approach to landing."
+- **Subtext:** "Dublin daily. Glasgow on weekends — and select summer weekdays. The Atlantic on both sides of the runway."
+- **CTAs:** `text-sm` (antes xs)
+
+### Header transparente (homepage only)
+- `data-cinematic-hero` en `<html>` via `<script>` en index.astro
+- CSS: `:root[data-cinematic-hero] [data-header]:not(.is-scrolled)` → transparent + vars de color claros
+- Al hacer scroll 60px → `is-scrolled` → glass background aparece con transición 0.45s
+- Se limpia en `astro:before-swap` para no afectar otras páginas
+
 ### Fotos homepage
 | Archivo | Uso | Estado |
 |---------|-----|--------|
-| `public/photos/hero-poster.webp` | Hero fallback (Ken Burns) | ✅ |
+| `public/photos/hero-poster.webp` | Hero fallback (Ken Burns, se apaga en desktop) | ✅ |
 | `public/photos/dest-dub.webp` | Dublin panel | ⚠️ personas pendientes quitar |
-| `public/photos/dest-gla.webp` | Glasgow panel | ✅ (personas aceptadas) |
-| `public/video/hero.mp4` | Hero scrub 13s 1080p | ✅ |
-| `public/video/clouds-start.png` | Referencia nubes hero | ✅ guardado |
+| `public/photos/dest-gla.webp` | Glasgow panel | ✅ |
+| `public/video/hero.mp4` | Hero scrub 5s 1080p Kling puro | ✅ |
+| `public/video/clouds-start.png` | Referencia nubes para Kling | ✅ guardado |
 
 ### Hero video workflow (Higgsfield CLI)
 ```bash
-# Kling 3.0 — clouds→airport transition
+# Generar Kling 3.0 — clouds-start.png → drone-frame real
+higgsfield upload create clouds-start.png   # → UUID_clouds
+higgsfield upload create drone-frame.jpg    # → UUID_drone (extraído a t=1:30)
 higgsfield generate create kling3_0 \
-  --start-image <clouds_uuid> --end-image <airport_frame_uuid> \
-  --duration 8 --mode 4k --aspect_ratio 16:9 --sound off
+  --prompt "clouds parting left and right to reveal airport below, cinematic aerial" \
+  --start-image UUID_clouds --end-image UUID_drone \
+  --duration 5 --mode 4k --aspect_ratio 16:9 --sound off
+# Job guardado: 9e666a25 (CDN URL válida al menos días)
+# CDN: https://d8j0ntlcm91z4.cloudfront.net/user_3E8EfpZzNi3mpnf43wrkOYrByhZ/hf_20260601_165735_9e666a25-78cb-4747-87df-88ecf22b03fe.mp4
 
-# Drone clip extraction (source: Emerald - Airport HD Vid 1.mp4)
-# Ruta fuente: C:\Users\jjgar\Desktop\Fotos\Donegal Airport\Airport old photos\
-ffmpeg -ss 00:01:27 -i "source.mp4" -t 8 -c:v libx264 \
-  -g 1 -keyint_min 1 -sc_threshold 0 -movflags +faststart -crf 23 -an clip.mp4
-
-# Concat: Kling(1080p) + drone(trimmed 3s, 1080p) → hero.mp4
+# Encode para scrub (un único pase — CRÍTICO para evitar corrupción)
+ffmpeg -i kling-src.mp4 \
+  -vf "scale=1920:1080,format=yuv420p,setsar=1/1,fps=24" \
+  -c:v libx264 -crf 22 -g 1 -keyint_min 1 -sc_threshold 0 \
+  -movflags +faststart -preset slow -an \
+  -color_primaries bt709 -color_trc bt709 -colorspace bt709 \
+  hero.mp4
 ```
 
-**Regla del start frame (nubes):** Nubes esponjosas blancas sobre cielo azul (tipo altocumulus),
-NO dramáticas ni de tormenta, NO sunset. Nano Banana Pro genera buenos resultados.
-Usar Flux Kontext para compositar sobre foto real es demasiado conservador — mejor standalone.
+**REGLA CRÍTICA — encode en un solo pase:** Nunca hacer `-c copy` en concat de clips de distinta fuente.
+Los metadatos SAR/colorspace no se propagan y el browser corrompe la mitad inferior del vídeo.
+Si hay dos segmentos, usar `filter_complex` con `concat=n=2:v=1:a=0` y reencoder todo junto.
+
+**Regla del start frame (nubes):** Nubes esponjosas blancas sobre cielo azul.
+Kling usa el drone-frame como end-keyframe → el aeropuerto que aparece es el REAL.
 
 ## Pendientes conocidos
 
