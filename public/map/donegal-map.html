@@ -529,6 +529,24 @@ function setupPoints() {
     _ptsSetup = true;
     map.on('moveend', recluster);
     map.on('zoomend', recluster);
+
+    // Pause WAW during any map interaction so setPaintProperty doesn't
+    // compete with WebGL rendering on every drag/zoom/pitch frame
+    let _wawResumeTimer = 0;
+    function onInteractStart() {
+      clearTimeout(_wawResumeTimer);
+      pauseWAWAnim();
+    }
+    function onInteractEnd() {
+      clearTimeout(_wawResumeTimer);
+      _wawResumeTimer = setTimeout(resumeWAWAnim, 80);
+    }
+    map.on('movestart',  onInteractStart);
+    map.on('zoomstart',  onInteractStart);
+    map.on('pitchstart', onInteractStart);
+    map.on('moveend',    onInteractEnd);
+    map.on('zoomend',    onInteractEnd);
+    map.on('pitchend',   onInteractEnd);
   }
   recluster();
 }
