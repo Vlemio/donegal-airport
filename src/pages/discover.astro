@@ -10,19 +10,25 @@ const highlights = [
     label: "Coast & Ocean",
     text: "Blue-flag beaches, sea stacks, cliff walks. Ireland's most dramatic coastline is ten minutes from baggage claim. Carrickfinn beach starts at the runway threshold.",
     link: "#destinations",
-    photo: "Carrickfinn beach · CFN runway in frame",
+    src: "/photos/discover-carrickfinn.jpg",
+    srcPos: "90% 38%",
+    caption: "Carrickfinn beach · CFN",
   },
   {
     label: "Mountain & Lough",
     text: "Errigal, Slieve League and Glenveagh National Park sit within an hour's drive. No queues. No crowds. The park's 16,000 hectares of blanket bog and oak wood are free.",
     link: "#destinations",
-    photo: "Errigal from the south · golden hour",
+    src: "/photos/discover-mountain-lough.jpg",
+    srcPos: "50% 70%",
+    caption: "Errigal · Co. Donegal",
   },
   {
     label: "Gaeltacht",
     text: "Donegal is Ireland's largest Irish-speaking county. The airport sits at its heart. The dialect here — Úlaidh — is the oldest form of Irish still spoken daily.",
     link: "#destinations",
-    photo: "Gweedore village · Gaeltacht heartland",
+    src: "",
+    srcPos: "50% 50%",
+    caption: "Gweedore village · Gaeltacht heartland",
   },
 ] as const;
 
@@ -30,128 +36,362 @@ const destinations = [
   {
     code: "01",
     title: "Wild Atlantic Way",
-    drive: "10 min from CFN",
+    drive: "CFN sits on the route",
     tagline: "Ireland's great coastal road. 2,500 km of cliff, cove and open sky. Donegal holds the wildest stretch.",
-    photo: "Cliffs on the Wild Atlantic Way · north Donegal",
+    src: "/photos/discover-wild-atlantic.jpg",
+    srcPos: "47% 32%",
+    caption: "Wild Atlantic Way · north Donegal",
   },
   {
     code: "02",
     title: "Errigal Mountain",
     drive: "22 min from CFN",
     tagline: "Donegal's iconic quartzite cone, 751 m. The summit ridge trail takes two hours. The view takes the rest of the day.",
-    photo: "Errigal summit · looking north toward the Atlantic",
+    src: "/photos/discover-errigal.jpg",
+    srcPos: "60% 78%",
+    caption: "Errigal · Co. Donegal",
   },
   {
     code: "03",
     title: "Glenveagh",
     drive: "45 min from CFN",
     tagline: "Ireland's largest national park. Red deer, peregrine falcons, a Victorian castle beside a glacier lough. Entry is free.",
-    photo: "Glenveagh Castle · Lough Veagh reflected",
+    src: "/photos/discover-glenveagh.jpg",
+    srcPos: "48% 89%",
+    caption: "Glenveagh · Co. Donegal",
   },
   {
     code: "04",
     title: "Slieve League",
     drive: "55 min from CFN",
     tagline: "Three times the height of the Cliffs of Moher. A fraction of the visitors. The Atlantic crashes 600 m below the summit.",
-    photo: "Slieve League cliffs · looking west",
+    src: "/photos/discover-slieve-league.jpg",
+    srcPos: "24% 38%",
+    caption: "Slieve League · Co. Donegal",
   },
   {
     code: "05",
     title: "Malin Head",
-    drive: "1 h 15 min from CFN",
-    tagline: "Ireland's northernmost point. End of the Wild Atlantic Way. The signs point here from every corner of the island.",
-    photo: "Malin Head · Banba's Crown headland",
+    drive: "75 min from CFN",
+    tagline: "Ireland's most northern point. End of the Wild Atlantic Way. The signs point here from every corner of the island.",
+    src: "/photos/discover-malin-head.jpg",
+    srcPos: "61% 48%",
+    caption: "Malin Head · Co. Donegal",
   },
   {
     code: "06",
     title: "Donegal Town",
-    drive: "1 h from CFN",
+    drive: "60 min from CFN",
     tagline: "A medieval castle, a diamond square, the best tweed on the island. Small enough to walk end-to-end before dinner.",
-    photo: "Donegal Castle · River Eske",
+    src: "",
+    srcPos: "50% 50%",
+    caption: "Donegal Castle · River Eske",
   },
 ] as const;
 
-const practical = [
-  { label: "Car hire at CFN", detail: "Collection from arrivals · Budget, Europcar" },
-  { label: "Drive times", detail: "Beach 10 min · Errigal 22 min · Glenveagh 45 min · Donegal Town 1 h" },
-  { label: "Coach transfers", detail: "Bus Éireann 480 · Letterkenny 35 min · Sligo 2 h 30 min" },
-  { label: "Best season", detail: "Open all year · Best light: April – October" },
+
+type Provider = { name: string; website: string; phone: string; email: string };
+
+const activities: {
+  code: string;
+  label: string;
+  title: string;
+  tagline: string;
+  src: string;
+  srcPos: string;
+  providers: Provider[];
+  moreUrl: string;
+}[] = [
+  {
+    code: "01",
+    label: "Golf",
+    title: "Links Golf Capital of Ireland",
+    tagline: "Ten championship courses within an hour of CFN — Rosapenna, Ballyliffin and Portsalon among the finest links in Europe.",
+    src: "/photos/discover-golf.jpg",
+    srcPos: "50% 50%",
+    providers: [],
+    moreUrl: "",
+  },
+  {
+    code: "02",
+    label: "Water Sports",
+    title: "Kite, windsurf, paddle. At the fence.",
+    tagline: "Carrickfinn Watersports sits at the airport perimeter fence. Kitesurfing, windsurfing, paddleboarding and open-water swimming on Blue Flag water.",
+    src: "/photos/discover-watersports.jpg",
+    srcPos: "62% 39%",
+    providers: [
+      { name: "Carrickfinn Watersports", website: "https://www.carrickfinnwatersports.ie", phone: "+353 83 073 1517", email: "cfnwatersports@gmail.com" },
+    ],
+    moreUrl: "https://www.govisitdonegal.com/things-to-do/activities/water-activities",
+  },
+  {
+    code: "03",
+    label: "Sea Kayaking",
+    title: "Paddle the Wild Atlantic",
+    tagline: "Guided sea kayaking along sea caves, sea stacks and headlands only reachable from the water. Day trips and multi-day expeditions.",
+    src: "/photos/discover-kayaking.jpg",
+    srcPos: "50% 50%",
+    providers: [
+      { name: "Sea Kayaking Donegal", website: "https://www.seakayakingdonegal.com", phone: "", email: "seakayakingdonegal@gmail.com" },
+    ],
+    moreUrl: "",
+  },
+  {
+    code: "04",
+    label: "Sailing",
+    title: "Open water, big sky",
+    tagline: "Skippered sailing trips along Donegal Bay and the northwest coast. Day sails and longer charters from local harbours.",
+    src: "/photos/discover-sailing.jpg",
+    srcPos: "50% 50%",
+    providers: [
+      { name: "Selkie Sailing", website: "https://www.selkieseaadventures.com", phone: "+353 86 222 3328", email: "info@selkiesailing.com" },
+    ],
+    moreUrl: "",
+  },
+  {
+    code: "05",
+    label: "Trek & Paddle",
+    title: "Two ways to see the coast",
+    tagline: "Guided multi-activity days combining coastal walking with sea kayaking. Donegal's wild coast, explored from land and water on the same day.",
+    src: "/photos/discover-trek-paddle.jpg",
+    srcPos: "50% 50%",
+    providers: [
+      { name: "Trek and Paddle", website: "", phone: "+353 87 090 3163", email: "trekandpaddledonegal@gmail.com" },
+    ],
+    moreUrl: "",
+  },
+  {
+    code: "06",
+    label: "Outdoor Adventure",
+    title: "From cliff faces to open water",
+    tagline: "Rock climbing, archery, power boating and sea kayaking. All-weather, all-ability programmes for groups, families and individuals.",
+    src: "/photos/discover-adventure.jpg",
+    srcPos: "68% 100%",
+    providers: [
+      { name: "Gartan Outdoor Pursuits Centre", website: "https://www.gartan.com", phone: "+353 74 913 7032", email: "" },
+      { name: "Unique Ascent", website: "https://www.uniqueascent.ie", phone: "+353 87 758 4710", email: "" },
+    ],
+    moreUrl: "",
+  },
+  {
+    code: "07",
+    label: "Diving",
+    title: "Wrecks of the northwest coast",
+    tagline: "Cold, clear Atlantic water with exceptional visibility. Wreck dives, reef dives and shore diving from beginner to technical grade.",
+    src: "/photos/discover-diving.jpg",
+    srcPos: "48% 13%",
+    providers: [
+      { name: "Dive Arranmore", website: "https://www.divearranmore.com", phone: "+353 86 330 0516", email: "" },
+      { name: "Mevagh Dive Centre", website: "https://www.mevaghdiving.com", phone: "+353 74 914 4708", email: "" },
+    ],
+    moreUrl: "",
+  },
+  {
+    code: "08",
+    label: "Surfing",
+    title: "Atlantic swells, year-round",
+    tagline: "Donegal's exposed coast picks up consistent Atlantic swell from September to May. Board hire and lessons are minutes from the airport.",
+    src: "/photos/discover-surfing.jpg",
+    srcPos: "63% 15%",
+    providers: [],
+    moreUrl: "https://www.govisitdonegal.com/things-to-do/activities/surfing",
+  },
+  {
+    code: "09",
+    label: "Cycling",
+    title: "Empty roads, epic scenery",
+    tagline: "The Wild Atlantic Way cycle route winds through some of Ireland's most spectacular coastal scenery, with very little traffic.",
+    src: "/photos/discover-cycling.jpg",
+    srcPos: "50% 50%",
+    providers: [],
+    moreUrl: "https://www.govisitdonegal.com/things-to-do/activities/cycling",
+  },
+  {
+    code: "10",
+    label: "Angling",
+    title: "The catch of a lifetime",
+    tagline: "Donegal's rivers run with salmon and sea trout. The Atlantic coast offers shore angling and fully-equipped deep-sea charter boats.",
+    src: "/photos/discover-angling.jpg",
+    srcPos: "50% 50%",
+    providers: [],
+    moreUrl: "https://www.govisitdonegal.com/things-to-do/activities/angling",
+  },
+  {
+    code: "11",
+    label: "Walking & Hiking",
+    title: "Pull on boots. Point anywhere.",
+    tagline: "Waymarked Ways, National Loops and the Wild Nephin Wilderness Trail. 50,000 km² of Donegal — and very few other walkers.",
+    src: "/photos/discover-hiking.jpg",
+    srcPos: "50% 50%",
+    providers: [],
+    moreUrl: "https://www.govisitdonegal.com/things-to-do/activities/walking",
+  },
+];
+
+
+const golfClubs = [
+  { name: "Rosapenna Golf Resort",     location: "Downings",    contact: "golf@rosapenna.ie",            phone: "+353 74 91 55000",  website: "https://www.rosapenna.ie",             photo: "https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_05.png" },
+  { name: "Ballyliffin Golf Club",     location: "Ballyliffin", contact: "info@ballyliffingolfclub.com", phone: "+353 74 9376 119",  website: "https://www.ballyliffingolfclub.com",  photo: "https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_08.png" },
+  { name: "Portsalon Golf Club",       location: "Portsalon",   contact: "admin@portsalongolfclub.ie",   phone: "+353 74 9159459",   website: "https://www.portsalongolfclub.ie",     photo: "https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_07.png" },
+  { name: "Narin & Portnoo Golf Club", location: "Portnoo",     contact: "info@nandplinks.com",          phone: "+353 74 95 45107",  website: "https://www.narinandportnoo.com",      photo: "https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_02.png" },
+  { name: "Cruit Island Golf Club",    location: "Kincasslagh", contact: "info@cruitislandgolfclub.com", phone: "+353 74 9543296",   website: "https://www.cruitislandgolfclub.com",  photo: "https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_01.png" },
+  { name: "Dunfanaghy Golf Club",      location: "Dunfanaghy",  contact: "dunfanaghygolf@eircom.net",    phone: "+353 74 913 6335",  website: "https://www.dunfanaghygolfclub.com",   photo: "https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_04.png" },
+  { name: "Gweedore Golf Club",        location: "Gweedore",    contact: "gweedoregc@gmail.com",         phone: "+353 74 9531140",   website: "https://www.gweedoregolfclub.com",     photo: "https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_03.png" },
+  { name: "Donegal Golf Club",         location: "Murvagh",     contact: "info@donegalgolfclub.ie",      phone: "+353 74 97 34054",  website: "https://www.donegalgolfclub.ie",       photo: "https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_06.png" },
+  { name: "Bundoran Golf Club",        location: "Bundoran",    contact: "info@bundorangolfclub.com",    phone: "+353 71 984 1302",  website: "https://www.bundorangolfclub.com",     photo: "https://donegalairport.ie/wp-content/uploads/2024/12/bundoran.jpeg" },
+  { name: "North West Golf Club",      location: "Buncrana",    contact: "booking@northwestgolfclub.com",phone: "+353 74 936 1715",  website: "https://www.northwestgolfclub.com",    photo: "https://donegalairport.ie/wp-content/uploads/2024/12/buncrana.jpg" },
+] as const;
+
+const islands = [
+  // ── Original four — most visited, shown first ──────────────────────────────
+  {
+    name: "Arranmore",
+    irish: "An Oileán Mór",
+    ferry: "Burtonport · 15 min crossing",
+    drive: "35 min from CFN",
+    text: "Donegal's largest inhabited island. 500 residents, blue-flag beaches, sea cliffs and a pub that opens when the fishermen get back.",
+    src: "", srcPos: "50% 50%",
+  },
+  {
+    name: "Tory Island",
+    irish: "Toraigh",
+    ferry: "Magheroarty · 45 min crossing",
+    drive: "55 min from CFN",
+    text: "Nine miles offshore. A world of its own — an elected king, a school of naïve painters, and a way of life untouched by the mainland.",
+    src: "", srcPos: "50% 50%",
+  },
+  {
+    name: "Gola Island",
+    irish: "Oileán Ghabhla",
+    ferry: "Bunbeg · 10 min crossing",
+    drive: "40 min from CFN",
+    text: "Uninhabited since 1967. White beaches, abandoned stone cottages, complete silence. Day trips run in summer from Bunbeg harbour.",
+    src: "", srcPos: "50% 50%",
+  },
+  {
+    name: "Owey Island",
+    irish: "Uaigh",
+    ferry: "Cruit Island · 10 min crossing",
+    drive: "40 min from CFN",
+    text: "No road. No permanent residents. A small summer population returns each year to keep the old cottages alive. Arranged crossings only.",
+    src: "", srcPos: "50% 50%",
+  },
+  // ── Additional islands ─────────────────────────────────────────────────────
+  {
+    name: "Inishbofin",
+    irish: "Inis Bó Finne",
+    ferry: "Magheraroarty · 20 min crossing",
+    drive: "50 min from CFN",
+    text: "A small Gaeltacht community off the northwest coast. White beaches, dramatic cliffs, and one of Donegal's most important seabird colonies.",
+    src: "", srcPos: "50% 50%",
+  },
+  {
+    name: "Inishfree",
+    irish: "Inis Fraoigh",
+    ferry: "Burtonport · 10 min crossing",
+    drive: "35 min from CFN",
+    text: "Island of heather, sheltered in the bay between Dungloe and Burtonport. Once home to farmers and fishermen; now visited for its peace.",
+    src: "", srcPos: "50% 50%",
+  },
+  {
+    name: "Inishirrer",
+    irish: "Inis Oirthir",
+    ferry: "Gweedore coast · short crossing",
+    drive: "45 min from CFN",
+    text: "The Eastern Island — long and narrow, off the Gweedore coast. Its islanders were famed throughout Donegal for seamanship and rowing.",
+    src: "", srcPos: "50% 50%",
+  },
+  {
+    name: "Inishkerragh",
+    irish: "Inis Caorach",
+    ferry: "Burtonport · short crossing",
+    drive: "40 min from CFN",
+    text: "Sheep Island — a tiny flat islet in Boylagh Bay, just 650 m long. One of the most sheltered of the Rosses archipelago.",
+    src: "", srcPos: "50% 50%",
+  },
+  {
+    name: "Inishtrahull",
+    irish: "Inis Trá Thoill",
+    ferry: "Malin Head · arranged crossing",
+    drive: "90 min from CFN",
+    text: "Ireland's most northerly island. Uninhabited since 1929. An automated lighthouse marks the point where the Atlantic meets the Irish Sea.",
+    src: "", srcPos: "50% 50%",
+  },
+  {
+    name: "Island Roy",
+    irish: "Oileán Ruaidh",
+    ferry: "Downings · short crossing",
+    drive: "60 min from CFN",
+    text: "A quiet islet in the sheltered waters of Mulroy Bay, near Downings. Calm tidal channels, birdlife, and some of the most still water in Donegal.",
+    src: "", srcPos: "50% 50%",
+  },
 ] as const;
 ---
 
 <BaseLayout title={title} description={description}>
 
-  {/* ─── HERO ──────────────────────────────────────────────────────────────────
-      Full-screen. Left: editorial headline. Right: tall photo placeholder.
-      Photo caption is what José replaces with his image. */}
-  <section class="border-b border-line">
-    <div class="mx-auto grid min-h-[92vh] max-w-7xl grid-cols-1 items-end gap-0 px-6 pb-0 pt-[var(--header-h)] lg:grid-cols-2">
+  {/* ─── HERO — D: full-bleed photo · centred kicker + title + links · no body ─ */}
+  <section class="relative h-[88vh] min-h-[540px] overflow-hidden border-b border-line">
 
-      {/* Text column */}
-      <div class="py-16 pr-0 lg:py-24 lg:pr-16">
-        <p
-          data-animate="fade-up"
-          class="font-mono text-[0.68rem] uppercase tracking-[0.34em] text-atlantic"
-        >
-          Donegal · Ireland · Wild Atlantic Way
-        </p>
+    <img
+      src="/photos/discover-hero.jpg"
+      alt="Sunset from Errigal, Donegal"
+      class="absolute inset-0 h-full w-full object-cover object-[50%_42%]"
+      loading="eager"
+      decoding="sync"
+    />
 
-        <h1
-          data-split
-          data-split-delay="0.1"
-          class="mt-6 font-display text-[clamp(3rem,6.5vw,7rem)] font-normal leading-[0.92]"
-        >
-          Land in<br />Donegal.
-        </h1>
+    {/* Overall darkening scrim — subtle, lets colours through */}
+    <div class="pointer-events-none absolute inset-0 bg-ink/25" aria-hidden="true"></div>
 
-        <p
-          data-animate="fade-up"
-          data-animate-delay="0.3"
-          class="mt-8 max-w-md text-base leading-relaxed text-mute sm:text-lg"
-        >
-          Ten minutes from baggage claim, you are standing on a blue-flag
-          beach with Mount Errigal behind you and the Atlantic in front.
-        </p>
-
-        <div
-          data-animate="fade-up"
-          data-animate-delay="0.4"
-          class="mt-10 flex flex-wrap gap-6"
-        >
-          <a
-            href="#destinations"
-            class="border-b border-ink/60 pb-1 font-mono text-xs uppercase tracking-[0.22em] text-ink transition-colors hover:border-sand hover:text-sand"
-          >
-            Explore destinations →
-          </a>
-          <a
-            href="/flights"
-            class="border-b border-transparent pb-1 font-mono text-xs uppercase tracking-[0.22em] text-mute transition-colors hover:border-sand hover:text-sand"
-          >
-            Book a flight →
-          </a>
-        </div>
-      </div>
-
-      {/* Hero photo — tall portrait, fills right column to bottom */}
-      <figure
-        data-photo
-        class="relative h-full min-h-[55vw] self-stretch overflow-hidden lg:min-h-0"
+    {/* Content — centred */}
+    <div class="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+      <p
+        data-animate="fade-up"
+        class="font-mono text-[0.68rem] uppercase tracking-[0.34em] text-white"
+        style="text-shadow: 0 1px 10px rgba(0,0,0,0.8)"
       >
-        <div
-          data-ken-burns
-          data-ken-burns-duration="22"
-          class="absolute inset-0 bg-surface-lo"
-          aria-hidden="true"
-        ></div>
-        {/* ↑ Replace bg-surface-lo with your photo:
-            class="absolute inset-0 h-full w-full object-cover"
-            src="/photos/discover-hero.jpg" alt="..." */}
-        <figcaption class="absolute bottom-4 right-5 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-mute">
-          Photograph · Wild Atlantic Way · Donegal
-        </figcaption>
-      </figure>
+        Donegal · Ireland · Wild Atlantic Way
+      </p>
+      <h1
+        data-split
+        data-split-delay="0.1"
+        class="mt-5 font-display text-[clamp(3.5rem,7vw,8rem)] font-normal leading-[0.9] text-white"
+      >
+        The Atlantic<br />begins here.
+      </h1>
+      <p
+        data-animate="fade-up"
+        data-animate-delay="0.25"
+        class="mt-6 max-w-lg text-[1rem] leading-relaxed text-white/80"
+        style="text-shadow: 0 1px 8px rgba(0,0,0,0.45)"
+      >
+        Most people land and then travel. Here, you've already arrived somewhere worth being. Fly into Ireland's wildest coast.
+      </p>
+      <div
+        data-animate="fade-up"
+        data-animate-delay="0.4"
+        class="mt-8 flex flex-wrap justify-center gap-8"
+      >
+        <a
+          href="#destinations"
+          class="border-b border-white/50 pb-0.5 font-mono text-xs uppercase tracking-[0.22em] text-white transition-colors hover:border-sand hover:text-sand"
+        >
+          Explore destinations →
+        </a>
+        <a
+          href="/flights"
+          class="border-b border-white/50 pb-0.5 font-mono text-xs uppercase tracking-[0.22em] text-white transition-colors hover:border-sand hover:text-sand"
+        >
+          Book a flight →
+        </a>
+      </div>
     </div>
+
+    <figcaption class="absolute bottom-4 right-5 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-white/35">
+      Errigal · Co. Donegal
+    </figcaption>
+
   </section>
 
   {/* ─── THREE HIGHLIGHTS ──────────────────────────────────────────────────────
@@ -163,17 +403,32 @@ const practical = [
           <li
             data-animate="fade-up"
             data-animate-delay={`${0.07 * i}`}
+            class="flex flex-col"
           >
-            {/* Photo placeholder — 3:4 portrait */}
-            <figure data-photo class="relative aspect-[3/4] w-full overflow-hidden bg-surface-lo">
-              {/* Replace bg-surface-lo with real photo */}
-              <figcaption class="absolute bottom-3 left-4 font-mono text-[0.58rem] uppercase tracking-[0.2em] text-mute/60">
-                {h.photo}
+            {/* Photo — 3:4 portrait */}
+            <figure data-drag-fig class="relative aspect-[3/4] w-full overflow-hidden bg-surface-lo">
+              {h.src && (
+                <img
+                  data-drag-img
+                  src={h.src}
+                  alt={h.label}
+                  class="absolute inset-0 h-full w-full object-cover"
+                  style={`object-position: ${h.srcPos}`}
+                  loading="lazy"
+                  decoding="async"
+                />
+              )}
+              <div data-drag-overlay class="absolute inset-0 cursor-grab active:cursor-grabbing"></div>
+              <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono text-[0.6rem] text-white backdrop-blur-sm">
+                {h.srcPos}
+              </div>
+              <figcaption class="pointer-events-none absolute bottom-3 left-4 font-mono text-[0.58rem] uppercase tracking-[0.2em] text-white" style="text-shadow:0 1px 6px rgba(0,0,0,0.85)">
+                {h.caption}
               </figcaption>
             </figure>
 
-            <div class="mt-6">
-              <p class="font-mono text-[0.66rem] uppercase tracking-[0.26em] text-atlantic">
+            <div class="mt-6 flex flex-1 flex-col">
+              <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.22em] text-atlantic">
                 {h.label}
               </p>
               <p class="mt-3 text-[0.9rem] leading-relaxed text-mute">
@@ -181,7 +436,7 @@ const practical = [
               </p>
               <a
                 href={h.link}
-                class="mt-5 inline-block border-b border-ink/40 pb-0.5 font-mono text-[0.66rem] uppercase tracking-[0.22em] text-ink transition-colors hover:border-sand hover:text-sand"
+                class="mt-auto pt-5 inline-block border-b border-ink/40 pb-0.5 font-mono text-[0.66rem] uppercase tracking-[0.22em] text-ink transition-colors hover:border-sand hover:text-sand"
               >
                 Explore →
               </a>
@@ -194,14 +449,14 @@ const practical = [
 
   {/* ─── DESTINATIONS GRID ─────────────────────────────────────────────────────
       6 cards · 3×2 on desktop · photos fill each card · text below. */}
-  <section id="destinations" class="border-b border-line bg-surface-lo/50">
+  <section class="border-b border-line bg-surface-lo/50">
     <div class="mx-auto max-w-7xl px-6 py-20">
 
       <div class="mb-14 flex items-end justify-between gap-6">
         <div>
           <p
             data-animate="fade-up"
-            class="font-mono text-[0.68rem] uppercase tracking-[0.3em] text-atlantic"
+            class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.26em] text-atlantic"
           >
             From the terminal
           </p>
@@ -209,7 +464,7 @@ const practical = [
             data-split
             class="mt-3 font-display text-[clamp(2rem,4.5vw,4.2rem)] font-normal leading-[0.97]"
           >
-            Six reasons to<br />miss your return flight.
+            Where do you go first?
           </h2>
         </div>
       </div>
@@ -219,48 +474,51 @@ const practical = [
           <li
             data-animate="fade-up"
             data-animate-delay={`${0.05 * i}`}
+            data-tilt
             class="group"
           >
             {/* Photo area — 4:5 portrait */}
             <figure
-              data-photo
+              data-drag-fig
               class="relative aspect-[4/5] w-full overflow-hidden bg-surface-lo"
             >
-              {/* Replace bg-surface-lo with real photo.
-                  Overlay text works on any photo via the gradient below: */}
+              {d.src && (
+                <img
+                  data-drag-img
+                  src={d.src}
+                  alt={d.title}
+                  class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                  style={`object-position: ${d.srcPos}`}
+                  loading="lazy"
+                  decoding="async"
+                />
+              )}
               <div
-                class="absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
                 aria-hidden="true"
               ></div>
-              <p class="absolute bottom-4 left-5 font-display text-[clamp(1.4rem,3vw,2rem)] font-normal leading-tight text-[#f0eee6] opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+              <p class="pointer-events-none absolute bottom-4 left-5 right-4 font-display text-[clamp(1.2rem,2.5vw,1.7rem)] font-normal leading-tight text-[#f0eee6] opacity-0 transition-opacity duration-500 group-hover:opacity-100">
                 {d.tagline}
               </p>
-              <figcaption class="absolute bottom-3 right-4 font-mono text-[0.58rem] uppercase tracking-[0.18em] text-mute/50">
-                {d.photo}
+              <div data-drag-overlay class="absolute inset-0 cursor-grab active:cursor-grabbing"></div>
+              <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono text-[0.6rem] text-white backdrop-blur-sm">
+                {d.srcPos}
+              </div>
+              <figcaption class="pointer-events-none absolute bottom-3 right-3 font-mono text-[0.52rem] uppercase tracking-[0.15em] text-white" style="text-shadow:0 1px 6px rgba(0,0,0,0.85)">
+                {d.caption}
               </figcaption>
-
-              {/* Card number watermark */}
-              <span
-                class="absolute right-4 top-4 font-mono text-[0.6rem] uppercase tracking-[0.28em] text-ink/25"
-                aria-hidden="true"
-              >
-                {d.code}
-              </span>
             </figure>
 
             {/* Text below photo — always visible */}
             <div class="mt-4 flex items-start justify-between gap-4">
               <div>
-                <h3 class="font-display text-[1.5rem] font-normal leading-tight">
+                <h3 class="font-display text-[1.5rem] font-bold leading-tight">
                   {d.title}
                 </h3>
-                <p class="mt-1 font-mono text-[0.65rem] uppercase tracking-[0.2em] text-mute">
+                <p data-odometer class="mt-1 font-mono text-[0.65rem] uppercase tracking-[0.2em] text-mute">
                   {d.drive}
                 </p>
               </div>
-              <span class="mt-1 shrink-0 font-mono text-[0.7rem] text-atlantic transition-transform duration-300 group-hover:translate-x-1">
-                →
-              </span>
             </div>
           </li>
         ))}
@@ -268,87 +526,720 @@ const practical = [
     </div>
   </section>
 
-  {/* ─── EDITORIAL CTA ─────────────────────────────────────────────────────────
-      Atlantic green block — design element, no photo needed. */}
-  <section
-    class="border-b border-line"
-    style="background-color: var(--color-atlantic)"
-  >
-    <div class="mx-auto max-w-7xl px-6 py-28 sm:py-36">
-      <p
-        data-animate="fade-up"
-        class="font-mono text-[0.68rem] uppercase tracking-[0.34em]"
-        style="color: rgba(240,238,230,0.55)"
-      >
-        The plan
-      </p>
-      <h2
-        data-split
-        class="mt-5 max-w-5xl font-display text-[clamp(2.4rem,6vw,6.5rem)] font-normal leading-[0.93]"
-        style="color: #f0eee6"
-      >
-        Fly in Thursday.<br />
-        Back by Sunday.<br />
-        <em class="font-normal not-italic" style="color: var(--color-sand-bright)">
-          You'll stay longer next time.
-        </em>
-      </h2>
-      <div
-        data-animate="fade-up"
-        data-animate-delay="0.3"
-        class="mt-14 flex flex-wrap gap-x-10 gap-y-4"
-      >
-        <a
-          href="/flights"
-          class="border-b pb-1 font-mono text-xs uppercase tracking-[0.22em] transition-colors hover:text-sand"
-          style="color: #f0eee6; border-color: rgba(240,238,230,0.45)"
-        >
-          Book a flight →
-        </a>
-        <a
-          href="/plan"
-          class="border-b border-transparent pb-1 font-mono text-xs uppercase tracking-[0.22em] transition-colors hover:text-sand"
-          style="color: rgba(240,238,230,0.5)"
-        >
-          Plan your journey →
-        </a>
-      </div>
-    </div>
-  </section>
-
-  {/* ─── PRACTICAL INFO ────────────────────────────────────────────────────── */}
-  <section>
+  {/* ─── ACTIVITIES GRID ───────────────────────────────────────────────────────
+      6 cards · same design as destinations · sports & activities */}
+  <section id="activities" class="border-b border-line">
     <div class="mx-auto max-w-7xl px-6 py-20">
-      <p
-        data-animate="fade-up"
-        class="font-mono text-[0.68rem] uppercase tracking-[0.3em] text-atlantic"
-      >
-        Getting around
-      </p>
-      <h2
-        data-split
-        class="mt-3 font-display text-[clamp(1.8rem,3.5vw,3rem)] font-normal leading-[1.02]"
-      >
-        From the terminal to the wilderness.
-      </h2>
 
-      <dl
-        data-animate="fade-up"
-        data-animate-delay="0.15"
-        class="mt-12 grid divide-y divide-line sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4"
-      >
-        {practical.map((p) => (
-          <div class="py-8 sm:pr-8">
-            <dt class="font-mono text-[0.64rem] uppercase tracking-[0.22em] text-atlantic">
-              {p.label}
-            </dt>
-            <dd class="mt-3 text-[0.9rem] leading-relaxed text-mute">
-              {p.detail}
-            </dd>
-          </div>
+      <div class="mb-14 flex items-end justify-between gap-6">
+        <div>
+          <p
+            data-animate="fade-up"
+            class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.26em] text-atlantic"
+          >
+            Sports &amp; activities
+          </p>
+          <h2
+            data-split
+            class="mt-3 font-display text-[clamp(2rem,4.5vw,4.2rem)] font-normal leading-[0.97]"
+          >
+            Every way to fill the days.
+          </h2>
+        </div>
+      </div>
+
+      <ul class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        {activities.map((a, i) => (
+          <li
+            id={a.code === "01" ? "golf-card" : undefined}
+            data-animate="fade-up"
+            data-animate-delay={`${0.05 * i}`}
+            data-tilt
+            class={`group flex flex-col${a.code === "01" ? " cursor-pointer select-none" : ""}`}
+            role={a.code === "01" ? "button" : undefined}
+            aria-expanded={a.code === "01" ? "false" : undefined}
+            aria-controls={a.code === "01" ? "golf-panel" : undefined}
+          >
+            <figure
+              data-drag-fig
+              class="relative aspect-[4/5] w-full overflow-hidden bg-surface-lo"
+            >
+              {a.src && (
+                <img
+                  data-drag-img
+                  src={a.src}
+                  alt={a.label}
+                  class="absolute inset-0 h-full w-full object-cover"
+                  style={`object-position: ${a.srcPos}`}
+                  loading="lazy"
+                  decoding="async"
+                />
+              )}
+              <div
+                class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                aria-hidden="true"
+              ></div>
+              <p class="pointer-events-none absolute bottom-4 left-5 right-4 font-display text-[clamp(1.1rem,2.2vw,1.55rem)] font-normal leading-tight text-[#f0eee6] opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+                {a.tagline}
+              </p>
+              <div data-drag-overlay class="absolute inset-0 cursor-grab active:cursor-grabbing"></div>
+              <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono text-[0.6rem] text-white backdrop-blur-sm"></div>
+            </figure>
+
+            {/* Content below photo — flex-col so provider strip aligns to bottom */}
+            <div class="mt-4 flex flex-1 flex-col">
+              {/* Title row */}
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="font-mono text-[0.74rem] font-bold uppercase tracking-[0.22em] text-atlantic">
+                    {a.label}
+                  </p>
+                  <h3 class="mt-1 font-display text-[1.9rem] font-bold leading-tight">
+                    {a.title.split(/([fF])/).map((seg) =>
+                      seg.match(/[fF]/) ? <span class="f-fix">{seg}</span> : seg
+                    )}
+                  </h3>
+                </div>
+                {a.code === "01" && (
+                  <span id="golf-toggle-arrow" class="mt-2 shrink-0 font-mono text-[0.7rem] text-atlantic transition-transform duration-300 group-hover:translate-y-1">
+                    ↓
+                  </span>
+                )}
+              </div>
+
+              {/* Provider / link strip — mt-auto pushes it to the bottom of every cell.
+                  min-h keeps single-line items (Golf text, moreUrl) as tall as 2-name cards
+                  so the separator border-t lands at the same Y across each grid row. */}
+              <div class="mt-auto border-t border-line pt-3 min-h-[4rem] space-y-2.5">
+                {a.code === "01" ? (
+                  <span class="block font-mono text-[0.72rem] tracking-[0.04em] text-ink/40">
+                    10 championship courses · tap to explore
+                  </span>
+                ) : a.providers.length > 0 ? (
+                  a.providers.map((p) => (
+                    <div>
+                      {p.website ? (
+                        <a
+                          href={p.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="group/p flex items-center justify-between gap-2"
+                        >
+                          <span class="font-mono text-[0.75rem] tracking-[0.03em] text-ink/65 transition-colors group-hover/p:text-atlantic truncate">
+                            {p.name}
+                          </span>
+                          <span class="shrink-0 font-mono text-[0.6rem] text-atlantic/70">↗</span>
+                        </a>
+                      ) : (
+                        <span class="block font-mono text-[0.75rem] tracking-[0.03em] text-ink/55">
+                          {p.name}
+                        </span>
+                      )}
+                      {/* Show contact only for single-provider cards; 2-provider cards show names only */}
+                      {a.providers.length === 1 && (p.phone ? (
+                        <span class="block font-mono text-[0.68rem] tracking-[0.03em] text-mute/70 mt-0.5">
+                          {p.phone}
+                        </span>
+                      ) : p.email ? (
+                        <a
+                          href={`mailto:${p.email}`}
+                          class="block font-mono text-[0.68rem] tracking-[0.03em] text-mute/70 hover:text-atlantic transition-colors mt-0.5"
+                        >
+                          {p.email}
+                        </a>
+                      ) : null)}
+                    </div>
+                  ))
+                ) : a.moreUrl ? (
+                  <a
+                    href={a.moreUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="group/more flex items-center justify-between gap-2"
+                  >
+                    <span class="font-mono text-[0.72rem] tracking-[0.03em] text-ink/45 transition-colors group-hover/more:text-atlantic">
+                      govisitdonegal.com
+                    </span>
+                    <span class="shrink-0 font-mono text-[0.6rem] text-atlantic/70">↗</span>
+                  </a>
+                ) : null}
+              </div>
+            </div>
+          </li>
         ))}
-      </dl>
+      </ul>
+
+      {/* ── Golf clubs panel — hidden until golf card is clicked ── */}
+      <div
+        id="golf-panel"
+        aria-hidden="true"
+        class="mt-14 overflow-hidden border-t border-line"
+        style="max-height: 0; transition: max-height 0.55s cubic-bezier(0.4,0,0.2,1);"
+      >
+        <div class="pt-12 pb-2 flex items-end justify-between gap-6">
+          <div>
+            <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.26em] text-atlantic">
+              Golf · 10 championship courses
+            </p>
+            <h3 class="mt-3 font-display text-[clamp(1.6rem,3vw,2.6rem)] font-normal leading-[1.02]">
+              Ten courses. One county.
+            </h3>
+          </div>
+          <span id="golf-counter" class="font-mono text-[0.62rem] text-mute tabular-nums shrink-0">1 / {golfClubs.length}</span>
+        </div>
+
+        {/* Carousel with side arrows */}
+        <div class="mt-8 flex items-center gap-6">
+          <button
+            id="golf-prev"
+            aria-label="Previous"
+            class="flex-none flex h-11 w-11 items-center justify-center rounded-full border border-ink/25 text-ink/50 text-[0.95rem] transition-all hover:border-ink/60 hover:text-ink disabled:opacity-20"
+          >←</button>
+          <div id="golf-carousel-wrap" class="flex-1 overflow-hidden">
+          <ul id="golf-track" class="flex" style="gap: 1.5rem; transition: transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94);">
+            {golfClubs.map((c) => (
+              <li data-golf-card class="flex-none">
+                <a href={c.website} target="_blank" rel="noopener noreferrer" class="block group/card">
+                  <figure class="relative aspect-[4/3] w-full overflow-hidden bg-surface-lo">
+                    {c.photo && (
+                      <img data-src={c.photo} alt={c.name} class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover/card:scale-[1.04]" />
+                    )}
+                    <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/55 via-transparent to-transparent"></div>
+                    <figcaption class="pointer-events-none absolute bottom-3 left-4 font-mono text-[0.58rem] uppercase tracking-[0.2em] text-white" style="text-shadow:0 1px 5px rgba(0,0,0,0.8)">
+                      {c.location}
+                    </figcaption>
+                  </figure>
+                </a>
+                <div class="mt-4">
+                  <h4 class="font-display text-[1.25rem] font-bold leading-tight">
+                    {c.name}
+                  </h4>
+                  <a
+                    href={`mailto:${c.contact}`}
+                    class="mt-2 block font-mono text-[0.72rem] tracking-[0.08em] text-atlantic transition-colors hover:text-ink"
+                  >
+                    {c.contact}
+                  </a>
+                  <span class="block font-mono text-[0.72rem] tracking-[0.06em] text-mute/70 mt-0.5">
+                    {c.phone}
+                  </span>
+                  {c.website && (
+                    <a
+                      href={c.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="mt-3 inline-flex items-center gap-1.5 border-b border-ink/30 pb-0.5 font-mono text-[0.68rem] uppercase tracking-[0.18em] text-ink transition-colors hover:border-atlantic hover:text-atlantic"
+                    >
+                      Visit website →
+                    </a>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+          </div>{/* end golf-carousel-wrap */}
+          <button
+            id="golf-next"
+            aria-label="Next"
+            class="flex-none flex h-11 w-11 items-center justify-center rounded-full border border-ink/25 text-ink/50 text-[0.95rem] transition-all hover:border-ink/60 hover:text-ink disabled:opacity-20"
+          >→</button>
+        </div>{/* end carousel row */}
+      </div>
+
     </div>
   </section>
+
+  {/* ─── ISLANDS ───────────────────────────────────────────────────────────────
+      Donegal's inhabited and uninhabited offshore islands. */}
+  <section id="islands" class="border-b border-line bg-surface-lo/40">
+    <div class="mx-auto max-w-7xl px-6 py-20">
+
+      <div class="mb-8 flex items-end justify-between gap-6">
+        <div>
+          <p
+            data-animate="fade-up"
+            class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.26em] text-atlantic"
+          >
+            Offshore islands
+          </p>
+          <h2
+            data-split
+            data-animate="fade-up"
+            data-animate-delay="0.1"
+            class="mt-3 font-display text-[clamp(2rem,4.5vw,4.2rem)] font-normal leading-[0.97]"
+          >
+            The islands wait<br />for those who cross.
+          </h2>
+        </div>
+        <span id="isl-counter" class="font-mono text-[0.62rem] text-mute tabular-nums shrink-0">
+          1 / {islands.length}
+        </span>
+      </div>
+
+      {/* Islands carousel */}
+      <div data-animate="fade-up" data-animate-delay="0.22" class="flex items-center gap-4 sm:gap-6">
+        <button
+          id="isl-prev"
+          aria-label="Previous island"
+          class="flex-none flex h-11 w-11 items-center justify-center rounded-full border border-ink/25 text-ink/50 text-[0.95rem] transition-all hover:border-ink/60 hover:text-ink disabled:opacity-20"
+        >←</button>
+
+        <div id="isl-carousel-wrap" class="flex-1 overflow-hidden">
+          <ul id="isl-track" class="flex" style="gap:1.5rem;transition:transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94);">
+            {islands.map((isl) => (
+              <li data-isl-card data-tilt class="flex-none group">
+                <figure class="relative aspect-[3/4] w-full overflow-hidden bg-surface-lo">
+                  {isl.src && (
+                    <img
+                      src={isl.src}
+                      alt={isl.name}
+                      class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                      style={`object-position: ${isl.srcPos}`}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  )}
+                  {!isl.src && (
+                    <div class="absolute inset-0 bg-gradient-to-b from-atlantic/20 to-ink/60"></div>
+                  )}
+                  <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/75 via-ink/10 to-transparent"></div>
+                  <div class="absolute bottom-5 left-5 right-4">
+                    <p class="font-mono text-[0.55rem] uppercase tracking-[0.22em] text-white/60">
+                      {isl.ferry}
+                    </p>
+                    <h3 class="mt-1 font-display text-[1.6rem] font-normal leading-tight text-white">
+                      {isl.name}
+                    </h3>
+                    <p class="font-display text-[0.9rem] italic text-white/55">{isl.irish}</p>
+                  </div>
+                </figure>
+                <div class="mt-4">
+                  <p class="font-mono text-[0.65rem] uppercase tracking-[0.2em] text-mute">
+                    {isl.drive}
+                  </p>
+                  <p class="mt-2 text-[0.88rem] leading-relaxed text-mute">
+                    {isl.text}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <button
+          id="isl-next"
+          aria-label="Next island"
+          class="flex-none flex h-11 w-11 items-center justify-center rounded-full border border-ink/25 text-ink/50 text-[0.95rem] transition-all hover:border-ink/60 hover:text-ink disabled:opacity-20"
+        >→</button>
+      </div>
+
+    </div>
+  </section>
+
+  {/* ─── ILLUSTRATED MAP ──────────────────────────────────────────────────────
+      Photo-pin map — SVG land + HTML circular thumbnails overlaid. */}
+  <section id="destinations" class="relative border-b border-line overflow-hidden" style="background:#0c1714;scroll-margin-top:var(--header-h)">
+    <iframe
+      id="don-map-frame"
+      src="/map/donegal-map.html"
+      title="Donegal interactive map"
+      style="display:block;width:100%;height:min(88vh,860px);min-height:600px;border:none;"
+      allow="fullscreen"
+    ></iframe>
+    {/* Scroll shield: sits over the iframe so wheel events reach the parent
+        synchronously. Disappears on click so the map becomes interactive.
+        Re-appears on the next parent scroll to restore smooth page scrolling. */}
+    <div id="map-shield" style="position:absolute;top:0;right:298px;bottom:0;left:0;z-index:10;cursor:pointer;" aria-hidden="true"></div>
+  </section>
+
 
 </BaseLayout>
+
+<style>
+  [data-drag-img] {
+    transform-origin: center;
+    transition: transform 0.1s ease;
+  }
+
+  /* Golf carousel */
+  #golf-prev:disabled,
+  #golf-next:disabled { opacity: 0.3; pointer-events: none; }
+
+  #isl-prev:disabled,
+  #isl-next:disabled { opacity: 0.2; pointer-events: none; }
+
+  #golf-toggle-arrow { transition: transform 0.35s ease; }
+  #golf-card:hover #golf-toggle-arrow { transform: translateY(3px); }
+  #golf-panel.is-open ~ * #golf-toggle-arrow,
+  #golf-card[aria-expanded="true"] #golf-toggle-arrow { transform: rotate(180deg); }
+</style>
+
+<script>
+  /* ── Drag + zoom for [data-drag-fig] figures ──
+     At zoom=1: object-position handles horizontal pan (image overflows container
+     sideways for landscape shots). At zoom>1: CSS transform handles both axes,
+     guaranteeing the image always fills the container in X and Y regardless of
+     the photo's natural aspect ratio. */
+  function initPhotoDrag() {
+    document.querySelectorAll<HTMLElement>("[data-drag-fig]").forEach((fig) => {
+      const img     = fig.querySelector<HTMLImageElement>("[data-drag-img]");
+      const overlay = fig.querySelector<HTMLElement>("[data-drag-overlay]");
+      const readout = fig.querySelector<HTMLElement>("[data-drag-readout]");
+      if (!img || !overlay) return;
+
+      const initial = img.style.objectPosition || "50% 50%";
+      const [ix, iy] = initial.split(" ").map((v) => parseFloat(v));
+      let posX = isNaN(ix) ? 50 : ix;
+      let posY = isNaN(iy) ? 50 : iy;
+      let zoom  = 1;
+      let tx    = 0; // translate X in element-coords (pre-scale)
+      let ty    = 0; // translate Y in element-coords (pre-scale)
+      let dragging = false;
+      let startX = 0, startY = 0;
+
+      const clampPos = (v: number) => Math.max(0, Math.min(100, v));
+      const clampT   = () => {
+        // Max translate before empty space appears: fw*(zoom-1)/(2*zoom)
+        const mx = fig.offsetWidth  * (zoom - 1) / (2 * zoom);
+        const my = fig.offsetHeight * (zoom - 1) / (2 * zoom);
+        tx = Math.max(-mx, Math.min(mx, tx));
+        ty = Math.max(-my, Math.min(my, ty));
+      };
+      const apply = () => {
+        img.style.objectPosition = `${Math.round(posX)}% ${Math.round(posY)}%`;
+        img.style.transform = zoom > 1 ? `scale(${zoom}) translate(${tx}px,${ty}px)` : "";
+        if (readout) {
+          const pos = `${Math.round(posX)}% ${Math.round(posY)}%`;
+          readout.textContent = zoom > 1 ? `×${zoom.toFixed(1)}  ${pos}` : pos;
+        }
+      };
+
+      overlay.addEventListener("wheel", (e) => {
+        e.preventDefault();
+        zoom = Math.max(1, Math.min(4, zoom - e.deltaY * 0.002));
+        if (zoom === 1) { tx = 0; ty = 0; }
+        clampT();
+        if (readout) readout.classList.remove("hidden");
+        apply();
+      }, { passive: false });
+
+      overlay.addEventListener("mousedown", (e) => {
+        dragging = true;
+        startX = e.clientX; startY = e.clientY;
+        if (readout) readout.classList.remove("hidden");
+        overlay.style.cursor = "grabbing";
+        e.preventDefault();
+      });
+      window.addEventListener("mousemove", (e) => {
+        if (!dragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        startX = e.clientX; startY = e.clientY;
+        if (zoom > 1) {
+          tx -= dx / zoom;
+          ty -= dy / zoom;
+          clampT();
+        } else {
+          const rect = overlay.getBoundingClientRect();
+          posX = clampPos(posX - dx / rect.width  * 100);
+          posY = clampPos(posY - dy / rect.height * 100);
+        }
+        apply();
+      });
+      window.addEventListener("mouseup", () => {
+        dragging = false;
+        overlay.style.cursor = "grab";
+      });
+      overlay.style.cursor = "grab";
+      apply();
+    });
+  }
+
+  function initGolfCarousel() {
+    const wrap    = document.getElementById("golf-carousel-wrap");
+    const track   = document.getElementById("golf-track");
+    const prevBtn = document.getElementById("golf-prev") as HTMLButtonElement | null;
+    const nextBtn = document.getElementById("golf-next") as HTMLButtonElement | null;
+    const counter = document.getElementById("golf-counter");
+    if (!wrap || !track || !prevBtn || !nextBtn) return;
+
+    const cards = Array.from(track.querySelectorAll<HTMLElement>("[data-golf-card]"));
+    const gap = 24; // 1.5rem gap-6
+    let idx = 0;
+    const perView = 3;
+    const maxIdx = cards.length - perView;
+
+    const setWidths = () => {
+      const w = Math.floor((wrap.offsetWidth - gap * (perView - 1)) / perView);
+      cards.forEach((c) => (c.style.width = `${w}px`));
+    };
+
+    // Assign src from data-src so images load even when hidden by overflow:hidden
+    track.querySelectorAll<HTMLImageElement>("img[data-src]").forEach((img) => {
+      img.src = img.dataset.src!;
+    });
+
+    const go = (i: number) => {
+      idx = Math.max(0, Math.min(maxIdx, i));
+      const step = cards[0].offsetWidth + gap;
+      track.style.transform = `translateX(-${idx * step}px)`;
+      if (counter) counter.textContent = `${idx + 1} / ${cards.length}`;
+      prevBtn.disabled = idx === 0;
+      nextBtn.disabled = idx >= maxIdx;
+    };
+
+    setWidths();
+    go(0);
+
+    prevBtn.addEventListener("click", () => go(idx - 1));
+    nextBtn.addEventListener("click", () => go(idx + 1));
+    window.addEventListener("resize", () => { setWidths(); go(idx); });
+  }
+
+  function initGolfPanel() {
+    const card  = document.getElementById("golf-card");
+    const panel = document.getElementById("golf-panel");
+    const arrow = document.getElementById("golf-toggle-arrow");
+    if (!card || !panel) return;
+
+    let open = false;
+    let carouselReady = false;
+
+    card.addEventListener("click", () => {
+      open = !open;
+      card.setAttribute("aria-expanded", String(open));
+      panel.setAttribute("aria-hidden", String(!open));
+      panel.classList.toggle("is-open", open);
+      panel.style.maxHeight = open ? panel.scrollHeight + 600 + "px" : "0";
+      if (arrow) arrow.style.transform = open ? "rotate(180deg)" : "";
+      if (open) {
+        setTimeout(() => {
+          panel.scrollIntoView({ behavior: "smooth", block: "start" });
+          if (!carouselReady) { initGolfCarousel(); carouselReady = true; }
+        }, 80);
+      }
+    });
+  }
+
+  function initGrain() {
+    if (document.getElementById("grain-overlay")) return;
+    const d = document.createElement("div");
+    d.id = "grain-overlay";
+    d.setAttribute("aria-hidden", "true");
+    d.style.cssText = "position:fixed;inset:-25%;width:150%;height:150%;z-index:9999;pointer-events:none;opacity:0.12;mix-blend-mode:soft-light;";
+    const c = document.createElement("canvas");
+    c.width = c.height = 512;
+    const ctx = c.getContext("2d")!;
+    const img = ctx.createImageData(512, 512);
+    for (let i = 0; i < img.data.length; i += 4) {
+      const v = (Math.random() * 255) | 0;
+      img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
+      img.data[i + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+    d.style.backgroundImage = `url(${c.toDataURL()})`;
+    d.style.backgroundSize = "256px";
+    document.body.appendChild(d);
+    let f = 0;
+    (function tick() {
+      requestAnimationFrame(tick);
+      if (document.hidden) return;
+      if (++f % 3 === 0)
+        d.style.transform = `translate(${((Math.random() * 40 - 20) | 0)}px,${((Math.random() * 40 - 20) | 0)}px)`;
+    })();
+  }
+
+  function initCardTilt() {
+    document.querySelectorAll<HTMLElement>("[data-tilt]").forEach((card) => {
+      let raf = 0;
+      let leaveTimer: ReturnType<typeof setTimeout>;
+      let entering = false;
+
+      const figure = card.querySelector<HTMLElement>("figure");
+      const img = !card.querySelector("[data-drag-img]")
+        ? card.querySelector<HTMLImageElement>("img")
+        : null;
+
+      let spot: HTMLDivElement | null = null;
+      if (figure) {
+        spot = document.createElement("div");
+        spot.setAttribute("aria-hidden", "true");
+        spot.style.cssText =
+          "position:absolute;inset:0;pointer-events:none;z-index:3;" +
+          "opacity:0;transition:opacity 0.35s ease;border-radius:inherit;";
+        figure.appendChild(spot);
+      }
+
+      let cardRect: DOMRect | null = null;
+      let figureRect: DOMRect | null = null;
+
+      card.addEventListener("mouseenter", () => {
+        clearTimeout(leaveTimer);
+        entering = true;
+        cardRect = card.getBoundingClientRect();
+        figureRect = figure ? figure.getBoundingClientRect() : null;
+        card.style.transition = "transform 0.2s ease";
+        if (img) img.style.transition = "transform 0.2s ease";
+        if (spot) spot.style.opacity = "1";
+      });
+
+      card.addEventListener("mousemove", (e) => {
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => {
+          if (!cardRect) return;
+          const x = (e.clientX - cardRect.left) / cardRect.width - 0.5;
+          const y = (e.clientY - cardRect.top) / cardRect.height - 0.5;
+
+          // Keep entry transition for the first move so it eases in smoothly;
+          // clear it on subsequent moves for direct tracking.
+          if (entering) {
+            entering = false;
+          } else {
+            card.style.transition = "";
+            if (img) img.style.transition = "";
+          }
+
+          card.style.transform = `perspective(900px) rotateY(${x * 7}deg) rotateX(${-y * 4}deg)`;
+
+          if (spot && figureRect) {
+            spot.style.background = `radial-gradient(circle 200px at ${e.clientX - figureRect.left}px ${e.clientY - figureRect.top}px, rgba(255,255,255,0.09) 0%, transparent 70%)`;
+          }
+
+          if (img) {
+            img.style.transform = `translateX(${-x * 10}px) translateY(${-y * 7}px) scale(1.06)`;
+          }
+        });
+      });
+
+      card.addEventListener("mouseleave", () => {
+        cancelAnimationFrame(raf);
+        entering = false;
+        if (spot) spot.style.opacity = "0";
+        clearTimeout(leaveTimer);
+        leaveTimer = setTimeout(() => {
+          card.style.transition = "transform 0.55s cubic-bezier(0.23,1,0.32,1)";
+          card.style.transform = "";
+          if (img) {
+            img.style.transition = "transform 0.55s cubic-bezier(0.23,1,0.32,1)";
+            img.style.transform = "";
+          }
+        }, 40);
+      });
+    });
+  }
+
+  function initOdometer() {
+    document.querySelectorAll<HTMLElement>("[data-odometer]").forEach((el) => {
+      const text = el.textContent ?? "";
+      const m = text.match(/\d+/);
+      if (!m) return;
+      const target = parseInt(m[0]);
+      const pre = text.slice(0, m.index);
+      const suf = text.slice((m.index ?? 0) + m[0].length);
+      const obs = new IntersectionObserver(([entry]) => {
+        if (!entry.isIntersecting) return;
+        obs.disconnect();
+        const t0 = performance.now();
+        const dur = 2400;
+        (function tick(now: number) {
+          const p = Math.min((now - t0) / dur, 1);
+          const ease = 1 - (1 - p) ** 3;
+          el.textContent = pre + Math.round(ease * target) + suf;
+          if (p < 1) requestAnimationFrame(tick);
+        })(performance.now());
+      }, { threshold: 0.6 });
+      obs.observe(el);
+    });
+  }
+
+  function initIslandCarousel() {
+    const wrap    = document.getElementById("isl-carousel-wrap");
+    const track   = document.getElementById("isl-track");
+    const prevBtn = document.getElementById("isl-prev") as HTMLButtonElement | null;
+    const nextBtn = document.getElementById("isl-next") as HTMLButtonElement | null;
+    const counter = document.getElementById("isl-counter");
+    if (!wrap || !track || !prevBtn || !nextBtn) return;
+
+    const cards = Array.from(track.querySelectorAll<HTMLElement>("[data-isl-card]"));
+    const gap = 24;
+    let idx = 0;
+
+    const getPerView = () => window.innerWidth >= 1024 ? 4 : window.innerWidth >= 640 ? 2 : 1;
+
+    const setWidths = () => {
+      const pv = getPerView();
+      const w = Math.floor((wrap.offsetWidth - gap * (pv - 1)) / pv);
+      cards.forEach((c) => (c.style.width = `${w}px`));
+    };
+
+    const go = (i: number) => {
+      const pv = getPerView();
+      const maxIdx = Math.max(0, cards.length - pv);
+      idx = Math.max(0, Math.min(maxIdx, i));
+      const step = cards[0].offsetWidth + gap;
+      track.style.transform = `translateX(-${idx * step}px)`;
+      if (counter) counter.textContent = `${idx + 1} / ${cards.length}`;
+      prevBtn.disabled = idx === 0;
+      nextBtn.disabled = idx >= maxIdx;
+    };
+
+    setWidths();
+    go(0);
+
+    prevBtn.addEventListener("click", () => go(idx - 1));
+    nextBtn.addEventListener("click", () => go(idx + 1));
+    window.addEventListener("resize", () => { setWidths(); go(idx); });
+  }
+
+  document.addEventListener("astro:page-load", () => {
+    initPhotoDrag();
+    initGolfPanel();
+    initIslandCarousel();
+    initGrain();
+    initCardTilt();
+    initOdometer();
+
+    // Trigger map intro animation when the section enters the viewport
+    const frame = document.getElementById('don-map-frame') as HTMLIFrameElement | null;
+    if (frame) {
+      const obs = new IntersectionObserver(([entry]) => {
+        if (!entry.isIntersecting) return;
+        obs.disconnect();
+        // Small delay so the user sees the full animation from the start
+        setTimeout(() => {
+          frame.contentWindow?.postMessage({ type: 'don-start-intro' }, '*');
+        }, 600);
+      }, { threshold: 0.15 });
+      obs.observe(frame);
+
+      // Pause WAW animation when iframe is off-screen to save GPU cycles
+      const wawVis = new IntersectionObserver(([entry]) => {
+        frame.contentWindow?.postMessage(
+          { type: entry.isIntersecting ? 'don-waw-resume' : 'don-waw-pause' }, '*'
+        );
+      }, { threshold: 0 });
+      wawVis.observe(frame);
+
+      // Scroll shield: a transparent div over the iframe that captures wheel
+      // events on the parent synchronously, preventing the iframe from swallowing
+      // them. Dismissed on click (map becomes interactive); re-shown on next scroll.
+      const shield = document.getElementById('map-shield');
+      if (shield) {
+        shield.addEventListener('click', () => { shield.style.display = 'none'; });
+        window.addEventListener('scroll', () => {
+          if (shield.style.display === 'none') shield.style.display = '';
+        }, { passive: true });
+      }
+
+      // Replay intro animation every time "Explore destinations →" is clicked
+      const exploreLink = document.querySelector<HTMLAnchorElement>('a[href="#destinations"]');
+      if (exploreLink) {
+        exploreLink.addEventListener('click', () => {
+          setTimeout(() => {
+            frame.contentWindow?.postMessage({ type: 'don-replay-intro' }, '*');
+          }, 450);
+        });
+      }
+    }
+  });
+</script>

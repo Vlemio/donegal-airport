@@ -3,6 +3,13 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 
 const title = "Plan your journey · Donegal Airport";
 const description = "Getting here, parking, car hire, taxis, accessibility (PRM) and security at Donegal Airport (CFN).";
+
+const practical = [
+  { label: "Car hire at CFN", detail: "Collection from arrivals · Budget, Europcar" },
+  { label: "Drive times", detail: "Beach 10 min · Errigal 22 min · Glenveagh 45 min · Donegal Town 1 h" },
+  { label: "Coach transfers", detail: "Bus Éireann 480 · Letterkenny 35 min · Sligo 2 h 30 min" },
+  { label: "Best season", detail: "Open all year · Best light: April – October" },
+] as const;
 ---
 
 <BaseLayout title={title} description={description}>
@@ -28,6 +35,41 @@ const description = "Getting here, parking, car hire, taxis, accessibility (PRM)
       <p class="mt-4 max-w-2xl font-display text-2xl leading-snug text-ink">
         Getting here · Parking · Car hire · Taxis · PRM · Security · At the airport.
       </p>
+    </div>
+  </section>
+
+  {/* ─── GETTING AROUND ─────────────────────────────────────────────────────── */}
+  <section class="border-t border-line">
+    <div class="mx-auto max-w-7xl px-6 py-20">
+      <p
+        data-animate="fade-up"
+        class="font-mono text-[0.68rem] uppercase tracking-[0.3em] text-atlantic"
+      >
+        Getting around
+      </p>
+      <h2
+        data-split
+        class="mt-3 font-display text-[clamp(1.8rem,3.5vw,3rem)] font-normal leading-[1.02]"
+      >
+        From the terminal to the wilderness.
+      </h2>
+
+      <dl
+        data-animate="fade-up"
+        data-animate-delay="0.15"
+        class="mt-12 grid divide-y divide-line sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4"
+      >
+        {practical.map((p) => (
+          <div class="py-8 sm:pr-8">
+            <dt class="font-mono text-[0.64rem] uppercase tracking-[0.22em] text-atlantic">
+              {p.label}
+            </dt>
+            <dd class="mt-3 text-[0.9rem] leading-relaxed text-mute">
+              {p.detail}
+            </dd>
+          </div>
+        ))}
+      </dl>
     </div>
   </section>
 </BaseLayout>
