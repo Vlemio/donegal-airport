@@ -1213,7 +1213,7 @@ const islands = [
         // Small delay so the user sees the full animation from the start
         setTimeout(() => {
           frame.contentWindow?.postMessage({ type: 'don-start-intro' }, '*');
-        }, 600);
+        }, 1100);
       }, { threshold: 0.15 });
       obs.observe(frame);
 
@@ -1231,6 +1231,15 @@ const islands = [
       const shield = document.getElementById('map-shield');
       if (shield) {
         shield.addEventListener('click', () => { shield.style.display = 'none'; });
+        // Ctrl+scroll on the shield: forward zoom to iframe without requiring a click first
+        shield.addEventListener('wheel', (e) => {
+          if (e.ctrlKey) {
+            e.preventDefault();
+            frame.contentWindow?.postMessage(
+              { type: 'don-wheel-zoom', deltaY: e.deltaY, deltaMode: e.deltaMode }, '*'
+            );
+          }
+        }, { passive: false });
         window.addEventListener('scroll', () => {
           if (shield.style.display === 'none') shield.style.display = '';
         }, { passive: true });
