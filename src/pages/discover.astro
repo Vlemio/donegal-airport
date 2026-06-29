@@ -1026,7 +1026,7 @@ const islands = [
     const d = document.createElement("div");
     d.id = "grain-overlay";
     d.setAttribute("aria-hidden", "true");
-    d.style.cssText = "position:fixed;inset:-25%;width:150%;height:150%;z-index:9999;pointer-events:none;opacity:0.12;mix-blend-mode:soft-light;";
+    d.style.cssText = "position:fixed;inset:-25%;width:150%;height:150%;z-index:9999;pointer-events:none;opacity:0.055;will-change:transform;";
     const c = document.createElement("canvas");
     c.width = c.height = 512;
     const ctx = c.getContext("2d")!;
@@ -1040,10 +1040,15 @@ const islands = [
     d.style.backgroundImage = `url(${c.toDataURL()})`;
     d.style.backgroundSize = "256px";
     document.body.appendChild(d);
-    let f = 0;
+    let f = 0, grainScrolling = false, grainScrollTimer = 0;
+    window.addEventListener('scroll', () => {
+      grainScrolling = true;
+      clearTimeout(grainScrollTimer);
+      grainScrollTimer = setTimeout(() => { grainScrolling = false; }, 150) as unknown as number;
+    }, { passive: true });
     (function tick() {
       requestAnimationFrame(tick);
-      if (document.hidden) return;
+      if (document.hidden || grainScrolling) return;
       if (++f % 3 === 0)
         d.style.transform = `translate(${((Math.random() * 40 - 20) | 0)}px,${((Math.random() * 40 - 20) | 0)}px)`;
     })();
