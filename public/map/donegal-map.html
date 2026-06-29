@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
@@ -100,22 +100,22 @@ const CATS = [
 ];
 
 const PLACES = [
-  { cat:'airport', name:'CFN Airport',            sub:'Carrickfinn · start',   lng:-8.3410,  lat:55.0442,  desc:'Donegal Airport — one of Europe’s most scenic approaches, between dunes and the Atlantic.' },
-  { cat:'nature',  name:'Errigal',                sub:'Mountain · 751 m', lng:-8.11237, lat:55.03393, desc:'The county’s iconic glittering quartzite peak.' },
-  { cat:'nature',  name:'Glenveagh National Park',sub:'Park & castle',              lng:-7.94518, lat:55.05655, desc:'Glacial valley, lake and a Victorian castle set among gardens.' },
-  { cat:'nature',  name:'Slieve League',          sub:'Sea cliffs',                 lng:-8.6889,  lat:54.6383,  desc:'Sea cliffs nearly 600 m high — among the highest in Europe.' },
-  { cat:'nature',  name:'Malin Head',             sub:'Ireland’s northern tip',lng:-7.3736,  lat:55.3817,  desc:'The northernmost point of Ireland, on the Inishowen peninsula.' },
+  { cat:’airport’, name:’CFN Airport’,            sub:’Carrickfinn · start’,   lng:-8.3410,  lat:55.0442,  desc:’Donegal Airport — one of Europe’s most scenic approaches, between dunes and the Atlantic.’, photo:’/photos/map/cfn-airport.jpg’ },
+  { cat:'nature',  name:'Errigal',                sub:'Mountain · 751 m', lng:-8.11237, lat:55.03393, desc:'The county’s iconic glittering quartzite peak.', photo:'/photos/map/errigal.jpg' },
+  { cat:'nature',  name:'Glenveagh National Park',sub:'Park & castle',              lng:-7.94518, lat:55.05655, desc:'Glacial valley, lake and a Victorian castle set among gardens.', photo:'/photos/map/glenveagh.jpg' },
+  { cat:'nature',  name:'Slieve League',          sub:'Sea cliffs',                 lng:-8.6889,  lat:54.6383,  desc:'Sea cliffs nearly 600 m high — among the highest in Europe.', photo:'/photos/map/slieve-league.jpg' },
+  { cat:'nature',  name:'Malin Head',             sub:'Ireland’s northern tip',lng:-7.3736,  lat:55.3817,  desc:'The northernmost point of Ireland, on the Inishowen peninsula.', photo:'/photos/map/malin-head.jpg' },
   { cat:'nature',  name:'Griánán of Aileach',sub:'Stone ringfort',       lng:-7.4283,  lat:55.0236,  desc:'A stone ring at 250 m with 360° views over the loughs.' },
   { cat:'nature',  name:'Ards Forest Park',       sub:'Coastal forest',             lng:-7.90209, lat:55.15435, desc:'480 ha of woodland, dunes and beaches on Sheephaven Bay.' },
   { cat:'nature',  name:'Doe Castle',             sub:'15th-c. castle',             lng:-7.86861, lat:55.13787, desc:'A medieval tower house by the water near Creeslough.' },
-  { cat:'nature',  name:'Carrickfinn Beach',      sub:'Airport beach',              lng:-8.34978, lat:55.04081, desc:'Blue Flag white-sand beach right beside the runway.' },
+  { cat:'nature',  name:'Carrickfinn Beach',      sub:'Airport beach',              lng:-8.34978, lat:55.04081, desc:'Blue Flag white-sand beach right beside the runway.', photo:'/photos/map/carrickfinn-beach.jpg' },
   { cat:'nature',  name:'Inishowen Peninsula',    sub:'Northern region',            lng:-7.2900,  lat:55.2500,  desc:'Ireland’s northernmost peninsula; home to Malin Head.' },
   { cat:'towns',   name:'Donegal Town',           sub:'Castle & bay',               lng:-8.1100,  lat:54.6542,  desc:'Heart of the south, with a castle and quayside.' },
   { cat:'towns',   name:'Letterkenny',            sub:'Main town',                  lng:-7.7344,  lat:54.9558,  desc:'Donegal’s largest town and main service hub.' },
-  { cat:'towns',   name:'Bundoran',               sub:'Surf & beach',               lng:-8.2811,  lat:54.4783,  desc:'Ireland’s surf capital, with a Blue Flag beach on the Wild Atlantic Way.' },
-  { cat:'towns',   name:'Killybegs',              sub:'Fishing port',               lng:-8.4500,  lat:54.6333,  desc:'Ireland’s largest fishing port.' },
+  { cat:'towns',   name:'Bundoran',               sub:'Surf & beach',               lng:-8.2811,  lat:54.4783,  desc:'Ireland’s surf capital, with a Blue Flag beach on the Wild Atlantic Way.', photo:'/photos/map/bundoran.jpg' },
+  { cat:'towns',   name:'Killybegs',              sub:'Fishing port',               lng:-8.4500,  lat:54.6333,  desc:'Ireland’s largest fishing port.', photo:'/photos/map/killybegs.jpg' },
   { cat:'towns',   name:'Glencolmcille',          sub:'Folk Village',               lng:-8.74134, lat:54.70806, desc:'Open-air folk museum and dramatic southwest coast.' },
-  { cat:'towns',   name:'Ardara',                 sub:'Heritage town',              lng:-8.4100,  lat:54.7700,  desc:'Famous for tweed and woollen craft.' },
+  { cat:'towns',   name:'Ardara',                 sub:'Heritage town',              lng:-8.4100,  lat:54.7700,  desc:'Famous for tweed and woollen craft.', photo:'/photos/map/ardara.jpg' },
   { cat:'towns',   name:'Ballyshannon',           sub:'Mouth of the Erne',          lng:-8.1897,  lat:54.5028,  desc:'One of the oldest towns in Ireland.' },
   { cat:'islands', name:'Arranmore',              sub:'Árainn Mhór',      lng:-8.52591, lat:54.98914, desc:'Donegal’s largest inhabited island, a Gaeltacht community.' },
   { cat:'islands', name:'Tory Island',            sub:'Toraigh',                    lng:-8.2333,  lat:55.2667,  desc:'Remote island with its own king and a community of artists.' },
@@ -126,16 +126,16 @@ const PLACES = [
   { cat:'islands', name:'Inishkerragh',           sub:'Inis Caorach',               lng:-8.49415, lat:54.96017, desc:'Uninhabited islet of The Rosses archipelago.' },
   { cat:'islands', name:'Inishtrahull',           sub:'Northernmost isle',          lng:-7.2333,  lat:55.4333,  desc:'Ireland’s most northerly island, off Malin Head.' },
   { cat:'islands', name:'Island Roy',             sub:'Oileán Ruaidh',         lng:-7.79068, lat:55.1922,  desc:'Islet in Mulroy Bay, near Downings.' },
-  { cat:'golf',    name:'Rosapenna Golf Resort',  sub:'Downings',                   lng:-7.82604, lat:55.18671 },
-  { cat:'golf',    name:'Ballyliffin Golf Club',  sub:'Ballyliffin (Inishowen)',    lng:-7.3708,  lat:55.30551 },
-  { cat:'golf',    name:'Portsalon Golf Club',    sub:'Portsalon',                  lng:-7.6217,  lat:55.2056  },
-  { cat:'golf',    name:'Narin & Portnoo Golf Club', sub:'Portnoo',                lng:-8.44196, lat:54.83649 },
-  { cat:'golf',    name:'Cruit Island Golf Club', sub:'Kincasslagh',               lng:-8.42291, lat:55.03688 },
-  { cat:'golf',    name:'Dunfanaghy Golf Club',   sub:'Dunfanaghy',                lng:-7.9700,  lat:55.1850  },
-  { cat:'golf',    name:'Gweedore Golf Club',     sub:'Gweedore',                  lng:-8.31614, lat:55.08554 },
-  { cat:'golf',    name:'Donegal Golf Club',      sub:'Murvagh',                   lng:-8.15838, lat:54.61403 },
-  { cat:'golf',    name:'Bundoran Golf Club',     sub:'Bundoran',                  lng:-8.27408, lat:54.48739 },
-  { cat:'golf',    name:'North West Golf Club',   sub:'Buncrana',                  lng:-7.45422, lat:55.11766 },
+  { cat:'golf',    name:'Rosapenna Golf Resort',  sub:'Downings',                   lng:-7.82604, lat:55.18671, photo:'https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_05.png' },
+  { cat:'golf',    name:'Ballyliffin Golf Club',  sub:'Ballyliffin (Inishowen)',    lng:-7.3708,  lat:55.30551, photo:'https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_08.png' },
+  { cat:'golf',    name:'Portsalon Golf Club',    sub:'Portsalon',                  lng:-7.6217,  lat:55.2056, photo:'https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_07.png' },
+  { cat:'golf',    name:'Narin & Portnoo Golf Club', sub:'Portnoo',                lng:-8.44196, lat:54.83649, photo:'https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_02.png' },
+  { cat:'golf',    name:'Cruit Island Golf Club', sub:'Kincasslagh',               lng:-8.42291, lat:55.03688, photo:'https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_01.png' },
+  { cat:'golf',    name:'Dunfanaghy Golf Club',   sub:'Dunfanaghy',                lng:-7.9700,  lat:55.1850, photo:'https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_04.png' },
+  { cat:'golf',    name:'Gweedore Golf Club',     sub:'Gweedore',                  lng:-8.31614, lat:55.08554, photo:'https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_03.png' },
+  { cat:'golf',    name:'Donegal Golf Club',      sub:'Murvagh',                   lng:-8.15838, lat:54.61403, photo:'https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_06.png' },
+  { cat:'golf',    name:'Bundoran Golf Club',     sub:'Bundoran',                  lng:-8.27408, lat:54.48739, photo:'https://donegalairport.ie/wp-content/uploads/2024/12/bundoran.jpeg' },
+  { cat:'golf',    name:'North West Golf Club',   sub:'Buncrana',                  lng:-7.45422, lat:55.11766, photo:'https://donegalairport.ie/wp-content/uploads/2024/12/buncrana.jpg' },
 ];
 
 const WAW = [
@@ -245,8 +245,11 @@ function infoRow(name) {
 
 function cardHTML(pr) {
   const c = catMap[pr.cat] || {label:'',color:'#888'};
+  const photoEl = pr.photo
+    ? '<img src="'+pr.photo+'" alt="'+pr.name+'" style="width:100%;height:100%;object-fit:cover;object-position:'+(pr.photoPos||'center')+';display:block;" loading="lazy">'
+    : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#8a7f63;font:10.5px/1.5 monospace;text-align:center;letter-spacing:.05em;text-transform:uppercase;padding:8px;">'+pr.name+'</div>';
   return '<div style="font-family:Karla,sans-serif;width:236px;">'
-    +'<div style="height:116px;border-radius:9px;overflow:hidden;background:repeating-linear-gradient(45deg,#e9e1cd,#e9e1cd 9px,#ded5bd 9px,#ded5bd 18px);display:flex;align-items:center;justify-content:center;color:#8a7f63;font:10.5px/1.5 monospace;text-align:center;letter-spacing:.05em;text-transform:uppercase;">PHOTO<br>'+pr.name+'</div>'
+    +'<div style="height:116px;border-radius:9px;overflow:hidden;background:'+(pr.photo?'#111b14':'repeating-linear-gradient(45deg,#e9e1cd,#e9e1cd 9px,#ded5bd 9px,#ded5bd 18px)')+';">'+photoEl+'</div>'
     +'<div style="display:flex;align-items:center;gap:7px;margin:9px 0 2px;">'
       +'<span style="width:9px;height:9px;border-radius:50%;background:'+c.color+';"></span>'
       +'<span style="font:700 9.5px/1 Karla,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:'+c.color+';">'+c.label+'</span>'
@@ -254,7 +257,6 @@ function cardHTML(pr) {
     +'<div style="font-family:Marcellus,serif;font-size:18px;color:#1f3a2e;">'+pr.name+'</div>'
     +(pr.desc?'<div style="font-size:12.5px;color:#4a5a4f;line-height:1.5;margin-top:3px;">'+pr.desc+'</div>':'')
     +infoRow(pr.name)
-    +'<div style="margin-top:9px;font:9.5px/1 monospace;letter-spacing:.1em;color:#a89a76;text-transform:uppercase;">Photo · replaceable</div>'
     +'</div>';
 }
 
@@ -368,7 +370,9 @@ function toggleTime(v) {
 function flyToPlace(name) {
   const p = byName[name];
   if(!map || !p) return;
-  map.flyTo({ center:[p.lng,p.lat], zoom:10.4, pitch:62, bearing:-14, duration:1500, essential:true });
+  pauseWAWAnim();
+  map.easeTo({ center:[p.lng,p.lat], zoom:10.4, pitch:62, bearing:-14, duration:1100 });
+  map.once('moveend', resumeWAWAnim);
   setTimeout(() => openPopup([p.lng,p.lat], { name:p.name, sub:p.sub, cat:p.cat, desc:p.desc||'' }), 780);
 }
 
