@@ -145,7 +145,7 @@ const WAW = [
   [-7.560,55.200],[-7.540,55.110],[-7.450,55.130],[-7.380,55.300],[-7.373,55.382],
 ];
 
-const TERR_EXO = 2.0;
+const TERR_EXO = 0; // terrain disabled — hillshade provides depth, interaction is smooth
 const HC = '#ffd98a';
 const OV_KEY = 'donegal_pin_overrides_v1';
 
@@ -527,8 +527,10 @@ function openPopup(coords, pr) {
 function setupPoints() {
   if(!_ptsSetup) {
     _ptsSetup = true;
-    map.on('moveend', recluster);
-    map.on('zoomend', recluster);
+    let _reclusterTimer = 0;
+    const deferRecluster = () => { clearTimeout(_reclusterTimer); _reclusterTimer = setTimeout(recluster, 50); };
+    map.on('moveend', deferRecluster);
+    map.on('zoomend', deferRecluster);
 
     // Pause WAW during any map interaction so setPaintProperty doesn't
     // compete with WebGL rendering on every drag/zoom/pitch frame
@@ -702,7 +704,6 @@ function initMap() {
     glyphs:'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
     sources:{
       base:{ type:'raster', tileSize:256, maxzoom:12, tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}'], attribution:'© Esri · National Geographic' },
-      terrain:{ type:'raster-dem', tiles:DEM, encoding:'terrarium', tileSize:256, maxzoom:13 },
       hs:{ type:'raster-dem', tiles:DEM, encoding:'terrarium', tileSize:256, maxzoom:13 },
     },
     layers:[
@@ -710,7 +711,6 @@ function initMap() {
       { id:'base',      type:'raster',     source:'base', paint:{ 'raster-saturation':-0.18, 'raster-contrast':0.06, 'raster-brightness-max':0.97 } },
       { id:'hillshade', type:'hillshade',  source:'hs',   paint:{ 'hillshade-exaggeration':0.6, 'hillshade-shadow-color':'#43381f', 'hillshade-highlight-color':'#fff6df', 'hillshade-accent-color':'#6b5a33' } },
     ],
-    terrain:{ source:'terrain', exaggeration:TERR_EXO },
   };
 
   map = new maplibregl.Map({
@@ -749,7 +749,7 @@ function initMap() {
   }, { passive: false });
 
   // Custom: Ctrl+Alt+drag = vertical pitch tilt (drag up = more 3D, drag down = flatter)
-  let tiltState = null;
+  let tiltState = null, tiltRaf = 0, tiltPending = 0;
   canvas.addEventListener('mousedown', e => {
     if(e.ctrlKey && e.altKey) {
       tiltState = { y: e.clientY, pitch: map.getPitch() };
@@ -758,10 +758,10 @@ function initMap() {
     }
   });
   window.addEventListener('mousemove', e => {
-    if(tiltState) {
-      const p = tiltState.pitch - (e.clientY - tiltState.y) * 0.4;
-      map.setPitch(Math.max(0, Math.min(80, p)));
-    }
+    if(!tiltState) return;
+    tiltPending = Math.max(0, Math.min(80, tiltState.pitch - (e.clientY - tiltState.y) * 0.4));
+    if(tiltRaf) return;
+    tiltRaf = requestAnimationFrame(() => { tiltRaf = 0; map.setPitch(tiltPending); });
   });
   window.addEventListener('mouseup', () => { tiltState = null; });
 
