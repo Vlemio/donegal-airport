@@ -87,6 +87,13 @@ const localeTag: Record<Locale, string> = {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
+    {/* Playfair Display — used for the café-menu names on /plan */}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,500;1,600&display=swap"
+      rel="stylesheet"
+    />
     <title>{title}</title>
     {siteDescription && <meta name="description" content={siteDescription} />}
     <link rel="canonical" href={canonical} />

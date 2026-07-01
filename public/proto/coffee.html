@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Coffee arc — prototype v3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet" />
+<style>
+  :root{ --bg:#f3f2ee; --ink:#181d16; --mute:#56605a; --sand:#a07840; --line:rgba(24,29,22,.14);
+    /* coffee palette */
+    --espresso:#2b1a10; --mocha:#6a5142; --caramel:#a06a34; --crema:#c9a06a; }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;}
+  .intro{max-width:900px;margin:0 auto;padding:56px 24px 0;}
+  .intro .ey{font-family:ui-monospace,Menlo,monospace;font-size:.72rem;letter-spacing:.28em;
+    text-transform:uppercase;color:var(--sand)}
+  .intro h1{font-size:2.2rem;font-weight:400;margin:.25em 0 .1em}
+  .intro p{color:var(--mute);margin:.4em 0}
+  .scrollhint{font-family:ui-monospace,Menlo,monospace;font-size:.72rem;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--sand)}
+
+  #track{position:relative;height:480vh;margin-top:36px;border-top:1px solid var(--line);
+    background:var(--bg);}
+  .pin{position:sticky;top:0;height:100vh;overflow:hidden;}
+  .split{display:grid;grid-template-columns:0.82fr 1.18fr;height:100%;}
+  .video{position:relative;height:100%;overflow:hidden;}          /* fixed, never resizes */
+  .video video{width:100%;height:100%;object-fit:cover;display:block;}
+
+  .stage{position:relative;height:100%;overflow:hidden;background:var(--bg);}
+  .stitle{position:absolute;top:8%;left:8%;z-index:5;pointer-events:none;}
+  .stitle .ey{font-family:ui-monospace,Menlo,monospace;font-size:.95rem;font-weight:700;
+    letter-spacing:.3em;text-transform:uppercase;color:var(--caramel);margin:0}
+  .stitle h3{font-family:'Playfair Display',Georgia,serif;font-weight:600;
+    font-size:clamp(1.9rem,3vw,2.7rem);line-height:1.02;color:var(--espresso);margin:.35em 0 0}
+  .shours{position:absolute;bottom:7%;left:8%;z-index:5;pointer-events:none;
+    font-family:ui-monospace,Menlo,monospace;font-size:.72rem;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--mocha)}
+  .shours b{color:var(--caramel);font-weight:700}
+  .group{position:absolute;left:0;top:0;}
+  .cup{position:absolute;left:0;top:0;transform-origin:center;will-change:transform,opacity;
+    filter:drop-shadow(0 24px 30px rgba(0,0,0,.26));}
+  .bean{position:absolute;left:0;top:0;transform-origin:center;will-change:transform,opacity;
+    filter:drop-shadow(0 3px 4px rgba(0,0,0,.25));}
+  .text{position:absolute;left:0;top:0;width:60%;text-align:center;pointer-events:none;
+    will-change:transform,opacity;}
+  .text h2{font-family:'Playfair Display',Georgia,serif;font-style:italic;font-weight:600;
+    font-size:clamp(2.6rem,4.2vw,3.9rem);line-height:1.0;margin:0;color:var(--espresso);}
+  .text p{color:var(--mocha);font-weight:500;font-size:1.16rem;line-height:1.55;
+    margin:.85em auto 0;max-width:23rem}
+
+  .after{height:80vh;display:flex;align-items:center;justify-content:center;color:var(--mute);
+    border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+  <div class="intro">
+    <p class="ey">The Airport Café · prototype v3</p>
+    <h1>Scroll to brew.</h1>
+    <p>Cup spins in → stops at centre → spins out. Loose beans converge and disperse.</p>
+    <p class="scrollhint">↓ scroll ↓</p>
+  </div>
+
+  <section id="track">
+    <div class="pin">
+      <div class="split">
+        <div class="video">
+          <video autoplay muted loop playsinline poster="/photos/plan/cafe-video-poster.jpg">
+            <source src="/photos/plan/cafe-video.mp4" type="video/mp4" />
+          </video>
+        </div>
+        <div class="stage" id="stage">
+          <div class="stitle">
+            <p class="ey">At the airport</p>
+            <h3>The Airport Café</h3>
+          </div>
+          <p class="shours">Open daily · mornings until <b>3pm</b></p>
+          <div id="groups"></div>
+          <div class="text" id="text">
+            <h2 id="name">Flat White</h2>
+            <p id="desc"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="after">↑ scroll back up to replay ↑</div>
+
+<script>
+  const COFFEES = [
+    { name: "Flat White", desc: "A double ristretto under silky steamed milk. No froth, no fuss.", img: "/proto/coffee-cup-flatwhite.png" },
+    { name: "Cappuccino", desc: "Espresso, steamed milk and a deep foam crown, dusted with cocoa.", img: "/proto/coffee-cup-cappuccino.png" },
+    { name: "Americano",  desc: "A shot of espresso loosened with hot water. Long, black and easy.", img: "/proto/coffee-cup-americano.png" },
+    { name: "Latte",      desc: "Espresso and plenty of steamed milk. Smooth, warm and mellow.", img: "/proto/coffee-cup-latte.png" },
+  ];
+  const N = COFFEES.length;
+  const BEAN = "/proto/coffee-bean.png";
+  const M_BEANS = 8;                        // loose beans per cup (all separated)
+  const HOLD = 0.26;                        // no rotation inside |d| < HOLD (centre)
+  const SPIN = 190;                         // degrees of spin during enter / exit
+
+  const track = document.getElementById("track");
+  const stage = document.getElementById("stage");
+  const wrap  = document.getElementById("groups");
+  const textEl= document.getElementById("text");
+  const nameEl= document.getElementById("name");
+  const descEl= document.getElementById("desc");
+  const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+
+  // build a group (cup + loose beans) per coffee
+  const groups = COFFEES.map((c)=>{
+    const g = document.createElement("div"); g.className = "group";
+    const cup = document.createElement("img"); cup.className = "cup"; cup.src = c.img; cup.alt = "";
+    g.appendChild(cup);
+    const beans = [];
+    const half = M_BEANS/2;
+    for(let j=0;j<M_BEANS;j++){
+      const b = document.createElement("img"); b.className = "bean"; b.src = BEAN; b.alt = "";
+      const side = (j < half) ? -1 : 1;                  // first half top, second half bottom
+      const k = (side < 0) ? j : j - half;               // index within its side
+      // target sits OUTSIDE the saucer, scattered by angle + radius (different
+      // places & heights — not a straight line). Top beans in the upper arc,
+      // bottom beans in the lower arc.
+      const baseAng = side < 0 ? -Math.PI/2 : Math.PI/2;
+      const ang = baseAng + ((k/(half-1)) - 0.5)*1.9 + (Math.random()-0.5)*0.25;
+      const rt  = 0.60 + Math.random()*0.42;             // target radius (×cup)
+      const tx  = Math.cos(ang)*rt;
+      const ty  = Math.sin(ang)*rt;
+      const startMul = 2.2 + Math.random()*1.0;          // how far off-screen it starts
+      const sp = Math.random()*360;                      // base rotation
+      const tw = (50 + Math.random()*150) * (Math.random()<0.5?-1:1); // spin while travelling
+      g.appendChild(b);
+      beans.push({ el:b, side, tx, ty, startMul, sp, tw });
+    }
+    wrap.appendChild(g);
+    return { g, cup, beans };
+  });
+
+  // rotation as a function of distance-from-centre d: spin while |d|>HOLD, still inside
+  function spinDeg(d){
+    if(d <= -HOLD) return (d + HOLD)/(1-HOLD) * SPIN;   // enter: -SPIN..0
+    if(d >=  HOLD) return (d - HOLD)/(1-HOLD) * SPIN;   // exit:   0..+SPIN
+    return 0;                                           // centre: held still
+  }
+
+  const smooth = t => t*t*(3-2*t);
+
+  // Each coffee owns a scroll segment and runs its FULL cycle inside it
+  // (enter → hold → exit), so the next one can't appear until this one and its
+  // beans are gone. GAP = dead zone between coffees.
+  const GAP = 0.06, A = 0.50, B = 0.50;   // no hold — cup passes smoothly through centre
+
+  // Bean visibility over the cup's arc distance d, per side. The cup enters from
+  // the TOP, so top beans (side -1) gather LATE (after the cup leaves the top)
+  // and linger; bottom beans (side +1) gather EARLY (with the cup) and clear out
+  // BEFORE the cup descends to the bottom — so beans never sit under the cup.
+  function beanPresence(d, side){
+    const dC    = side < 0 ?  0.02 : -0.18;
+    const halfW = side < 0 ?  0.52 :  0.62;
+    return clamp(1 - Math.abs((d - dC)/halfW), 0, 1);
+  }
+
+  function render(){
+    const r = track.getBoundingClientRect();
+    const total = track.offsetHeight - window.innerHeight;
+    const p = clamp(-r.top / total, 0, 1);
+
+    const W = stage.clientWidth, H = stage.clientHeight;
+    const cupSize = Math.min(H*0.40, W*0.50);     // constant size — smaller, no overlap
+    const beanSize = cupSize*0.13;
+    const R  = Math.min(W*0.64, H*0.40);
+    const cx = W;                 // arc circle centre on the stage's right edge
+    const cy = H*0.46;
+    const centreX = cx - R;
+
+    const segLen = 1/N;
+    let centreIdx = 0, centreVal = 0;
+
+    groups.forEach((grp,i)=>{
+      // local progress within this coffee's own segment, minus the dead-zone gap
+      const lpRaw = (p - i*segLen)/segLen;
+      const lp = (lpRaw - GAP)/(1 - 2*GAP);
+      if(lp < 0 || lp > 1){ grp.g.style.opacity = "0"; return; }
+      grp.g.style.opacity = "1";
+
+      // lp -> d, with a hold at the centre
+      let d;
+      if(lp < A)      d = -1 + lp/A;          // enter: -1 -> 0
+      else if(lp > B) d = (lp - B)/(1 - B);   // exit:   0 -> 1
+      else            d = 0;                  // hold
+      const ad = Math.abs(d);
+
+      // how centred this coffee is → drives the text
+      const centred = (lp>=A && lp<=B) ? 1 : clamp(1 - ad/0.5, 0, 1);
+      if(centred > centreVal){ centreVal = centred; centreIdx = i; }
+
+      const th = d * Math.PI/2;                 // -90°..+90°
+      const x  = cx - R*Math.cos(th);           // d=0 centre, d=±1 right edge
+      const y  = cy + R*Math.sin(th);           // d=-1 up, d=+1 down
+      grp.g.style.transform = `translate(${x}px, ${y}px)`;
+
+      // cup — constant size, spin in / hold / spin out
+      const cupOp = clamp((0.94 - ad)/0.2, 0, 1);
+      grp.cup.style.width = cupSize+"px";
+      grp.cup.style.opacity = String(cupOp);
+      grp.cup.style.transform = `translate(-50%,-50%) rotate(${spinDeg(d)}deg)`;
+
+      // beans — travel in from off-screen top/bottom to a scattered target around
+      // (never over) the cup, each spinning a little; reverse out as they leave.
+      grp.beans.forEach(b=>{
+        const pres = beanPresence(d, b.side);
+        const gather = smooth(pres);
+        const bx = b.tx*cupSize;
+        const by = b.ty*cupSize*gather + b.side*b.startMul*cupSize*(1 - gather);
+        const rot = b.sp + (1 - gather)*b.tw;
+        b.el.style.width = beanSize+"px";
+        b.el.style.opacity = String(clamp(pres/0.4, 0, 1));
+        b.el.style.transform = `translate(${bx}px, ${by}px) translate(-50%,-50%) rotate(${rot}deg)`;
+      });
+    });
+
+    nameEl.textContent = COFFEES[centreIdx].name;
+    descEl.textContent = COFFEES[centreIdx].desc;
+    textEl.style.opacity = String(centreVal);
+    textEl.style.transform =
+      `translate(${centreX}px, ${cy + cupSize*0.42 + (1-centreVal)*16}px) translate(-50%,0)`;
+  }
+
+  function loop(){ render(); requestAnimationFrame(loop); }
+  requestAnimationFrame(loop);
+</script>
+</body>
+</html>

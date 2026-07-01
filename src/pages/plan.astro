@@ -86,6 +86,22 @@ const transfers = [
   { name: "Donegal Tour Guide · Henry Doohan", phone: "086 333 1031", href: "tel:+353863331031", note: "Chauffeur · tours & corporate" },
 ] as const;
 
+// Soft brand tints for operator cards — alternate cool/warm; hover fills with the
+// matching brand colour (atlantic tiles → atlantic, sand tiles → sand).
+const cardTints = [
+  { bg: "bg-[color-mix(in_srgb,var(--color-atlantic)_10%,var(--color-surface))]", hover: "hover:bg-[var(--color-atlantic)]" },
+  { bg: "bg-[color-mix(in_srgb,var(--color-sand)_13%,var(--color-surface))]",     hover: "hover:bg-[var(--color-sand)]" },
+];
+
+// Café menu — each cup (transparent, top-down) arcs in on scroll in the
+// "At the airport" section. img is the beans-less cutout the animation rotates.
+const coffees = [
+  { name: "Flat White",  desc: "A double ristretto under silky steamed milk. No froth, no fuss.",   img: "/photos/plan/coffees/cup-flatwhite.png" },
+  { name: "Cappuccino",  desc: "Espresso, steamed milk and a deep foam crown, dusted with cocoa.",  img: "/photos/plan/coffees/cup-cappuccino.png" },
+  { name: "Americano",   desc: "A shot of espresso loosened with hot water. Long, black and easy.", img: "/photos/plan/coffees/cup-americano.png" },
+  { name: "Latte",       desc: "Steamed milk poured over espresso — foam, with the coffee below.",  img: "/photos/plan/coffees/cup-latte.png" },
+];
+
 // Local Link bus times at Donegal Airport. Each pair is depart → arrive.
 // "ms: true" = Mon–Sat only; all other trips run daily (incl. Sun & public holidays).
 const busToAirport = [
@@ -412,7 +428,7 @@ const busColumns = [
           <h2 data-split class="mt-3 font-display text-[clamp(3.2rem,5.5vw,5rem)] font-normal leading-[1.02]">
             Collect from arrivals.
           </h2>
-          <p class="mt-5 max-w-xl text-lg leading-relaxed text-mute">
+          <p data-animate="fade-up" data-animate-delay="0.05" class="mt-5 max-w-xl text-lg leading-relaxed text-mute">
             Four operators with desks or meet-and-greet in the arrivals hall.
             Book directly for the best rates.
           </p>
@@ -452,7 +468,7 @@ const busColumns = [
 
           {/* driving cars — desktop only */}
           {carHire.map((c, i) => (
-            <div class="ch-car absolute left-0 top-0 z-[3] hidden md:block" data-idx={i} data-side={c.side}>
+            <div class="ch-car pointer-events-none absolute left-0 top-0 z-[3] hidden md:block" data-idx={i} data-side={c.side}>
               <img
                 src={c.car}
                 alt=""
@@ -488,28 +504,28 @@ const busColumns = [
       >
         Local drivers, door to door.
       </h2>
-      <p class="mt-5 max-w-xl text-sm leading-relaxed text-mute">
-        All operators are based in the area. Pre-booking recommended for early flights.
+      <p data-animate="fade-up" data-animate-delay="0.05" class="mt-5 max-w-xl text-base leading-relaxed text-mute">
+        All operators are based in the area. Pre-booking is recommended.
       </p>
 
       {/* Taxis */}
-      <p data-animate="fade-up" class="mt-12 font-mono text-[0.7rem] font-bold uppercase tracking-[0.22em] text-atlantic">
+      <p data-animate="fade-up" class="mt-12 font-mono text-[1.05rem] font-bold uppercase tracking-[0.16em] text-atlantic">
         Taxis
       </p>
       <div
         data-animate="fade-up"
         data-animate-delay="0.05"
-        class="mt-4 grid gap-px bg-line grid-cols-2 sm:grid-cols-4"
+        class="mt-4 grid gap-px bg-[rgba(24,29,22,0.16)] grid-cols-2 sm:grid-cols-4"
       >
-        {taxis.map((t) => (
+        {taxis.map((t, i) => (
           <a
             href={t.href}
-            class="group flex flex-col bg-surface p-6 transition-colors hover:bg-[var(--color-bg)]"
+            class={`group flex flex-col p-6 transition-colors duration-300 ${cardTints[i % cardTints.length].bg} ${cardTints[i % cardTints.length].hover}`}
           >
-            <p class="text-sm font-medium leading-snug text-ink group-hover:text-atlantic transition-colors">
+            <p class="text-base font-medium leading-snug text-ink transition-colors duration-300 group-hover:text-white">
               {t.name}
             </p>
-            <p class="mt-4 font-mono text-[0.68rem] uppercase tracking-[0.15em] text-sand">
+            <p class="mt-4 font-mono text-[0.8rem] uppercase tracking-[0.15em] text-sand transition-all duration-300 group-hover:text-[0.95rem] group-hover:text-white">
               {t.phone}
             </p>
           </a>
@@ -517,28 +533,28 @@ const busColumns = [
       </div>
 
       {/* Transfers — groups, tours & coaches */}
-      <p data-animate="fade-up" class="mt-10 font-mono text-[0.7rem] font-bold uppercase tracking-[0.22em] text-atlantic">
+      <p data-animate="fade-up" class="mt-10 font-mono text-[1.05rem] font-bold uppercase tracking-[0.16em] text-atlantic">
         Transfers · groups &amp; tours
       </p>
       <div
         data-animate="fade-up"
         data-animate-delay="0.05"
-        class="mt-4 grid gap-px bg-line grid-cols-1 sm:grid-cols-3"
+        class="mt-4 grid gap-px bg-[rgba(24,29,22,0.16)] grid-cols-1 sm:grid-cols-3"
       >
-        {transfers.map((t) => (
+        {transfers.map((t, i) => (
           <a
             href={t.href}
-            class="group flex flex-col bg-surface p-6 transition-colors hover:bg-[var(--color-bg)]"
+            class={`group flex flex-col p-6 transition-colors duration-300 ${cardTints[i % cardTints.length].bg} ${cardTints[i % cardTints.length].hover}`}
           >
-            <p class="text-sm font-medium leading-snug text-ink group-hover:text-atlantic transition-colors">
+            <p class="text-base font-medium leading-snug text-ink transition-colors duration-300 group-hover:text-white">
               {t.name}
             </p>
             {t.note && (
-              <p class="mt-1 font-mono text-[0.58rem] uppercase tracking-[0.14em] text-mute">
+              <p class="mt-1 font-mono text-[0.68rem] uppercase tracking-[0.14em] text-mute transition-colors duration-300 group-hover:text-white/70">
                 {t.note}
               </p>
             )}
-            <p class="mt-4 font-mono text-[0.68rem] uppercase tracking-[0.15em] text-sand">
+            <p class="mt-4 font-mono text-[0.8rem] uppercase tracking-[0.15em] text-sand transition-all duration-300 group-hover:text-[0.95rem] group-hover:text-white">
               {t.phone}
             </p>
           </a>
@@ -639,67 +655,91 @@ Bus stop: Front of the Terminal. <span class="text-sand">*</span> Mon–Sat only
     </div>
   </section>
 
-  {/* ─── AT THE AIRPORT ─────────────────────────────────────────────────────── */}
+  {/* ─── AT THE AIRPORT · CAFÉ ──────────────────────────────────────────────── */}
   <section class="border-t border-line">
-    <div class="mx-auto max-w-7xl px-6 pt-20">
-      <p
-        data-animate="fade-up"
-        class="font-mono text-base font-bold uppercase tracking-[0.3em] text-atlantic"
-      >
-        At the airport
-      </p>
-      <h2
-        data-split
-        class="mt-3 font-display text-[clamp(1.8rem,3.5vw,3rem)] font-normal leading-[1.02]"
-      >
-        Small airport. Big welcome.
-      </h2>
-    </div>
+    {/* Vertical video full-bleed left; on the right each cup arcs in on scroll,
+        spins to the centre with its loose beans, then slips off bottom-right as
+        the next one arrives. Pinned on desktop; static menu on mobile. */}
+    <div id="cafe-track" class="relative h-auto lg:h-[460vh]">
+      <div class="static lg:sticky lg:top-0 lg:h-screen">
+        <div class="w-full px-6 lg:h-full lg:px-0">
+          <div class="grid gap-10 py-16 lg:h-full lg:grid-cols-[0.82fr_1.18fr] lg:items-stretch lg:gap-0 lg:py-0">
 
-    {/* Café — full-bleed photo limpia, label debajo */}
-    <div class="mt-12">
-      <div class="h-[420px] w-full overflow-hidden sm:h-[520px]">
-        <img
-          src="/photos/plan/plan-cafe-03.jpg"
-          alt="Coffees and pastries at the Donegal Airport Café"
-          class="h-full w-full object-cover object-[center_40%]"
-          loading="lazy"
-        />
-      </div>
-      <div class="mx-auto max-w-7xl px-6 pt-6">
-        <p class="font-mono text-[0.62rem] uppercase tracking-[0.2em] text-atlantic">Café</p>
-        <p class="mt-1 font-display text-[clamp(1.4rem,2.5vw,2rem)] font-normal leading-snug text-ink">
-          The Airport Café
-        </p>
-      </div>
+            {/* Vertical video — full-bleed to the left edge, top-to-bottom on desktop */}
+            <div class="relative mx-auto aspect-[9/16] w-full max-w-[340px] overflow-hidden shadow-[0_34px_64px_-28px_rgba(0,0,0,0.55)] lg:mx-0 lg:aspect-auto lg:h-full lg:max-w-none lg:shadow-none">
+              <video
+                class="h-full w-full object-cover"
+                autoplay
+                muted
+                loop
+                playsinline
+                preload="metadata"
+                poster="/photos/plan/cafe-video-poster.jpg"
+              >
+                <source src="/photos/plan/cafe-video.mp4" type="video/mp4" />
+              </video>
+            </div>
 
-      <div class="mx-auto max-w-7xl px-6 pb-20">
-        <div class="mt-0 grid gap-px bg-line sm:grid-cols-2">
+            {/* Desktop stage — title, hours, and the scroll-driven coffee arc */}
+            <div class="relative hidden h-full overflow-hidden lg:block">
+              {/* Title */}
+              <div class="absolute left-[7%] top-[calc(var(--header-h)+3vh)] z-10">
+                <p class="font-mono text-[0.95rem] font-bold uppercase tracking-[0.3em] text-[#a06a34]">
+                  At the airport
+                </p>
+                <h2 class="cafe-name mt-2 text-[clamp(2rem,3vw,2.9rem)] leading-[1.02] text-[#2b1a10]">
+                  The Airport Café
+                </h2>
+              </div>
 
-          {/* Café description */}
-          <div class="flex items-center bg-surface p-8">
-            <p class="text-sm leading-relaxed text-mute">
-              Hot drinks, freshly made food and Donegal produce — open from
-              first flight to last. The best view of Errigal you'll get
-              without leaving your seat.
-            </p>
+              {/* Hours */}
+              <p class="absolute bottom-[8%] left-[7%] z-10 font-mono text-[0.78rem] uppercase tracking-[0.16em] text-[#6a5142]">
+                Open daily · mornings until <span class="font-bold text-[#a06a34]">3pm</span>
+              </p>
+
+              {/* Animation stage (cups + beans injected by JS) */}
+              <div id="cafe-stage" class="absolute inset-0">
+                <div id="cafe-groups"></div>
+                <div id="cafe-text" class="px-4">
+                  <h3 id="cafe-name" class="cafe-name text-[clamp(2.4rem,4vw,3.6rem)] leading-none text-[#2b1a10]"></h3>
+                  <p id="cafe-desc" class="mx-auto mt-4 max-w-sm text-[1.05rem] font-medium leading-relaxed text-[#6a5142]"></p>
+                </div>
+                {/* Closing line — settles in once the last cup has left */}
+                <p id="cafe-outro" class="cafe-name text-[clamp(2.2rem,3.4vw,3.2rem)] leading-tight text-[#a06a34]">
+                  A proper cup before you fly.
+                </p>
+              </div>
+            </div>
+
+            {/* Mobile — static café menu */}
+            <div class="lg:hidden">
+              <p class="font-mono text-[0.8rem] font-bold uppercase tracking-[0.3em] text-[#a06a34]">At the airport</p>
+              <h2 class="cafe-name mt-2 text-[clamp(1.9rem,8vw,2.6rem)] leading-[1.02] text-[#2b1a10]">The Airport Café</h2>
+              <p class="mt-3 font-mono text-[0.72rem] uppercase tracking-[0.16em] text-[#6a5142]">
+                Open daily · mornings until <span class="font-bold text-[#a06a34]">3pm</span>
+              </p>
+              <div class="mt-8 divide-y divide-line border-y border-line">
+                {coffees.map((c) => (
+                  <div class="flex items-center gap-5 py-5">
+                    <img src={c.img} alt={`${c.name} at the Donegal Airport Café`} class="w-20 shrink-0" loading="lazy" />
+                    <div>
+                      <h3 class="cafe-name text-[1.5rem] leading-none text-[#2b1a10]">{c.name}</h3>
+                      <p class="mt-1.5 text-sm leading-relaxed text-[#6a5142]">{c.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p class="cafe-name mt-8 text-center text-[clamp(1.5rem,6vw,2rem)] leading-tight text-[#a06a34]">
+                A proper cup before you fly.
+              </p>
+            </div>
+
           </div>
-
-          {/* Café photo 2 */}
-          <div class="overflow-hidden bg-surface">
-            <img
-              src="/photos/plan/plan-cafe-03.jpg"
-              alt="Coffees and pastries at the Donegal Airport Café"
-              class="h-full w-full object-cover object-center"
-              style="min-height: 220px;"
-              loading="lazy"
-            />
-          </div>
-
         </div>
       </div>
     </div>
 
+    <script type="application/json" id="cafe-data" is:inline set:html={JSON.stringify(coffees)}></script>
   </section>
 
 
@@ -773,9 +813,16 @@ Bus stop: Front of the Terminal. <span class="text-sand">*</span> Mon–Sat only
       const endPx = total > 0 ? -total * 0.65 : -vh * 0.9;
       const p = clamp((startPx - r.top) / (startPx - endPx), 0, 1);
       const cf = clamp((p - 0.8) / 0.2, 0, 1);   // crossfade window: last 20%
+      // Per-car drive window [start, end] within p. The bottom-row cars
+      // (Europcar idx2, GoCar idx3) start noticeably later than the top row so
+      // their approach is still visibly moving when the top two have parked —
+      // otherwise they arrive almost instantly and you miss the animation.
+      // All four finish by p=0.8, right as the crossfade to cards begins.
+      const DWIN = [[0.00, 0.60], [0.06, 0.66], [0.32, 0.80], [0.40, 0.80]];
       ctx.clearRect(0, 0, W, H);
       cars.forEach(c => {
-        const drive = clamp((p / 0.8) - c.i * 0.05, 0, 1);
+        const win = DWIN[c.i] || [0, 0.8];
+        const drive = clamp((p - win[0]) / (win[1] - win[0]), 0, 1);
         const x = c.startX + (c.endX - c.startX) * easeOutCubic(drive);
         c.el.style.transform = `translate(${x}px, ${c.cy - c.carH / 2}px)`;
         c.el.style.opacity = String(1 - cf);
@@ -835,20 +882,195 @@ Bus stop: Front of the Terminal. <span class="text-sand">*</span> Mon–Sat only
   function initParkingReveal() {
     const fig = document.getElementById("parking-figures");
     if (!fig) return;
-    // Slide-up only — opacity stays at 1 so the dark glass colour is constant.
+    // Fade the whole block up as one (opacity + y), so the container box is never
+    // shown empty "filling up" — it enters like every other fade-up on the page.
     gsap.from(fig, {
-      y: 44,
+      opacity: 0,
+      y: 40,
       ease: "power3.out",
       duration: 0.9,
-      scrollTrigger: { trigger: fig, start: "top 90%" },
+      scrollTrigger: { trigger: fig, start: "top 80%" },
     });
+  }
+
+  // ── Café: each cup arcs in from the top-right, spins to the centre (still at
+  //    the centre) with loose beans dropping in from top & bottom, then slips off
+  //    bottom-right as the next one arrives. Scroll-driven; desktop-only. ───────
+  function initCafeCoffee() {
+    const track = document.getElementById("cafe-track");
+    const stage = document.getElementById("cafe-stage");
+    const wrap  = document.getElementById("cafe-groups");
+    const textEl = document.getElementById("cafe-text");
+    const nameEl = document.getElementById("cafe-name");
+    const descEl = document.getElementById("cafe-desc");
+    const outroEl = document.getElementById("cafe-outro");
+    const dataEl = document.getElementById("cafe-data");
+    if (!track || !stage || !wrap || !textEl || !dataEl) return;
+    let COFFEES;
+    try { COFFEES = JSON.parse(dataEl.textContent || "[]"); } catch { return; }
+    if (!COFFEES.length) return;
+
+    const N = COFFEES.length;
+    const BEAN = "/photos/plan/coffees/bean.png";
+    const M_BEANS = 8, HOLD = 0.26, SPIN = 190, GAP = 0.06;
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const smooth = t => t*t*(3 - 2*t);
+    const isDesktop = () => window.matchMedia("(min-width: 1024px)").matches;
+
+    // build a group (cup + loose beans) per coffee
+    const groups = COFFEES.map(c => {
+      const g = document.createElement("div"); g.className = "cafe-group";
+      const cup = document.createElement("img"); cup.className = "cafe-cup"; cup.src = c.img; cup.alt = "";
+      g.appendChild(cup);
+      const beans = [];
+      const half = M_BEANS/2;
+      for (let j = 0; j < M_BEANS; j++) {
+        const b = document.createElement("img"); b.className = "cafe-bean"; b.src = BEAN; b.alt = "";
+        const side = (j < half) ? -1 : 1;
+        const k = (side < 0) ? j : j - half;
+        let ang;
+        if (side < 0) {
+          // top beans — spread across the upper arc
+          ang = -Math.PI/2 + ((k/(half-1)) - 0.5)*1.9 + (Math.random()-0.5)*0.25;
+        } else {
+          // bottom beans — two side clusters, leaving a clear corridor directly
+          // below the cup so they never sit on the description text.
+          const lr = (k % 2 === 0) ? 1 : -1;
+          const tier = Math.floor(k/2);
+          ang = Math.PI/2 + lr*(0.95 + tier*0.45 + (Math.random()-0.5)*0.2);
+        }
+        const rt = 0.58 + Math.random()*0.34;
+        const tx = Math.cos(ang)*rt, ty = Math.sin(ang)*rt;
+        const startMul = 2.2 + Math.random()*1.0;
+        const sp = Math.random()*360;
+        const tw = (50 + Math.random()*150) * (Math.random() < 0.5 ? -1 : 1);
+        g.appendChild(b);
+        beans.push({ el:b, side, tx, ty, startMul, sp, tw });
+      }
+      wrap.appendChild(g);
+      return { g, cup, beans };
+    });
+
+    function spinDeg(d) {
+      if (d <= -HOLD) return (d + HOLD)/(1 - HOLD) * SPIN;
+      if (d >=  HOLD) return (d - HOLD)/(1 - HOLD) * SPIN;
+      return 0;
+    }
+    // top beans (side -1) gather late & linger; bottom beans (side +1) gather
+    // early with the cup and clear out before it descends — so no bean sits under it.
+    function beanPresence(d, side) {
+      const dC    = side < 0 ?  0.02 : -0.18;
+      const halfW = side < 0 ?  0.52 :  0.62;
+      return clamp(1 - Math.abs((d - dC)/halfW), 0, 1);
+    }
+
+    function render() {
+      if (!isDesktop()) return;                 // mobile uses the static menu
+      const r = track.getBoundingClientRect();
+      const total = track.offsetHeight - window.innerHeight;
+      if (total <= 0) return;
+      const p = clamp(-r.top / total, 0, 1);
+
+      const W = stage.clientWidth, H = stage.clientHeight;
+      if (!W || !H) return;
+      const cupSize = Math.min(H*0.40, W*0.50);
+      const beanSize = cupSize*0.13;
+      const R  = Math.min(W*0.64, H*0.40);
+      const cx = W, cy = H*0.46, centreX = cx - R;
+
+      const segLen = 1/N;
+      let centreIdx = 0, centreVal = 0;
+
+      groups.forEach((grp, i) => {
+        const lp = ((p - i*segLen)/segLen - GAP)/(1 - 2*GAP);
+        if (lp < 0 || lp > 1) { grp.g.style.opacity = "0"; return; }
+        grp.g.style.opacity = "1";
+
+        // lp -> d: enter (-1→0), pass smoothly through, exit (0→1). No forced hold.
+        const d = (lp < 0.5) ? (-1 + lp/0.5) : ((lp - 0.5)/0.5);
+        const ad = Math.abs(d);
+
+        const centred = clamp(1 - ad/0.5, 0, 1);
+        if (centred > centreVal) { centreVal = centred; centreIdx = i; }
+
+        const th = d * Math.PI/2;
+        const x = cx - R*Math.cos(th);
+        const y = cy + R*Math.sin(th);
+        grp.g.style.transform = `translate(${x}px, ${y}px)`;
+
+        const cupOp = clamp((0.94 - ad)/0.2, 0, 1);
+        grp.cup.style.width = cupSize+"px";
+        grp.cup.style.opacity = String(cupOp);
+        grp.cup.style.transform = `translate(-50%,-50%) rotate(${spinDeg(d)}deg)`;
+
+        grp.beans.forEach(b => {
+          const pres = beanPresence(d, b.side);
+          const gather = smooth(pres);
+          const bx = b.tx*cupSize;
+          const by = b.ty*cupSize*gather + b.side*b.startMul*cupSize*(1 - gather);
+          const rot = b.sp + (1 - gather)*b.tw;
+          b.el.style.width = beanSize+"px";
+          b.el.style.opacity = String(clamp(pres/0.4, 0, 1));
+          b.el.style.transform = `translate(${bx}px, ${by}px) translate(-50%,-50%) rotate(${rot}deg)`;
+        });
+      });
+
+      if (nameEl) nameEl.textContent = COFFEES[centreIdx].name;
+      if (descEl) descEl.textContent = COFFEES[centreIdx].desc;
+      textEl.style.opacity = String(centreVal);
+      textEl.style.transform =
+        `translate(${centreX}px, ${cy + cupSize*0.66 + (1-centreVal)*16}px) translate(-50%,0)`;
+
+      // Closing line — settles in at the centre once the last cup has left,
+      // so the pin doesn't run to empty at the end.
+      if (outroEl) {
+        const outro = clamp((p - 0.90)/0.06, 0, 1);
+        outroEl.style.opacity = String(outro);
+        // centred horizontally in the stage (W/2), not at the cup's arc centre
+        outroEl.style.transform =
+          `translate(${W/2}px, ${cy}px) translate(-50%,-50%) translateY(${(1-outro)*22}px)`;
+      }
+    }
+
+    function loop() { render(); requestAnimationFrame(loop); }
+    requestAnimationFrame(loop);
   }
 
   document.addEventListener("astro:page-load", () => {
     initCarHireDrive();
     initTariffPanel();
     initParkingReveal();
+    initCafeCoffee();
   });
 </script>
+
+{/* is:global — the cup/bean elements are created in JS (no Astro scope hash),
+    so these rules must NOT be scoped or position:absolute never applies to them. */}
+<style is:global>
+  /* Café-menu name — Playfair Display italic (the café's brand voice) */
+  .cafe-name { font-family: "Playfair Display", Georgia, serif; font-style: italic; font-weight: 600; }
+
+  /* Scroll-driven coffee arc (desktop). Positions are set inline by JS. */
+  #cafe-groups { position: absolute; inset: 0; pointer-events: none; }
+  .cafe-group { position: absolute; left: 0; top: 0; }
+  .cafe-cup {
+    position: absolute; left: 0; top: 0; max-width: none; transform-origin: center;
+    will-change: transform, opacity;
+    filter: drop-shadow(0 24px 30px rgba(0, 0, 0, 0.26));
+  }
+  .cafe-bean {
+    position: absolute; left: 0; top: 0; max-width: none; transform-origin: center;
+    will-change: transform, opacity;
+    filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.25));
+  }
+  #cafe-text {
+    position: absolute; left: 0; top: 0; width: 62%; text-align: center;
+    opacity: 0; pointer-events: none; will-change: transform, opacity;
+  }
+  #cafe-outro {
+    position: absolute; left: 0; top: 0; width: 68%; text-align: center;
+    opacity: 0; pointer-events: none; will-change: transform, opacity;
+  }
+</style>
 
 </BaseLayout>

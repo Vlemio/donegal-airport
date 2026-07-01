@@ -1,67 +1,557 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 
-const title = "Pilots & ATC · Donegal Airport";
-const description = "Aerodrome reference data, ATC frequencies, PPR, drone operations in the Donegal CTR and special operations at Carrickfinn.";
+const title = "Pilots & drones · Donegal Airport";
+const description =
+  "Aerodrome reference data, ATC frequencies, PPR procedure, fees & charges and drone operations in the Donegal (EIDL) control zone — from AIP Ireland AD 2 EIDL.";
+
+/* Figures from AIP Ireland — EIDL AD 2 (AIRAC 006/25). Cross-check current AIP & NOTAMs. */
+
+const nav = [
+  { id: "data", label: "Aerodrome data" },
+  { id: "ppr", label: "PPR & procedures" },
+  { id: "fees", label: "Fees & charges" },
+  { id: "drones", label: "Drones · CTR" },
+];
+
+/* At-a-glance stats */
+const stats = [
+  { big: "02 / 20", small: "Runway · 1495 × 30 m" },
+  { big: "30 ft", small: "Elevation AMSL" },
+  { big: "10 NM", small: "CTR · SFC–5000 ft · C" },
+  { big: "5000 ft", small: "Transition altitude" },
+  { big: "129.805", small: "Tower · ATIS 129.930" },
+  { big: "CAT 4", small: "RFFS · CAT 5 on 24 h PN" },
+];
+
+/* Detail blocks (accordions) */
+const identifiers = [
+  ["IATA / ICAO", "CFN / EIDL"],
+  ["Aerodrome type", "Civil · Donegal Airport Co."],
+  ["ARP", "55°02′39″N 008°20′28″W"],
+  ["Position", "2 NM SW of Bunbeg"],
+  ["Reference temp", "19.1 °C max · 2.2 °C min"],
+  ["Magnetic variation", "2°W (2025) · −11′/yr"],
+  ["Traffic permitted", "IFR / VFR"],
+];
+const runwayFull = [
+  ["Bearing", "023° / 203° mag · 020.4° / 200.4° true"],
+  ["Surface", "Grooved asphalt · PCN 21/F/B/X/T"],
+  ["Displaced THR", "02 → 209 m · 20 → 129 m"],
+  ["Strip / RESA", "1562 × 150 m / 120 × 60 m"],
+  ["PAPI", "3.3° both (left) · MEHT 43 ft"],
+  ["Approach lgt", "02: LIH 420 m · 20: LIH 455 m · LED"],
+];
+const declared = [
+  { rwy: "02", tora: "1314", toda: "1593", asda: "1314", lda: "1159", thr: "209 m" },
+  { rwy: "20", tora: "1332", toda: "1406", asda: "1332", lda: "1203", thr: "129 m" },
+];
+
+/* ── Interactive aerodrome map — features projected from AIP coordinates ──
+   Equirectangular projection about a local reference, then auto-scaled to the
+   SVG viewBox. Relative positions are accurate; the runway centreline, stands,
+   NDB and DME come straight from EIDL AD 2 / the Aerodrome Chart. */
+const LAT0 = 55.0442, LON0 = -8.3400, KX = Math.cos(LAT0 * Math.PI / 180);
+const P = (lat: number, lon: number): [number, number] => [(lon - LON0) * KX, -(lat - LAT0)];
+
+const rwyS = P(55.039269, -8.344186); // 02 physical end (SW)
+const rwyN = P(55.049402, -8.337625); // 20 physical end (NE)
+const dthr02 = P(55.039644, -8.343944);
+const dthr20 = P(55.048531, -8.338189);
+const arp = P(55.044167, -8.341111);
+const mapNav = [
+  { id: "NDB", label: "CFN", sub: "361 kHz", p: P(55.043992, -8.339219) },
+  { id: "DME", label: "IFN", sub: "110.3 · 40X", p: P(55.043953, -8.339508) },
+];
+const standsRaw: [string, number, number][] = [
+  ["1E", 55.038442, -8.342467], ["1N", 55.038569, -8.342303], ["1S", 55.038431, -8.342392], ["1W", 55.038486, -8.342681],
+  ["2E", 55.038322, -8.341500], ["2N", 55.038450, -8.341339], ["2S", 55.038311, -8.341428], ["2W", 55.038367, -8.341714],
+  ["3E", 55.039192, -8.341678], ["3W", 55.039239, -8.341903],
+];
+const stands = standsRaw.map(([id, lat, lon]) => ({ id, p: P(lat, lon) }));
+
+// auto-scale all features into the viewBox
+const MVW = 320, MVH = 520, MPAD = 44;
+const _all = [rwyS, rwyN, dthr02, dthr20, arp, ...mapNav.map((n) => n.p), ...stands.map((s) => s.p)];
+const _xs = _all.map((p) => p[0]), _ys = _all.map((p) => p[1]);
+const _minX = Math.min(..._xs), _maxX = Math.max(..._xs), _minY = Math.min(..._ys), _maxY = Math.max(..._ys);
+const SC = Math.min((MVW - 2 * MPAD) / (_maxX - _minX), (MVH - 2 * MPAD) / (_maxY - _minY));
+const OX = (MVW - (_maxX - _minX) * SC) / 2 - _minX * SC;
+const OY = (MVH - (_maxY - _minY) * SC) / 2 - _minY * SC;
+const T = ([x, y]: [number, number]): [number, number] => [x * SC + OX, y * SC + OY];
+const M2PX = (SC / 111320) * KX; // metres → px (approx, via the projection)
+const RW_PX = 30 * (SC / 111320); // runway 30 m width in px
+
+const tS = T(rwyS), tN = T(rwyN), t02 = T(dthr02), t20 = T(dthr20), tARP = T(arp);
+const tStands = stands.map((s) => ({ id: s.id, xy: T(s.p) }));
+const tNav = mapNav.map((n) => ({ ...n, xy: T(n.p) }));
+// unit vector along the runway (S→N) and its left/west normal
+const _dx = tN[0] - tS[0], _dy = tN[1] - tS[1], _dl = Math.hypot(_dx, _dy);
+const RUX = _dx / _dl, RUY = _dy / _dl;           // along-runway unit
+const RNX = -RUY, RNY = RUX;                        // normal (points to one side)
+const rwWidth = Math.max(11, 30 * M2PX);           // px
+const RW_DEG = Math.atan2(RUY, RUX) * 180 / Math.PI;
+const ANX = -RNX, ANY = -RNY;                       // normal pointing to the apron/west side
+const off = (p: [number, number], d: number): [number, number] => [p[0] + ANX * d, p[1] + ANY * d];
+
+// apron hull (rounded box around the stand cluster) from the stand bbox
+const _sx = tStands.map((s) => s.xy[0]), _sy = tStands.map((s) => s.xy[1]);
+const apron = {
+  x: Math.min(..._sx) - 16, y: Math.min(..._sy) - 16,
+  w: Math.max(..._sx) - Math.min(..._sx) + 32, h: Math.max(..._sy) - Math.min(..._sy) + 32,
+};
+
+/* stand details for the info panel */
+const standInfo = "Self-manoeuvring · max wingspan 29.6 m · max length 27.1 m";
+const airspace = [
+  ["Designation", "Donegal CTR · within Shannon FIR"],
+  ["Lateral limits", "Circle radius 10 NM about ARP"],
+  ["Vertical limits", "SFC – 5000 ft AMSL"],
+  ["Class", "C (G outside ATC hours)"],
+  ["Transition altitude", "5000 ft"],
+  ["Flight plan", "Mandatory during ATS hours"],
+];
+const approaches = [
+  ["RWY 02", "RNP (RNAV) · NDB/DME"],
+  ["RWY 20", "RNP (RNAV) · LOC · NDB/DME"],
+];
+const navaids = [
+  ["NDB", "CFN · 361 kHz · H24 · DOC 25 NM"],
+  ["DME", "IFN · 110.3 MHz (Ch 40X) · zero at DTHR · DOC 20 NM"],
+  ["LOC 20", "IFN · 110.3 MHz · H24"],
+];
+const comms = [
+  ["Tower / Clearance", "Donegal Tower · 129.805 MHz"],
+  ["Ground", "Donegal Ground · 129.805 MHz"],
+  ["AFIS", "Donegal Information · 129.805 MHz"],
+  ["ATIS", "Donegal ATIS · 129.930 MHz"],
+];
+const ops = [
+  ["RFFS", "CAT 4 · CAT 5 on 24 h notice"],
+  ["Fuel", "Jet A1 only · 10000 L bowser"],
+  ["Security", "H24"],
+  ["PPR", "Required for all flights"],
+  ["Customs / Imm.", "24 HR PN non-EU · 12 HR PN EU"],
+];
+const cautions = [
+  "Code 2 non-precision approach runway.",
+  "Wind shear & turbulence in the lee of Mt Errigal — caution on approach to RWY 20 in winds 260°–310°.",
+  "Reduced Aerodrome Visibility Procedures apply below 1400 m visibility (max 3 movements).",
+];
+
+/* Opening hours → timeline (UTC). Bar range 06:00–21:00. */
+const hoursData = {
+  Winter: [
+    { day: "Mon–Sat", blocks: [["0740", "1030"], ["1100", "1500"], ["1530", "1700"], ["1800", "2010"]] },
+    { day: "Sun", blocks: [["0940", "1130"], ["1200", "1430"], ["1500", "1700"], ["1800", "2010"]] },
+  ],
+  Summer: [
+    { day: "Mon–Fri", blocks: [["0640", "0930"], ["1000", "1400"], ["1430", "1600"], ["1700", "1910"]] },
+    { day: "Sat", blocks: [["0640", "0800"], ["0830", "1200"], ["1230", "1600"], ["1700", "1910"]] },
+    { day: "Sun", blocks: [["0840", "1030"], ["1100", "1330"], ["1400", "1600"], ["1700", "1910"]] },
+  ],
+};
+const START = 360, SPAN = 900; // 06:00 → 21:00
+const toMin = (t: string) => parseInt(t.slice(0, 2)) * 60 + parseInt(t.slice(2));
+const pct = (m: number) => ((m - START) / SPAN) * 100;
+const ticks = ["06", "09", "12", "15", "18", "21"];
+
+/* Accordion groups */
+const accordions = [
+  { title: "Identifiers & location", rows: identifiers },
+  { title: "Runway — full detail", rows: runwayFull },
+  { title: "Airspace · Donegal CTR", rows: airspace },
+  { title: "Instrument approaches", rows: approaches },
+  { title: "Navigation aids", rows: navaids },
+  { title: "Communications", rows: comms },
+  { title: "Operational", rows: ops },
+];
+
+/* ── Fees & charges (effective 1 March 2025) ────────────────── */
+const feeGroups = [
+  { title: "Landing", rows: [["Single engine", "€15.00"], ["Twin engine (< 4 t)", "€28.75"], ["Over 4 t", "€17.50 / tonne or part"]] },
+  { title: "Aircraft parking · per 24 h", rows: [["First 2 hours", "No charge"], ["Not over 3 t", "€15.00 flat"], ["Not over 10 t", "€35.75 flat"], ["Not over 20 t", "€64.00 flat"], ["Over 20 t", "€80.00 flat"]] },
+  { title: "Handling · per outbound pax", rows: [["Passenger load supplement", "€17.50"], ["Handling fee", "€9.75"], ["Exempt", "Under 2s · non-commercial"]] },
+  { title: "Ground services", rows: [["Ground power unit", "€51.50 + €51.50/h after 30 min"], ["Hot water", "€35.00"], ["Cleaning catering dishes", "€50.00"], ["Aircraft towing", "€50.00 / tow"], ["Special services", "+15% (min €30)"]] },
+  { title: "Out-of-hours", rows: [["Airport extension", "€330.00 / aircraft / hour · 48 h notice"]] },
+  { title: "Hangarage · + 23% VAT", rows: [["Private single engine", "€20.00 / 24 h"], ["Private twin engine", "€40.00 / 24 h"], ["Commercial", "€15.00 / tonne / 24 h"], ["Push in / out", "€50.00 / push"]] },
+];
+
+/* ── Drones ─────────────────────────────────────────────────── */
+const droneSteps = [
+  { n: "01", t: "Register with the IAA", d: "Any drone over 250 g, or with a camera or sensor, must be registered under EU Regulation 2019/947 and S.I. No. 24 of 2023." },
+  { n: "02", t: "The CTR is restricted airspace", d: "A 10 NM-radius circle from the surface to 5000 ft. It is illegal to fly within the UAS Geographical Zones — no flight without ATC permission." },
+  { n: "03", t: "Request ≥ 48 h in advance", d: "Complete the drone request form and email it to atc@donegalairport.ie. Requests inside the 48-hour window may not be processed in time." },
+  { n: "04", t: "Fly on approval only", d: "Operate strictly within the terms of the ATC approval. Questions to the drone coordinator at atc@donegalairport.ie." },
+];
 ---
 
 <BaseLayout title={title} description={description}>
-  <section class="mx-auto max-w-7xl px-6 pb-24 pt-40">
-    <p class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic">
-      Pilots & ATC
-    </p>
-    <h1
-      data-split
-      class="mt-4 max-w-4xl font-display text-[clamp(2.5rem,6vw,5.5rem)] font-normal leading-[0.98]"
-    >
-      Operations at CFN.
-    </h1>
+  {/* ─── HERO ─────────────────────────────────────────────────── */}
+  <section class="mx-auto max-w-7xl px-6 pb-14 pt-40">
+    <p class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic">Pilots &amp; drones</p>
+    <h1 data-split class="mt-4 max-w-4xl font-display text-[clamp(2.5rem,6vw,5.5rem)] font-normal leading-[0.98]">Operations at CFN.</h1>
     <p class="mt-7 max-w-2xl text-base leading-relaxed text-mute sm:text-lg">
-      Aerodrome data, frequencies, PPR procedure, drone operations
-      and the beach-landing approach — straight from the tower.
+      Aerodrome reference data, frequencies, the PPR procedure, fees and drone
+      operations in the Donegal (EIDL) control zone — from AIP Ireland AD 2.
     </p>
+  </section>
 
-    <dl
-      data-animate="fade-up"
-      class="mt-16 grid divide-y divide-line border-y border-line text-sm sm:grid-cols-2 sm:divide-x sm:divide-y-0"
-    >
-      <div class="px-2 py-7 sm:px-6">
-        <dt class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-sand">
-          IATA
-        </dt>
-        <dd class="mt-2 font-display text-4xl leading-none text-ink">CFN</dd>
-      </div>
-      <div class="px-2 py-7 sm:px-6">
-        <dt class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-sand">
-          ICAO
-        </dt>
-        <dd class="mt-2 font-display text-4xl leading-none text-ink">EIDL</dd>
-      </div>
-      <div class="px-2 py-7 sm:px-6">
-        <dt class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-sand">
-          Runway
-        </dt>
-        <dd class="mt-2 font-display text-3xl leading-none text-ink">
-          02/20 · 1 495 × 30 m
-        </dd>
-      </div>
-      <div class="px-2 py-7 sm:px-6">
-        <dt class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-sand">
-          Tower / ATIS
-        </dt>
-        <dd class="mt-2 font-display text-3xl leading-none text-ink">
-          129.805 / 129.930
-        </dd>
-      </div>
-    </dl>
+  {/* ─── ANCHOR NAV ───────────────────────────────────────────── */}
+  <nav class="sticky top-[var(--header-h)] z-30 border-y border-line bg-[color-mix(in_srgb,var(--color-surface)_88%,transparent)] backdrop-blur">
+    <div class="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-6">
+      {nav.map((n) => (
+        <a href={`#${n.id}`} data-nav-link={n.id} class="shrink-0 border-b-2 border-transparent py-4 pr-6 font-mono text-[0.7rem] font-bold uppercase tracking-[0.18em] text-mute transition-colors hover:text-ink">{n.label}</a>
+      ))}
+    </div>
+  </nav>
 
-    <div data-animate="fade-up" class="mt-14 border-t border-line pt-10">
-      <p class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-mute">
-        Coming next
-      </p>
-      <p class="mt-4 max-w-2xl font-display text-2xl leading-snug text-ink">
-        PPR online form · CTR drone map · approach types · AIP link · beach-landing operations.
-      </p>
+  {/* ─── AERODROME DATA ───────────────────────────────────────── */}
+  <section id="data" class="scroll-mt-[calc(var(--header-h)+3.5rem)] border-t border-line">
+    <div class="mx-auto max-w-7xl px-6 py-20">
+      <p data-animate="fade-up" class="font-mono text-base font-bold uppercase tracking-[0.3em] text-atlantic">Aerodrome data</p>
+      <h2 data-split class="mt-3 font-display text-[clamp(2.2rem,4vw,3.4rem)] font-normal leading-[1.02]">EIDL — the quick reference.</h2>
+
+      {/* At a glance */}
+      <div data-animate="fade-up" class="mt-10 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line md:grid-cols-3 lg:grid-cols-6">
+        {stats.map((s) => (
+          <div class="bg-surface px-5 py-6">
+            <p class="font-display text-[clamp(1.5rem,2.4vw,2rem)] leading-none text-ink">{s.big}</p>
+            <p class="mt-2 font-mono text-[0.6rem] uppercase leading-relaxed tracking-[0.14em] text-mute">{s.small}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Runway diagram */}
+      <div data-animate="fade-up" class="mt-12">
+        <p class="font-mono text-[0.66rem] font-bold uppercase tracking-[0.22em] text-sand">Aerodrome map</p>
+        <div class="mt-4 rounded-2xl border border-line bg-[color-mix(in_srgb,var(--color-atlantic)_4%,var(--color-surface))] p-6 sm:p-8">
+          <div class="grid gap-8 md:grid-cols-[minmax(0,300px)_1fr] md:items-start">
+            {/* MAP — features projected to scale from AIP coordinates */}
+            <svg viewBox="0 0 320 520" class="mx-auto w-full max-w-[300px]" role="img" aria-label="Donegal Airport aerodrome map">
+              {/* apron */}
+              <rect x={apron.x} y={apron.y} width={apron.w} height={apron.h} rx="10" fill="var(--color-surface-lo)" stroke="var(--color-line)" />
+              <text x={apron.x + apron.w / 2} y={apron.y - 6} text-anchor="middle" font-family="var(--font-mono)" font-size="8" fill="var(--color-mute)">APRON</text>
+              {/* taxiway to runway (approx) */}
+              <line x1={apron.x + apron.w} y1={apron.y + 6} x2={t02[0]} y2={t02[1]} stroke="var(--color-surface-lo)" stroke-width="7" stroke-linecap="round" />
+              {/* turn / back-track pads at each runway end */}
+              <rect x={off(tS, rwWidth * 0.4)[0] - rwWidth * 1.05} y={off(tS, rwWidth * 0.4)[1] - rwWidth * 0.8} width={rwWidth * 2.1} height={rwWidth * 1.6} rx="4" fill="#2c312e" transform={`rotate(${RW_DEG} ${off(tS, rwWidth * 0.4)[0]} ${off(tS, rwWidth * 0.4)[1]})`} />
+              <rect x={off(tN, rwWidth * 0.4)[0] - rwWidth * 1.05} y={off(tN, rwWidth * 0.4)[1] - rwWidth * 0.8} width={rwWidth * 2.1} height={rwWidth * 1.6} rx="4" fill="#2c312e" transform={`rotate(${RW_DEG} ${off(tN, rwWidth * 0.4)[0]} ${off(tN, rwWidth * 0.4)[1]})`} />
+              {/* runway asphalt + displaced zones */}
+              <line x1={tS[0]} y1={tS[1]} x2={tN[0]} y2={tN[1]} stroke="#2c312e" stroke-width={rwWidth} stroke-linecap="butt" />
+              <line x1={tS[0]} y1={tS[1]} x2={t02[0]} y2={t02[1]} stroke="#474d49" stroke-width={rwWidth} />
+              <line x1={t20[0]} y1={t20[1]} x2={tN[0]} y2={tN[1]} stroke="#474d49" stroke-width={rwWidth} />
+              {/* centreline */}
+              <line x1={t02[0]} y1={t02[1]} x2={t20[0]} y2={t20[1]} stroke="#f3f2ee" stroke-width="1.4" stroke-dasharray="7 6" opacity="0.85" />
+              {/* threshold bars */}
+              <rect x={t02[0] - (rwWidth + 4) / 2} y={t02[1] - 1.4} width={rwWidth + 4} height="2.8" fill="#f3f2ee" transform={`rotate(${RW_DEG} ${t02[0]} ${t02[1]})`} />
+              <rect x={t20[0] - (rwWidth + 4) / 2} y={t20[1] - 1.4} width={rwWidth + 4} height="2.8" fill="#f3f2ee" transform={`rotate(${RW_DEG} ${t20[0]} ${t20[1]})`} />
+              {/* PAPI (apron side of each threshold) */}
+              {[t02, t20].map((tp) => {
+                const c = off(tp, rwWidth * 0.95);
+                return (
+                  <g transform={`rotate(${RW_DEG} ${c[0]} ${c[1]})`}>
+                    {[0, 1, 2, 3].map((i) => (
+                      <rect x={c[0] - 8 + i * 4.2} y={c[1] - 2} width="3" height="4" fill={i < 2 ? "#f3f2ee" : "#c0392b"} />
+                    ))}
+                  </g>
+                );
+              })}
+              {/* navaids */}
+              {tNav.map((n) => (
+                <g>
+                  {n.id === "NDB" && <circle cx={n.xy[0]} cy={n.xy[1]} r="4.5" fill="none" stroke="var(--color-atlantic)" stroke-width="1.4" />}
+                  {n.id === "NDB" && <circle cx={n.xy[0]} cy={n.xy[1]} r="1.4" fill="var(--color-atlantic)" />}
+                  {n.id === "DME" && <rect x={n.xy[0] - 4} y={n.xy[1] - 4} width="8" height="8" fill="none" stroke="var(--color-atlantic)" stroke-width="1.4" />}
+                  <text x={n.xy[0] + 8} y={n.xy[1] + 3} font-family="var(--font-mono)" font-size="8" fill="var(--color-mute)">{n.id} {n.label}</text>
+                </g>
+              ))}
+              {/* ARP */}
+              <g>
+                <circle cx={tARP[0]} cy={tARP[1]} r="4" fill="none" stroke="var(--color-sand)" stroke-width="1.2" />
+                <line x1={tARP[0] - 5} y1={tARP[1]} x2={tARP[0] + 5} y2={tARP[1]} stroke="var(--color-sand)" stroke-width="1" />
+                <line x1={tARP[0]} y1={tARP[1] - 5} x2={tARP[0]} y2={tARP[1] + 5} stroke="var(--color-sand)" stroke-width="1" />
+                <text x={tARP[0] + 9} y={tARP[1] + 3} font-family="var(--font-mono)" font-size="8" fill="var(--color-mute)">ARP</text>
+              </g>
+              {/* stands (interactive) */}
+              {tStands.map((s) => (
+                <g class="map-stand" data-stand={s.id} tabindex="0" style="cursor:pointer">
+                  <circle cx={s.xy[0]} cy={s.xy[1]} r="6.5" fill="transparent" />
+                  <circle class="map-stand-dot" cx={s.xy[0]} cy={s.xy[1]} r="4" fill="var(--color-sand)" />
+                  <text x={s.xy[0]} y={s.xy[1] - 7} text-anchor="middle" font-family="var(--font-mono)" font-size="7" fill="var(--color-ink)">{s.id}</text>
+                </g>
+              ))}
+              {/* runway designators */}
+              <text x={tS[0]} y={tS[1] + 16} text-anchor="middle" font-family="var(--font-display)" font-size="16" fill="var(--color-ink)">02</text>
+              <text x={tN[0]} y={tN[1] - 8} text-anchor="middle" font-family="var(--font-display)" font-size="16" fill="var(--color-ink)">20</text>
+              {/* compass */}
+              <line x1="298" y1="42" x2="298" y2="18" stroke="var(--color-mute)" stroke-width="1.4" />
+              <polyline points="294,24 298,15 302,24" fill="none" stroke="var(--color-mute)" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+              <text x="298" y="56" text-anchor="middle" font-family="var(--font-mono)" font-size="10" fill="var(--color-ink)">N</text>
+            </svg>
+
+            {/* INFO PANEL */}
+            <div>
+              <p class="font-mono text-[0.66rem] font-bold uppercase tracking-[0.22em] text-sand">Legend</p>
+              <dl class="mt-4 space-y-2.5 text-sm">
+                <div class="flex items-center gap-3"><span class="h-2.5 w-6 rounded-full bg-[#2c312e]"></span><span class="text-mute">Runway · <span class="text-ink">1495 × 30 m</span></span></div>
+                <div class="flex items-center gap-3"><span class="h-2.5 w-6 rounded-full bg-[#474d49]"></span><span class="text-mute">Displaced threshold</span></div>
+                <div class="flex items-center gap-3"><span class="inline-flex gap-0.5"><span class="h-2.5 w-1 bg-[#f3f2ee] outline outline-1 outline-line"></span><span class="h-2.5 w-1 bg-[#f3f2ee] outline outline-1 outline-line"></span><span class="h-2.5 w-1 bg-[#c0392b]"></span><span class="h-2.5 w-1 bg-[#c0392b]"></span></span><span class="text-mute">PAPI 3.3°</span></div>
+                <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full bg-sand"></span><span class="text-mute">Aircraft stand</span></div>
+                <div class="flex items-center gap-3"><span class="h-3 w-3 rounded-full border border-atlantic"></span><span class="text-mute">NDB / DME</span></div>
+              </dl>
+
+              <div class="mt-8 rounded-xl border border-line bg-surface p-5">
+                <p class="font-mono text-[0.6rem] font-bold uppercase tracking-[0.2em] text-atlantic" data-map-title>Aircraft stands</p>
+                <p class="mt-2 text-sm leading-relaxed text-mute" data-map-body>Hover or tap a stand on the map for its details. Ten stands, all self-manoeuvring.</p>
+              </div>
+              <p class="mt-4 font-mono text-[0.6rem] uppercase tracking-[0.14em] text-mute">Scale from AIP coordinates · north up · VAR 2°W</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Declared distances */}
+        <div class="mt-6 overflow-x-auto">
+          <table class="w-full min-w-[34rem] border-y border-line text-sm">
+            <thead>
+              <tr class="border-b border-line font-mono text-[0.66rem] uppercase tracking-[0.16em] text-mute">
+                <th class="py-3 pr-4 text-left font-bold">RWY · declared m</th>
+                <th class="py-3 pr-4 text-right font-bold">TORA</th>
+                <th class="py-3 pr-4 text-right font-bold">TODA</th>
+                <th class="py-3 pr-4 text-right font-bold">ASDA</th>
+                <th class="py-3 pr-4 text-right font-bold">LDA</th>
+                <th class="py-3 text-right font-bold">Displ. THR</th>
+              </tr>
+            </thead>
+            <tbody class="font-mono text-ink">
+              {declared.map((r) => (
+                <tr class="border-b border-line last:border-0">
+                  <td class="py-3 pr-4 font-bold">{r.rwy}</td>
+                  <td class="py-3 pr-4 text-right">{r.tora}</td>
+                  <td class="py-3 pr-4 text-right">{r.toda}</td>
+                  <td class="py-3 pr-4 text-right">{r.asda}</td>
+                  <td class="py-3 pr-4 text-right">{r.lda}</td>
+                  <td class="py-3 text-right">{r.thr}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p class="mt-3 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-mute">Take-off run for RWY 02 commences 155 m before the displaced threshold.</p>
+      </div>
+
+      {/* Opening hours — timeline */}
+      <div data-animate="fade-up" class="mt-12 rounded-2xl border border-line bg-[color-mix(in_srgb,var(--color-atlantic)_5%,var(--color-surface))] p-6 sm:p-8">
+        <div class="flex flex-wrap items-baseline justify-between gap-3">
+          <p class="font-mono text-[0.7rem] font-bold uppercase tracking-[0.24em] text-atlantic">Tower opening hours · UTC</p>
+          <p class="font-mono text-[0.6rem] uppercase tracking-[0.16em] text-mute">Variations by NOTAM</p>
+        </div>
+        <div class="mt-6 grid gap-x-12 gap-y-8 lg:grid-cols-2">
+          {Object.entries(hoursData).map(([season, days]) => (
+            <div>
+              <p class="font-mono text-[0.64rem] font-bold uppercase tracking-[0.2em] text-sand">{season}</p>
+              <div class="mt-4 space-y-3">
+                {days.map((d) => (
+                  <div>
+                    <div class="flex items-baseline justify-between gap-3">
+                      <span class="font-mono text-[0.78rem] font-bold text-ink">{d.day}</span>
+                      <span class="font-mono text-[0.66rem] text-mute">{d.blocks.map((b) => `${b[0]}–${b[1]}`).join("  ")}</span>
+                    </div>
+                    <div class="relative mt-1.5 h-2.5 overflow-hidden rounded-full bg-line">
+                      {d.blocks.map((b) => (
+                        <div class="absolute inset-y-0 rounded-full bg-atlantic" style={`left:${pct(toMin(b[0]))}%;width:${pct(toMin(b[1])) - pct(toMin(b[0]))}%`}></div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+                <div class="relative mt-1 h-4">
+                  {ticks.map((t, i) => (
+                    <span class="absolute font-mono text-[0.58rem] text-mute" style={`left:${(i / (ticks.length - 1)) * 100}%;transform:translateX(-50%)`}>{t}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p class="mt-6 text-sm leading-relaxed text-mute">
+          The tower is <span class="font-medium text-ink">closed between the blocks shown</span> (crew breaks) and outside them.
+          Movements outside published hours are by out-of-hours arrangement — 48 h notice. Summer / Winter reflect the daylight-saving shift.
+        </p>
+      </div>
+
+      {/* Detail — accordions */}
+      <div data-animate="fade-up" class="mt-12 divide-y divide-line border-y border-line">
+        {accordions.map((a) => (
+          <details class="acc group">
+            <summary class="flex cursor-pointer items-center justify-between gap-4 py-4">
+              <span class="font-mono text-[0.72rem] font-bold uppercase tracking-[0.2em] text-ink">{a.title}</span>
+              <span class="acc-chevron font-mono text-mute">↓</span>
+            </summary>
+            <dl class="mb-4 divide-y divide-line border-t border-line">
+              {a.rows.map(([k, v]) => (
+                <div class="flex items-baseline justify-between gap-6 py-2.5">
+                  <dt class="text-sm text-mute">{k}</dt>
+                  <dd class="text-right font-mono text-[0.82rem] text-ink">{v}</dd>
+                </div>
+              ))}
+            </dl>
+          </details>
+        ))}
+        <details class="acc group">
+          <summary class="flex cursor-pointer items-center justify-between gap-4 py-4">
+            <span class="font-mono text-[0.72rem] font-bold uppercase tracking-[0.2em] text-ink">Cautions</span>
+            <span class="acc-chevron font-mono text-mute">↓</span>
+          </summary>
+          <ul class="mb-4 space-y-2 border-t border-line pt-4">
+            {cautions.map((c) => (<li class="text-sm leading-relaxed text-mute">{c}</li>))}
+          </ul>
+        </details>
+      </div>
+
+      <p class="mt-8 font-mono text-[0.62rem] uppercase tracking-[0.14em] text-mute">Source: AIP Ireland — EIDL AD 2 · AIRAC 006/25. Always cross-check the current AIP & NOTAMs.</p>
     </div>
   </section>
+
+  {/* ─── PPR & PROCEDURES ─────────────────────────────────────── */}
+  <section id="ppr" class="scroll-mt-[calc(var(--header-h)+3.5rem)] border-t border-line bg-surface">
+    <div class="mx-auto max-w-7xl px-6 py-20">
+      <p data-animate="fade-up" class="font-mono text-base font-bold uppercase tracking-[0.3em] text-atlantic">PPR &amp; procedures</p>
+      <h2 data-split class="mt-3 font-display text-[clamp(2.2rem,4vw,3.4rem)] font-normal leading-[1.02]">Call the tower first.</h2>
+      <p data-animate="fade-up" data-animate-delay="0.05" class="mt-5 max-w-2xl text-base leading-relaxed text-mute">Prior Permission Required for all flights. Contact ATC before planning an arrival or departure at Carrickfinn.</p>
+
+      <div class="mt-12 grid gap-px border border-line bg-line sm:grid-cols-3">
+        <div class="bg-surface p-7">
+          <p class="font-mono text-[0.66rem] font-bold uppercase tracking-[0.2em] text-sand">ATC</p>
+          <p class="mt-3 font-mono text-lg text-ink">+353 74 9548604</p>
+          <p class="mt-1 font-mono text-sm text-mute">atc@donegalairport.ie</p>
+        </div>
+        <div class="bg-surface p-7">
+          <p class="font-mono text-[0.66rem] font-bold uppercase tracking-[0.2em] text-sand">Out-of-hours</p>
+          <p class="mt-3 text-sm leading-relaxed text-ink">€330.00 per aircraft per hour.</p>
+          <p class="mt-1 text-sm text-mute">Minimum 48 hours notice.</p>
+        </div>
+        <div class="bg-surface p-7">
+          <p class="font-mono text-[0.66rem] font-bold uppercase tracking-[0.2em] text-sand">Fax</p>
+          <p class="mt-3 font-mono text-lg text-ink">+353 74 9562916</p>
+        </div>
+      </div>
+
+      <div data-animate="fade-up" class="mt-10 grid gap-x-12 gap-y-8 lg:grid-cols-2">
+        <div>
+          <p class="font-mono text-[0.66rem] font-bold uppercase tracking-[0.2em] text-sand">Arrival</p>
+          <p class="mt-3 text-sm leading-relaxed text-mute">Clearance to enter the CTR is issued by Donegal ATC on 129.805 MHz. Arriving aircraft call no later than 25 DME IFN. Shannon clears descent to the lowest usable level (FL080 / transition level if higher) before hand-off.</p>
+        </div>
+        <div>
+          <p class="font-mono text-[0.66rem] font-bold uppercase tracking-[0.2em] text-sand">Low visibility</p>
+          <p class="mt-3 text-sm leading-relaxed text-mute">Reduced Aerodrome Visibility Procedures apply below 1400 m or when ATC cannot maintain visual surveillance — maximum 3 movements on the manoeuvring area. Communication failure: act per ICAO Annex 2.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ─── FEES & CHARGES ───────────────────────────────────────── */}
+  <section id="fees" class="scroll-mt-[calc(var(--header-h)+3.5rem)] border-t border-line">
+    <div class="mx-auto max-w-7xl px-6 py-20">
+      <p data-animate="fade-up" class="font-mono text-base font-bold uppercase tracking-[0.3em] text-atlantic">Fees &amp; charges</p>
+      <h2 data-split class="mt-3 font-display text-[clamp(2.2rem,4vw,3.4rem)] font-normal leading-[1.02]">What it costs.</h2>
+      <p data-animate="fade-up" data-animate-delay="0.05" class="mt-5 font-mono text-[0.7rem] uppercase tracking-[0.16em] text-mute">Effective 1 March 2025</p>
+
+      <div class="mt-12 grid gap-x-12 gap-y-12 lg:grid-cols-2">
+        {feeGroups.map((g, i) => (
+          <div data-animate="fade-up" data-animate-delay={i % 2 === 1 ? "0.05" : "0"}>
+            <p class="font-mono text-[0.66rem] font-bold uppercase tracking-[0.2em] text-sand">{g.title}</p>
+            <dl class="mt-4 divide-y divide-line border-y border-line">
+              {g.rows.map(([k, v]) => (
+                <div class="flex items-baseline justify-between gap-6 py-3">
+                  <dt class="text-sm text-mute">{k}</dt>
+                  <dd class="text-right font-mono text-sm text-ink">{v}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        ))}
+      </div>
+      <p data-animate="fade-up" class="mt-8 text-sm leading-relaxed text-mute">Jet A1 available at monthly rates; price tracks the market and VAT applies. Hangarage plus 23% VAT and subject to availability. All charges in euro.</p>
+    </div>
+  </section>
+
+  {/* ─── DRONES ───────────────────────────────────────────────── */}
+  <section id="drones" class="scroll-mt-[calc(var(--header-h)+3.5rem)] border-t border-line bg-surface">
+    <div class="mx-auto max-w-7xl px-6 py-20">
+      <p data-animate="fade-up" class="font-mono text-base font-bold uppercase tracking-[0.3em] text-atlantic">Drones · CTR</p>
+      <h2 data-split class="mt-3 font-display text-[clamp(2.2rem,4vw,3.4rem)] font-normal leading-[1.02]">Flying a drone near Carrickfinn.</h2>
+      <p data-animate="fade-up" data-animate-delay="0.05" class="mt-5 max-w-2xl text-base leading-relaxed text-mute">The Donegal control zone is restricted airspace — a 10 NM-radius circle from the surface to 5000 ft. It is illegal to fly within the UAS Geographical Zones; inside the CTR you need ATC permission first.</p>
+
+      <ol class="mt-12 grid gap-px border border-line bg-line sm:grid-cols-2">
+        {droneSteps.map((s) => (
+          <li class="bg-surface p-7">
+            <p class="font-display text-3xl leading-none text-sand">{s.n}</p>
+            <p class="mt-3 font-display text-xl leading-snug text-ink">{s.t}</p>
+            <p class="mt-2 text-sm leading-relaxed text-mute">{s.d}</p>
+          </li>
+        ))}
+      </ol>
+
+      <div class="mt-10 flex flex-col gap-6 border-t border-line pt-8 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p class="font-mono text-[0.66rem] font-bold uppercase tracking-[0.2em] text-sand">Aerodrome reference point</p>
+          <p class="mt-2 font-mono text-sm text-ink">55°02′39″N 008°20′28″W</p>
+        </div>
+        <div class="flex flex-wrap gap-x-8 gap-y-3 font-mono text-[0.72rem] uppercase tracking-[0.16em]">
+          <a href="https://www.iaa.ie/general-aviation/drones/uas-geographic-zones" target="_blank" rel="noopener" class="text-atlantic hover:underline">IAA UAS zones ↗</a>
+          <a href="mailto:atc@donegalairport.ie" class="text-atlantic hover:underline">atc@donegalairport.ie ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    document.addEventListener("astro:page-load", () => {
+      const links = [...document.querySelectorAll<HTMLElement>("[data-nav-link]")];
+      if (!links.length) return;
+      const setActive = (id: string) => links.forEach((l) => l.classList.toggle("is-active", l.dataset.navLink === id));
+      const obs = new IntersectionObserver(
+        (entries) => {
+          const vis = entries.filter((e) => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+          if (vis) setActive((vis.target as HTMLElement).id);
+        },
+        { rootMargin: "-40% 0px -55% 0px", threshold: [0, 0.25, 0.5, 1] },
+      );
+      ["data", "ppr", "fees", "drones"].forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) obs.observe(el);
+      });
+
+      // Aerodrome map — stand hover/tap
+      const stands = [...document.querySelectorAll<HTMLElement>(".map-stand")];
+      const titleEl = document.querySelector<HTMLElement>("[data-map-title]");
+      const bodyEl = document.querySelector<HTMLElement>("[data-map-body]");
+      const info = "Self-manoeuvring · max wingspan 29.6 m · max length 27.1 m";
+      const reset = () => {
+        stands.forEach((s) => s.querySelector(".map-stand-dot")?.setAttribute("r", "4"));
+        if (titleEl) titleEl.textContent = "Aircraft stands";
+        if (bodyEl) bodyEl.textContent = "Hover or tap a stand on the map for its details. Ten stands, all self-manoeuvring.";
+      };
+      const show = (s: HTMLElement) => {
+        stands.forEach((o) => o.querySelector(".map-stand-dot")?.setAttribute("r", o === s ? "6" : "4"));
+        if (titleEl) titleEl.textContent = "Stand " + (s.dataset.stand || "");
+        if (bodyEl) bodyEl.textContent = info;
+      };
+      stands.forEach((s) => {
+        s.addEventListener("mouseenter", () => show(s));
+        s.addEventListener("focus", () => show(s));
+        s.addEventListener("click", () => show(s));
+      });
+      const mapWrap = stands[0]?.closest("svg");
+      mapWrap?.addEventListener("mouseleave", reset);
+    });
+  </script>
+
+  <style>
+    [data-nav-link].is-active { border-color: var(--color-atlantic); color: var(--color-ink); }
+    details.acc > summary { list-style: none; }
+    details.acc > summary::-webkit-details-marker { display: none; }
+    .acc-chevron { transition: transform 0.25s ease; display: inline-block; }
+    details.acc[open] .acc-chevron { transform: rotate(180deg); }
+  </style>
 </BaseLayout>
