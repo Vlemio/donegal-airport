@@ -4,72 +4,851 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 const title = "Plan your journey · Donegal Airport";
 const description = "Getting here, parking, car hire, taxis, accessibility (PRM) and security at Donegal Airport (CFN).";
 
-const practical = [
-  { label: "Car hire at CFN", detail: "Collection from arrivals · Budget, Europcar" },
-  { label: "Drive times", detail: "Beach 10 min · Errigal 22 min · Glenveagh 45 min · Donegal Town 1 h" },
-  { label: "Coach transfers", detail: "Bus Éireann 480 · Letterkenny 35 min · Sligo 2 h 30 min" },
-  { label: "Best season", detail: "Open all year · Best light: April – October" },
+const carHire = [
+  {
+    name: "Enterprise",
+    details: ["Ages 25+", "Pick-up & drop-off at the terminal", "Business & leisure", "+353 74 910 3202"],
+    website: "https://www.enterprise.ie/en/car-hire-locations/ie/donegal-airport-i128.html",
+    bg: "#089759",
+    logo: "/photos/plan/cars/logo-enterprise-white.png",
+    car: "/photos/plan/cars/car-enterprise.png",
+    roof: "/photos/plan/cars/logo-enterprise-white.png",
+    side: "left", logoW: 54, logoLeft: 44,
+  },
+  {
+    name: "Yuko Car Rental",
+    details: ["Ages 22–70", "Toyota fleet — manual & automatic", "Book online via the Yuko app", "Mon–Sat 06:30–20:00", "Sun 08:00–20:00", "+353 74 912 1385"],
+    website: "https://letterkenny.kellystoyota.com/car-rentals-at-kellys-toyota",
+    bg: "#E62334",
+    logo: "/photos/plan/cars/logo-yuko-decal.png",
+    car: "/photos/plan/cars/car-yuko.png",
+    roof: "/photos/plan/cars/logo-yuko-decal.png",
+    side: "right", logoW: 38, logoLeft: 56,
+  },
+  {
+    name: "Europcar",
+    details: ["07:30–20:30 daily", "Pre-book for 07:30–09:00 slots", "10% off direct bookings", "+353 74 970 7000", "+353 86 199 1651 — after hours"],
+    website: "https://www.europcar.ie/en-ie/places/car-rental-ireland/carrickfinn/donegal-airport",
+    bg: "#009B01",
+    logo: "/photos/plan/cars/logo-europcar-white.png",
+    car: "/photos/plan/cars/car-europcar.png",
+    roof: "/photos/plan/cars/logo-europcar-white.png",
+    side: "left", logoW: 44, logoLeft: 43,
+  },
+  {
+    name: "GoCar",
+    details: ["Hourly rental", "Fuel & insurance included", "Flexible — no long-term commitment"],
+    website: "https://www.gocar.ie/",
+    bg: "#8DC73F",
+    logo: "/photos/plan/cars/logo-gocar-white.png",
+    car: "/photos/plan/cars/car-gocar.png",
+    roof: "/photos/plan/cars/logo-gocar-white.png",
+    side: "right", logoW: 38, logoLeft: 56,
+  },
+] as const;
+
+const tariff = [
+  { d: "2 hours", p: "Free" },
+  { d: "1 day",   p: "€7" },
+  { d: "2 days",  p: "€14" },
+  { d: "3 days",  p: "€21" },
+  { d: "4 days",  p: "€28" },
+  { d: "5 days",  p: "€35" },
+  { d: "6 days",  p: "€39" },
+  { d: "7 days",  p: "€45", best: true },
+  { d: "8 days",  p: "€45", best: true },
+  { d: "9 days",  p: "€45", best: true },
+  { d: "10 days", p: "€45", best: true },
+  { d: "11 days", p: "€50" },
+  { d: "12 days", p: "€54" },
+  { d: "13 days", p: "€58" },
+  { d: "14 days", p: "€60" },
+  { d: "15+ days", p: "€4/day" },
+] as const;
+
+const tariffLeft = tariff.slice(0, 8);  // 2 hours … 7 days
+const tariffRight = tariff.slice(8);    // 8 days … 15+ days
+
+const taxis = [
+  { name: "Jackie Hughes Airport Transfers", phone: "087 261 8885", href: "tel:+353872618885" },
+  { name: "Josie Joe / Larsson Cabs",        phone: "087 653 6272", href: "tel:+353876536272" },
+  { name: "Charlie Mac Taxis",               phone: "087 260 3757", href: "tel:+353872603757" },
+  { name: "Teague Taxis",                    phone: "087 641 5985", href: "tel:+353876415985" },
+  { name: "Frank Gallagher",                 phone: "086 821 5936", href: "tel:+353868215936" },
+  { name: "Packie Gallagher",                phone: "087 261 5625", href: "tel:+353872615625" },
+  { name: "James Rodgers",                   phone: "086 809 3561", href: "tel:+353868093561" },
+  { name: "Martin McGlynn",                  phone: "087 259 6521", href: "tel:+353872596521" },
+] as const;
+
+const transfers = [
+  { name: "Cronan Mac Buses",          phone: "087 237 8888", href: "tel:+353872378888", note: "Large-party transfers & coaches" },
+  { name: "Turas Cartha · Nicola Doherty", phone: "087 055 6708", href: "tel:+353870556708", note: "Up to 8 · tours & corporate" },
+  { name: "Donegal Tour Guide · Henry Doohan", phone: "086 333 1031", href: "tel:+353863331031", note: "Chauffeur · tours & corporate" },
+] as const;
+
+// Local Link bus times at Donegal Airport. Each pair is depart → arrive.
+// "ms: true" = Mon–Sat only; all other trips run daily (incl. Sun & public holidays).
+const busToAirport = [
+  { place: "Falcarragh", route: "966", pairs: [
+    { dep: "06:20", arr: "07:15", ms: true },
+    { dep: "11:00", arr: "11:55" },
+    { dep: "16:10", arr: "17:05" },
+    { dep: "19:50", arr: "20:45" },
+  ] },
+  { place: "Crolly", route: "992", pairs: [
+    { dep: "14:50", arr: "15:05" },
+  ] },
+  { place: "Dungloe", route: "966", pairs: [
+    { dep: "08:50", arr: "09:25", ms: true },
+    { dep: "12:50", arr: "13:25" },
+    { dep: "14:10", arr: "14:45" },
+    { dep: "18:10", arr: "18:45" },
+    { dep: "21:30", arr: "22:05" },
+  ] },
+] as const;
+
+const busFromAirport = [
+  { place: "Falcarragh", route: "966", pairs: [
+    { dep: "09:25", arr: "10:20", ms: true },
+    { dep: "13:25", arr: "15:40" },
+    { dep: "14:45", arr: "15:40" },
+    { dep: "18:45", arr: "19:40" },
+    { dep: "22:05", arr: "23:00" },
+  ] },
+  { place: "Crolly", route: "992", pairs: [
+    { dep: "13:55", arr: "14:10" },
+  ] },
+  { place: "Dungloe", route: "966", pairs: [
+    { dep: "07:15", arr: "07:50", ms: true },
+    { dep: "11:55", arr: "12:30" },
+    { dep: "17:05", arr: "17:40" },
+    { dep: "20:45", arr: "21:20" },
+  ] },
+] as const;
+
+const busColumns = [
+  { title: "To the airport", sub: "depart → arrive airport", legs: busToAirport },
+  { title: "From the airport", sub: "depart airport → arrive", legs: busFromAirport },
 ] as const;
 ---
 
 <BaseLayout title={title} description={description}>
-  <section class="mx-auto max-w-7xl px-6 pb-24 pt-40">
-    <p class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic">
-      Plan your journey
-    </p>
-    <h1
-      data-split
-      class="mt-4 max-w-4xl font-display text-[clamp(2.5rem,6vw,5.5rem)] font-normal leading-[0.98]"
-    >
-      Everything you need before you fly.
-    </h1>
-    <p class="mt-7 max-w-2xl text-base leading-relaxed text-mute sm:text-lg">
-      Getting here, parking, transport, special assistance and security
-      in one place.
-    </p>
 
-    <div data-animate="fade-up" class="mt-16 border-t border-line pt-10">
-      <p class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-mute">
-        Coming next
+  {/* ─── HERO ── foto de la terminal full-bleed, título encima ─────────────── */}
+  {/* Swap src when JM provides the terminal photo                             */}
+  <section class="relative isolate flex min-h-[80vh] w-full items-end overflow-hidden border-b border-line">
+    <div class="absolute inset-0" aria-hidden="true">
+      <img
+        src="/photos/plan/plan-cafe-02.jpg"
+        alt="Inside the Donegal Airport terminal café"
+        class="h-full w-full object-cover object-[center_30%]"
+        loading="eager"
+        decoding="async"
+      />
+    </div>
+    <div class="cfn-hero-content relative z-10 mx-auto w-full max-w-7xl px-6 pb-16 pt-40 sm:pb-24">
+      <p
+        data-animate="fade-up"
+        class="font-mono text-[0.72rem] uppercase tracking-[0.32em] text-ink [text-shadow:0_1px_8px_rgba(0,0,0,.5)]"
+      >
+        Plan your journey · CFN
       </p>
-      <p class="mt-4 max-w-2xl font-display text-2xl leading-snug text-ink">
-        Getting here · Parking · Car hire · Taxis · PRM · Security · At the airport.
+      <h1
+        data-split
+        data-split-delay="0.1"
+        class="mt-8 max-w-5xl font-display text-[clamp(2.75rem,7vw,7.5rem)] font-light leading-[0.95] text-ink [text-shadow:0_2px_24px_rgba(0,0,0,.55),0_1px_6px_rgba(0,0,0,.4)]"
+      >
+        Everything you need<br/>before you fly.
+      </h1>
+      <p
+        data-animate="fade-up"
+        data-animate-delay="0.35"
+        class="mt-10 max-w-2xl text-base leading-relaxed text-mute sm:text-lg [text-shadow:0_1px_10px_rgba(0,0,0,.5)]"
+      >
+        Getting here, parking, transport, check-in timings, special
+        assistance and what's inside the terminal — all in one place.
       </p>
     </div>
   </section>
 
-  {/* ─── GETTING AROUND ─────────────────────────────────────────────────────── */}
+  {/* ─── PARKING ── foto aérea a sangre + cifras superpuestas ────────────────── */}
+  <section class="relative isolate border-t border-line">
+    {/* Background photo */}
+    <div class="absolute inset-0 -z-10" aria-hidden="true">
+      <img
+        src="/photos/plan/plan-parking-aerial.jpg"
+        alt="Aerial view of Donegal Airport terminal and its car park beside the runway"
+        class="h-full w-full object-cover object-center"
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+
+    <div class="cfn-hero-content mx-auto flex min-h-[88vh] max-w-7xl flex-col justify-between gap-y-16 px-6 pb-14 pt-24">
+      {/* Heading */}
+      <div>
+        <p
+          data-animate="fade-up"
+          class="font-mono text-base font-bold uppercase tracking-[0.3em] text-white [text-shadow:0_1px_10px_rgba(0,0,0,.6)]"
+        >
+          Parking
+        </p>
+        <h2
+          data-split
+          class="mt-3 font-display text-[clamp(2.4rem,4.5vw,4.2rem)] font-normal leading-[1.02] text-white [text-shadow:0_2px_22px_rgba(0,0,0,.6)] sm:whitespace-nowrap"
+        >
+          Park and walk straight in.
+        </h2>
+        <p
+          data-animate="fade-up"
+          data-animate-delay="0.08"
+          class="mt-5 max-w-xl text-base leading-relaxed text-white [text-shadow:0_1px_12px_rgba(0,0,0,.7)]"
+        >
+          The car park is directly in front of the terminal — a one-minute walk
+          from the car park to check-in. Pay by machine (cash or card) or
+          contactless tap-and-go at the exit barrier.
+        </p>
+      </div>
+
+      {/* Bottom block — figures + collapsible tariff, anchored to the bottom.
+          When the tariff opens, this whole block grows upward into the photo,
+          so everything stays inside the section. */}
+      <div>
+        {/* Figures */}
+        <div
+          id="parking-figures"
+          class="grid gap-px overflow-hidden rounded-xl bg-white/15 sm:grid-cols-3"
+        >
+          <div class="bg-black/30 p-8 backdrop-blur-sm">
+            <p class="font-display text-[3.2rem] leading-none text-white">2 h</p>
+            <p class="mt-3 font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">Free</p>
+            <p class="mt-2 text-sm leading-relaxed text-white/75">
+              First two hours free — drop off, pick up, or sit in for a coffee.
+            </p>
+          </div>
+          <div class="flex flex-col bg-black/30 p-8 backdrop-blur-sm">
+            <p class="font-display text-[3.2rem] leading-none text-white">Long Stay</p>
+            <p class="mt-3 font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">From €7 / day</p>
+            <p class="mt-2 text-sm leading-relaxed text-white/75">
+              €45 for 7–10 days · €60 for two weeks, then €4/day.
+            </p>
+            <button
+              type="button"
+              data-tariff-toggle
+              aria-expanded="false"
+              aria-controls="tariff-panel"
+              class="mt-4 inline-flex w-fit items-center gap-1.5 font-mono text-[0.7rem] font-bold uppercase tracking-[0.18em] text-white underline decoration-white/40 underline-offset-4 transition-opacity hover:opacity-70"
+            >
+              <span data-tariff-label>Show full tariff</span>
+              <span data-tariff-arrow>↓</span>
+            </button>
+          </div>
+          <div class="bg-black/30 p-8 backdrop-blur-sm">
+            <p class="font-display text-[3.2rem] leading-none text-white">EV</p>
+            <p class="mt-3 font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">4 × 22 kW chargers</p>
+            <p class="mt-2 text-sm leading-relaxed text-white/75">
+              EVBox charge points in the car park. Access via the EVBox app.
+            </p>
+          </div>
+        </div>
+
+        {/* Collapsible full tariff */}
+        <div
+          id="tariff-panel"
+          class="overflow-hidden transition-[max-height,opacity] duration-500 ease-out"
+          style="max-height: 0; opacity: 0;"
+        >
+          <div class="mt-3 rounded-xl bg-black/45 p-8 backdrop-blur-md">
+            <div class="flex items-baseline justify-between">
+              <p class="font-mono text-[0.68rem] font-bold uppercase tracking-[0.25em] text-white/90">Full car park tariff</p>
+              <p class="font-mono text-[0.62rem] uppercase tracking-[0.15em] text-white/55">Pay on exit</p>
+            </div>
+
+            <div class="mt-5 grid grid-cols-1 gap-x-12 sm:grid-cols-2">
+              <ul class="divide-y divide-white/10">
+                {tariffLeft.map((t) => (
+                  <li class={`flex items-center justify-between py-1.5 ${t.best ? "text-white" : "text-white/80"}`}>
+                    <span class={`text-sm ${t.best ? "font-semibold" : ""}`}>{t.d}</span>
+                    <span class={`font-mono text-sm ${t.best ? "font-semibold text-white" : "text-white/80"}`}>{t.p}</span>
+                  </li>
+                ))}
+              </ul>
+              <ul class="divide-y divide-white/10">
+                {tariffRight.map((t) => (
+                  <li class={`flex items-center justify-between py-1.5 ${t.best ? "text-white" : "text-white/80"}`}>
+                    <span class={`text-sm ${t.best ? "font-semibold" : ""}`}>
+                      {t.d}
+                      {t.d === "10 days" && (
+                        <span class="ml-2 rounded-full bg-white/15 px-2 py-0.5 font-mono text-[0.5rem] font-bold uppercase tracking-[0.12em] text-white">
+                          Best value
+                        </span>
+                      )}
+                    </span>
+                    <span class={`font-mono text-sm ${t.best ? "font-semibold text-white" : "text-white/80"}`}>{t.p}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ─── CHECK-IN & BAGGAGE ── light layout, Emerald photo in its box ──────────── */}
+  <section class="border-t border-line">
+    <div class="mx-auto max-w-7xl px-6 py-20">
+      <div class="grid items-start gap-12 lg:grid-cols-[1.35fr_1fr] lg:gap-16">
+
+        {/* Left: content */}
+        <div>
+          <p
+            data-animate="fade-up"
+            class="font-mono text-base font-bold uppercase tracking-[0.3em] text-atlantic"
+          >
+            Check-in &amp; baggage
+          </p>
+          <h2
+            data-split
+            class="mt-3 font-display text-[clamp(1.8rem,3.5vw,3rem)] font-normal leading-[1.02]"
+          >
+            Know your cut-offs.
+          </h2>
+
+          {/* Universal cut-offs timeline */}
+          <div data-animate="fade-up" data-animate-delay="0.1" class="mt-10">
+            <div class="relative mt-2">
+              <div class="absolute left-[12%] right-[12%] top-[6px] h-px bg-line" aria-hidden="true"></div>
+              <div class="relative grid grid-cols-3 text-center">
+                <div class="flex flex-col items-center">
+                  <span class="h-3 w-3 rounded-full bg-sand"></span>
+                  <p class="mt-5 font-display text-[clamp(2.4rem,5vw,3.6rem)] leading-none text-sand">45</p>
+                  <p class="mt-2 font-mono text-[0.72rem] font-bold uppercase tracking-[0.18em] text-atlantic">min before</p>
+                  <p class="mt-1 text-sm text-ink">Bag drop closes</p>
+                </div>
+                <div class="flex flex-col items-center">
+                  <span class="h-3 w-3 rounded-full bg-sand"></span>
+                  <p class="mt-5 font-display text-[clamp(2.4rem,5vw,3.6rem)] leading-none text-sand">30</p>
+                  <p class="mt-2 font-mono text-[0.72rem] font-bold uppercase tracking-[0.18em] text-atlantic">min before</p>
+                  <p class="mt-1 text-sm text-ink">Security &amp; gate</p>
+                </div>
+                <div class="flex flex-col items-center">
+                  <span class="h-3 w-3 rounded-full bg-ink"></span>
+                  <p class="mt-4 font-display text-[clamp(2.4rem,5vw,3.6rem)] leading-none text-ink">✈</p>
+                  <p class="mt-2 font-mono text-[0.72rem] font-bold uppercase tracking-[0.18em] text-atlantic">take-off</p>
+                  <p class="mt-1 text-sm text-ink">Departure</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick facts — departures-board spec list */}
+          <dl data-animate="fade-up" data-animate-delay="0.15" class="mt-12 divide-y divide-line border-y border-line">
+            <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-4">
+              <dt class="font-mono text-[0.72rem] font-bold uppercase tracking-[0.16em] text-atlantic">Cabin bag · Aer Lingus Regional</dt>
+              <dd class="text-sm text-ink"><span class="font-medium">10 kg</span> · pre-book online · €35 at airport</dd>
+            </div>
+            <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-4">
+              <dt class="font-mono text-[0.72rem] font-bold uppercase tracking-[0.16em] text-atlantic">Online check-in opens</dt>
+              <dd class="text-sm text-ink">Aer Lingus <span class="font-medium">48 h</span> · Loganair <span class="font-medium">96 h</span></dd>
+            </div>
+            <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-4">
+              <dt class="font-mono text-[0.72rem] font-bold uppercase tracking-[0.16em] text-atlantic">Special assistance · PRM</dt>
+              <dd class="text-sm text-ink">Arrange with your airline <span class="font-medium">48 h</span> ahead</dd>
+            </div>
+          </dl>
+
+          {/* Connecting onward — same spec style */}
+          <div data-animate="fade-up" data-animate-delay="0.2" class="mt-10">
+            <p class="font-mono text-[0.72rem] font-bold uppercase tracking-[0.16em] text-atlantic">Connecting onward via Dublin</p>
+            <p class="mt-2 text-sm text-ink">
+              Arrive <span class="font-medium">1 h 30</span> before your Donegal flight — then it depends on your bag:
+            </p>
+            <dl class="mt-4 divide-y divide-line border-y border-line">
+              <div class="py-4">
+                <dt class="font-mono text-[0.68rem] font-bold uppercase tracking-[0.14em] text-sand">Cabin bag only</dt>
+                <dd class="mt-1 text-sm leading-relaxed text-ink">Flight Connections Corridor straight to your gate — no security or immigration again.</dd>
+              </div>
+              <div class="py-4">
+                <dt class="font-mono text-[0.68rem] font-bold uppercase tracking-[0.14em] text-sand">Checked bag</dt>
+                <dd class="mt-1 text-sm leading-relaxed text-ink">Ask at check-in whether your bag can be tagged through to your final destination. If it can, there's no reclaim at Dublin. If not, Donegal Airport gives you a Domestic Travel Voucher — collect and re-check your bag at Dublin, and the voucher fast-tracks you through security there.</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+
+        {/* Right: Emerald photo in its box */}
+        <div
+          data-animate="fade-up"
+          data-animate-delay="0.2"
+          class="relative overflow-hidden rounded-xl lg:sticky lg:top-32"
+        >
+          <img
+            src="/photos/plan/plan-emerald.jpg"
+            alt="Aer Lingus Regional ATR 72 operated by Emerald Airlines on the apron at Donegal Airport with the control tower behind"
+            class="aspect-[3/4] w-full object-cover object-center"
+            loading="lazy"
+          />
+          <p class="mt-3 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-mute">
+            Aer Lingus Regional at Carrickfinn · daily to Dublin
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  {/* ─── CAR HIRE ── cars drive in from the sides, then become their cards ───── */}
+  {/* Scroll-driven on desktop: the section sticks while the cars drive in and    */}
+  {/* settle into the 2×2 grid. On mobile it's a plain grid (no animation).        */}
+  <section class="border-t border-line">
+    <div id="ch-track" class="relative h-auto md:h-[125vh]">
+      <div class="ch-sticky static flex flex-col justify-center overflow-x-clip py-20 md:sticky md:top-0 md:min-h-screen md:py-0">
+
+        <div class="mx-auto w-full max-w-7xl px-6">
+          <p data-animate="fade-up" class="font-mono text-base font-bold uppercase tracking-[0.3em] text-atlantic">
+            Car hire
+          </p>
+          <h2 data-split class="mt-3 font-display text-[clamp(3.2rem,5.5vw,5rem)] font-normal leading-[1.02]">
+            Collect from arrivals.
+          </h2>
+          <p class="mt-5 max-w-xl text-lg leading-relaxed text-mute">
+            Four operators with desks or meet-and-greet in the arrivals hall.
+            Book directly for the best rates.
+          </p>
+        </div>
+
+        <div id="ch-stage" class="relative mt-10 w-full">
+          <canvas id="ch-trail" class="pointer-events-none absolute inset-0 z-[1] hidden h-full w-full md:block"></canvas>
+
+          <div class="mx-auto w-full max-w-7xl px-6">
+            <div id="car-hire-grid" class="relative z-[2] grid gap-4 sm:grid-cols-2">
+              {carHire.map((c, i) => (
+                <a
+                  href={c.website}
+                  target="_blank"
+                  rel="noopener"
+                  data-idx={i}
+                  class="ch-card relative flex items-stretch overflow-hidden rounded-xl md:opacity-0"
+                  style={`background-color:${c.bg};`}
+                >
+                  <div class="relative z-[2] flex flex-1 flex-col justify-between p-7">
+                    <ul class="space-y-0.5">
+                      {c.details.map((d) => (
+                        <li class="text-sm leading-relaxed text-white [text-shadow:0_1px_8px_rgba(0,0,0,.5)]">{d}</li>
+                      ))}
+                    </ul>
+                    <p class="mt-4 font-mono text-[0.74rem] font-bold uppercase tracking-[0.18em] text-white [text-shadow:0_1px_8px_rgba(0,0,0,.5)]">
+                      Book now ↗
+                    </p>
+                  </div>
+                  <div class="flex shrink-0 basis-[36%] items-center justify-end p-4">
+                    <img src={c.logo} alt={c.name} class="max-h-[58%] max-w-full object-contain" loading="lazy" />
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* driving cars — desktop only */}
+          {carHire.map((c, i) => (
+            <div class="ch-car absolute left-0 top-0 z-[3] hidden md:block" data-idx={i} data-side={c.side}>
+              <img
+                src={c.car}
+                alt=""
+                class="ch-car-body block w-[200px] [filter:drop-shadow(0_12px_14px_rgba(0,0,0,.28))]"
+                style={c.side === "right" ? "transform:scaleX(-1)" : ""}
+              />
+              <img
+                src={c.roof}
+                alt=""
+                class="ch-car-roof absolute top-1/2"
+                style={`width:${c.logoW}px;left:${c.logoLeft}%;transform:translate(-50%,-50%);`}
+              />
+            </div>
+          ))}
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  {/* ─── TAXIS & BUSES ──────────────────────────────────────────────────────── */}
   <section class="border-t border-line">
     <div class="mx-auto max-w-7xl px-6 py-20">
       <p
         data-animate="fade-up"
-        class="font-mono text-[0.68rem] uppercase tracking-[0.3em] text-atlantic"
+        class="font-mono text-base font-bold uppercase tracking-[0.3em] text-atlantic"
       >
-        Getting around
+        Taxis & transfers
+      </p>
+      <h2
+        data-split
+        class="mt-3 font-display text-[clamp(2.4rem,4.5vw,3.8rem)] font-normal leading-[1.02]"
+      >
+        Local drivers, door to door.
+      </h2>
+      <p class="mt-5 max-w-xl text-sm leading-relaxed text-mute">
+        All operators are based in the area. Pre-booking recommended for early flights.
+      </p>
+
+      {/* Taxis */}
+      <p data-animate="fade-up" class="mt-12 font-mono text-[0.7rem] font-bold uppercase tracking-[0.22em] text-atlantic">
+        Taxis
+      </p>
+      <div
+        data-animate="fade-up"
+        data-animate-delay="0.05"
+        class="mt-4 grid gap-px bg-line grid-cols-2 sm:grid-cols-4"
+      >
+        {taxis.map((t) => (
+          <a
+            href={t.href}
+            class="group flex flex-col bg-surface p-6 transition-colors hover:bg-[var(--color-bg)]"
+          >
+            <p class="text-sm font-medium leading-snug text-ink group-hover:text-atlantic transition-colors">
+              {t.name}
+            </p>
+            <p class="mt-4 font-mono text-[0.68rem] uppercase tracking-[0.15em] text-sand">
+              {t.phone}
+            </p>
+          </a>
+        ))}
+      </div>
+
+      {/* Transfers — groups, tours & coaches */}
+      <p data-animate="fade-up" class="mt-10 font-mono text-[0.7rem] font-bold uppercase tracking-[0.22em] text-atlantic">
+        Transfers · groups &amp; tours
+      </p>
+      <div
+        data-animate="fade-up"
+        data-animate-delay="0.05"
+        class="mt-4 grid gap-px bg-line grid-cols-1 sm:grid-cols-3"
+      >
+        {transfers.map((t) => (
+          <a
+            href={t.href}
+            class="group flex flex-col bg-surface p-6 transition-colors hover:bg-[var(--color-bg)]"
+          >
+            <p class="text-sm font-medium leading-snug text-ink group-hover:text-atlantic transition-colors">
+              {t.name}
+            </p>
+            {t.note && (
+              <p class="mt-1 font-mono text-[0.58rem] uppercase tracking-[0.14em] text-mute">
+                {t.note}
+              </p>
+            )}
+            <p class="mt-4 font-mono text-[0.68rem] uppercase tracking-[0.15em] text-sand">
+              {t.phone}
+            </p>
+          </a>
+        ))}
+      </div>
+
+      {/* Bus — accent block */}
+      <div
+        data-animate="fade-up"
+        data-animate-delay="0.1"
+        class="mt-10 bg-line"
+      >
+        <div class="bg-[var(--color-bg)] px-8 py-10 sm:px-10">
+          <div>
+            <p class="font-mono text-base font-bold uppercase tracking-[0.3em] text-atlantic">Bus · Local Link Donegal</p>
+            <p class="mt-2 font-display text-[clamp(1.4rem,2.5vw,2rem)] font-normal leading-snug text-ink">
+              Routes <span class="font-sans font-medium tabular-nums">966</span> &amp; <span class="font-sans font-medium tabular-nums">992</span> stop at the airport.
+            </p>
+          </div>
+
+          {/* Bus times at the airport — always visible, aligned by place */}
+          <div class="mt-8 border-t border-line pt-6">
+            <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.18em] text-sand">Bus times at the airport</p>
+
+            {/* column headers */}
+            <div class="mt-6 grid grid-cols-2 gap-x-6 border-b border-line pb-3 sm:gap-x-12">
+              <p class="font-mono text-[1.05rem] font-bold uppercase tracking-[0.16em] text-atlantic">To the airport</p>
+              <p class="font-mono text-[1.05rem] font-bold uppercase tracking-[0.16em] text-atlantic">From the airport</p>
+            </div>
+
+            {/* one row per place — divider spans both columns so they line up */}
+            {busToAirport.map((toLeg, i) => (
+              <div class="grid grid-cols-2 gap-x-6 border-b border-line py-4 sm:gap-x-12">
+                {[toLeg, busFromAirport[i]].map((leg) => (
+                  <div>
+                    <p class="flex items-baseline gap-1.5">
+                      <span class="text-base font-semibold text-ink">{leg.place}</span>
+                      {leg.route === "992" && (
+                        <span class="font-mono text-[0.6rem] font-bold uppercase tracking-[0.1em] text-sand">992</span>
+                      )}
+                    </p>
+                    <div class="mt-2 flex flex-col gap-1.5 font-mono text-base tabular-nums text-ink">
+                      {leg.pairs.map((p) => (
+                        <span class="whitespace-nowrap">
+                          {p.dep} <span class="text-mute">→</span> {p.arr}{p.ms && <span class="text-sand">*</span>}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+
+          {/* Note — centred in the band between the timetable and the route info */}
+          <p class="my-6 text-sm leading-relaxed text-mute">
+Bus stop: Front of the Terminal. <span class="text-sand">*</span> Mon–Sat only; all other trips run daily, including Sundays &amp; public holidays. Always confirm on the live timetable.
+          </p>
+
+          {/* Route info (left) + links (right), vertically centred */}
+          <div class="flex flex-col gap-4 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
+            <div class="space-y-2 text-sm text-ink">
+              <p>
+                <span class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.18em] text-atlantic">Route 966</span>
+                <span class="ml-2 text-mute">An Fál Carrach (Falcarragh) ↔ An Clochán Liath (Dungloe), via the airport</span>
+              </p>
+              <p>
+                <span class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.18em] text-atlantic">Route 992</span>
+                <span class="ml-2 text-mute">Crolly ↔ Dungloe, via the airport</span>
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-x-6 gap-y-3 sm:flex-nowrap">
+              <a
+                href="https://locallinkdsl.ie/timetables/"
+                target="_blank"
+                rel="noopener"
+                class="font-mono text-[0.7rem] font-bold uppercase tracking-[0.18em] text-sand transition-opacity hover:opacity-70"
+              >
+                View live timetable ↗
+              </a>
+              <a
+                href="tel:+353749741644"
+                class="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-mute transition-colors hover:text-ink"
+              >
+                074 974 1644
+              </a>
+              <a
+                href="mailto:donegal@locallink.ie"
+                class="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-mute transition-colors hover:text-ink"
+              >
+                donegal@locallink.ie
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  {/* ─── AT THE AIRPORT ─────────────────────────────────────────────────────── */}
+  <section class="border-t border-line">
+    <div class="mx-auto max-w-7xl px-6 pt-20">
+      <p
+        data-animate="fade-up"
+        class="font-mono text-base font-bold uppercase tracking-[0.3em] text-atlantic"
+      >
+        At the airport
       </p>
       <h2
         data-split
         class="mt-3 font-display text-[clamp(1.8rem,3.5vw,3rem)] font-normal leading-[1.02]"
       >
-        From the terminal to the wilderness.
+        Small airport. Big welcome.
       </h2>
-
-      <dl
-        data-animate="fade-up"
-        data-animate-delay="0.15"
-        class="mt-12 grid divide-y divide-line sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-4"
-      >
-        {practical.map((p) => (
-          <div class="py-8 sm:pr-8">
-            <dt class="font-mono text-[0.64rem] uppercase tracking-[0.22em] text-atlantic">
-              {p.label}
-            </dt>
-            <dd class="mt-3 text-[0.9rem] leading-relaxed text-mute">
-              {p.detail}
-            </dd>
-          </div>
-        ))}
-      </dl>
     </div>
+
+    {/* Café — full-bleed photo limpia, label debajo */}
+    <div class="mt-12">
+      <div class="h-[420px] w-full overflow-hidden sm:h-[520px]">
+        <img
+          src="/photos/plan/plan-cafe-03.jpg"
+          alt="Coffees and pastries at the Donegal Airport Café"
+          class="h-full w-full object-cover object-[center_40%]"
+          loading="lazy"
+        />
+      </div>
+      <div class="mx-auto max-w-7xl px-6 pt-6">
+        <p class="font-mono text-[0.62rem] uppercase tracking-[0.2em] text-atlantic">Café</p>
+        <p class="mt-1 font-display text-[clamp(1.4rem,2.5vw,2rem)] font-normal leading-snug text-ink">
+          The Airport Café
+        </p>
+      </div>
+
+      <div class="mx-auto max-w-7xl px-6 pb-20">
+        <div class="mt-0 grid gap-px bg-line sm:grid-cols-2">
+
+          {/* Café description */}
+          <div class="flex items-center bg-surface p-8">
+            <p class="text-sm leading-relaxed text-mute">
+              Hot drinks, freshly made food and Donegal produce — open from
+              first flight to last. The best view of Errigal you'll get
+              without leaving your seat.
+            </p>
+          </div>
+
+          {/* Café photo 2 */}
+          <div class="overflow-hidden bg-surface">
+            <img
+              src="/photos/plan/plan-cafe-03.jpg"
+              alt="Coffees and pastries at the Donegal Airport Café"
+              class="h-full w-full object-cover object-center"
+              style="min-height: 220px;"
+              loading="lazy"
+            />
+          </div>
+
+        </div>
+      </div>
+    </div>
+
   </section>
+
+
+
+<script>
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  gsap.registerPlugin(ScrollTrigger);
+
+  // ── Car hire: branded cars drive in from the sides and become their cards ──
+  function initCarHireDrive() {
+    const track = document.getElementById("ch-track");
+    const stage = document.getElementById("ch-stage");
+    const grid  = document.getElementById("car-hire-grid");
+    const canvas = document.getElementById("ch-trail");
+    if (!track || !stage || !grid || !canvas) return;
+    const ctx = canvas.getContext("2d");
+    const cardEls = [...grid.querySelectorAll(".ch-card")];
+    const carEls  = [...stage.querySelectorAll(".ch-car")];
+    if (!cardEls.length || !carEls.length) return;
+
+    const isMobile = () => window.matchMedia("(max-width: 767px)").matches;
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let cars = [], W = 0, H = 0, enabled = false;
+
+    function hideCards() { cardEls.forEach(c => { c.style.opacity = "0"; }); }
+    function showCards() { cardEls.forEach(c => { c.style.opacity = ""; }); }
+
+    function measure() {
+      if (isMobile()) {            // plain grid, no animation
+        enabled = false;
+        showCards();
+        carEls.forEach(c => { c.style.opacity = "0"; });
+        if (ctx) ctx.clearRect(0, 0, W, H);
+        return;
+      }
+      enabled = true;
+      W = stage.clientWidth; H = stage.clientHeight;
+      canvas.width = W * dpr; canvas.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const sRect = stage.getBoundingClientRect();
+      cars = carEls.map(el => {
+        const i = +el.dataset.idx;
+        const side = el.dataset.side;
+        const body = el.querySelector(".ch-car-body");
+        const carW = body.offsetWidth || 200;
+        const carH = el.offsetHeight || carW * 0.66;
+        const card = cardEls.find(c => +c.dataset.idx === i);
+        const cR = card.getBoundingClientRect();
+        const cx = cR.left - sRect.left + cR.width / 2;
+        const cy = cR.top - sRect.top + cR.height / 2;
+        const startX = side === "left" ? -carW - 60 : W + 60;
+        const dir = side === "left" ? 1 : -1;
+        el.style.opacity = "1";
+        return { el, card, side, carW, carH, cy, startX, endX: cx - carW / 2, dir, i };
+      });
+      hideCards();
+      render();
+    }
+
+    function render() {
+      if (!enabled) return;
+      const r = track.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const total = r.height - vh;       // sticky pin distance
+      // Drive begins while the section is still scrolling up into view, and the
+      // whole sequence (drive + crossfade) finishes at ~65% of the pin — leaving
+      // the rest of the lock with the cards fully on screen before it releases.
+      const startPx = vh * 0.65;
+      const endPx = total > 0 ? -total * 0.65 : -vh * 0.9;
+      const p = clamp((startPx - r.top) / (startPx - endPx), 0, 1);
+      const cf = clamp((p - 0.8) / 0.2, 0, 1);   // crossfade window: last 20%
+      ctx.clearRect(0, 0, W, H);
+      cars.forEach(c => {
+        const drive = clamp((p / 0.8) - c.i * 0.05, 0, 1);
+        const x = c.startX + (c.endX - c.startX) * easeOutCubic(drive);
+        c.el.style.transform = `translate(${x}px, ${c.cy - c.carH / 2}px)`;
+        c.el.style.opacity = String(1 - cf);
+        c.card.style.opacity = String(cf);
+        if (cf < 1) {
+          const carCx = x + c.carW / 2;
+          const rearX = carCx - c.dir * c.carW * 0.30;
+          const edgeX = c.dir > 0 ? 0 : W;
+          const grad = ctx.createLinearGradient(edgeX, 0, rearX, 0);
+          grad.addColorStop(0, "rgba(24,29,22,0)");
+          grad.addColorStop(1, `rgba(24,29,22,${0.18 * (1 - cf)})`);
+          ctx.strokeStyle = grad; ctx.lineWidth = 4; ctx.lineCap = "round";
+          const dy = c.carH * 0.16;
+          [c.cy - dy, c.cy + dy].forEach(y => { ctx.beginPath(); ctx.moveTo(edgeX, y); ctx.lineTo(rearX, y); ctx.stroke(); });
+        }
+      });
+    }
+
+    measure();
+    // rAF loop — robust to Lenis smooth-scroll (reads layout each frame)
+    function loop() { render(); requestAnimationFrame(loop); }
+    requestAnimationFrame(loop);
+    let rt;
+    window.addEventListener("resize", () => { clearTimeout(rt); rt = window.setTimeout(measure, 200); });
+    window.addEventListener("load", measure);
+  }
+
+  function initTariffPanel() {
+    const panel = document.getElementById("tariff-panel");
+    const btn = document.querySelector("[data-tariff-toggle]");
+    if (!panel || !btn) return;
+    const label = btn.querySelector("[data-tariff-label]");
+    const arrow = btn.querySelector("[data-tariff-arrow]");
+    let open = false;
+
+    const setState = () => {
+      if (open) {
+        panel.style.maxHeight = panel.scrollHeight + "px";
+        panel.style.opacity = "1";
+        btn.setAttribute("aria-expanded", "true");
+        if (label) label.textContent = "Hide full tariff";
+        if (arrow) arrow.textContent = "↑";
+      } else {
+        panel.style.maxHeight = "0";
+        panel.style.opacity = "0";
+        btn.setAttribute("aria-expanded", "false");
+        if (label) label.textContent = "Show full tariff";
+        if (arrow) arrow.textContent = "↓";
+      }
+    };
+
+    btn.addEventListener("click", () => { open = !open; setState(); });
+    // Keep height correct on resize while open
+    window.addEventListener("resize", () => { if (open) panel.style.maxHeight = panel.scrollHeight + "px"; });
+  }
+
+  function initParkingReveal() {
+    const fig = document.getElementById("parking-figures");
+    if (!fig) return;
+    // Slide-up only — opacity stays at 1 so the dark glass colour is constant.
+    gsap.from(fig, {
+      y: 44,
+      ease: "power3.out",
+      duration: 0.9,
+      scrollTrigger: { trigger: fig, start: "top 90%" },
+    });
+  }
+
+  document.addEventListener("astro:page-load", () => {
+    initCarHireDrive();
+    initTariffPanel();
+    initParkingReveal();
+  });
+</script>
+
 </BaseLayout>

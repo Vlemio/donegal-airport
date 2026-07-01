@@ -1,0 +1,9 @@
+{
+  "updated": "2026-06-19T06:00:00Z",
+  "flights": [
+    { "t": "08:55", "f": "EI 3401", "city": "Dublin", "dir": "ARR", "st": "landed" },
+    { "t": "10:25", "f": "EI 3402", "city": "Dublin", "dir": "DEP", "st": "departed" },
+    { "t": "16:55", "f": "EI 3403", "city": "Dublin", "dir": "ARR", "st": "scheduled" },
+    { "t": "18:40", "f": "EI 3408", "city": "Dublin", "dir": "DEP", "st": "scheduled" }
+  ]
+}

@@ -100,23 +100,31 @@ const splitObservers = new WeakSet<Element>();
 function splitIntoChars(el: HTMLElement): void {
   if (splitObservers.has(el)) return;
   splitObservers.add(el);
-  const text = el.textContent ?? "";
-  const words = text.split(/\s+/).filter(Boolean);
+  const childNodes = Array.from(el.childNodes);
+  const fullText = (el.textContent ?? "").replace(/\s+/g, " ").trim();
   el.textContent = "";
-  el.setAttribute("aria-label", text);
-  words.forEach((word, wi) => {
-    const wordSpan = document.createElement("span");
-    wordSpan.style.display = "inline-block";
-    wordSpan.setAttribute("aria-hidden", "true");
-    [...word].forEach((char) => {
-      const charSpan = document.createElement("span");
-      charSpan.style.display = "inline-block";
-      charSpan.style.willChange = "transform, opacity";
-      charSpan.textContent = char;
-      wordSpan.appendChild(charSpan);
+  el.setAttribute("aria-label", fullText);
+  childNodes.forEach((node) => {
+    if (node.nodeType === Node.ELEMENT_NODE && (node as Element).tagName === "BR") {
+      el.appendChild(document.createElement("br"));
+      return;
+    }
+    const words = (node.textContent ?? "").split(/\s+/).filter(Boolean);
+    words.forEach((word, wi) => {
+      const wordSpan = document.createElement("span");
+      wordSpan.style.display = "inline-block";
+      wordSpan.setAttribute("aria-hidden", "true");
+      [...word].forEach((char) => {
+        const charSpan = document.createElement("span");
+        charSpan.style.display = "inline-block";
+        charSpan.style.willChange = "transform, opacity";
+        if (char === "F" || char === "f") charSpan.className = "f-fix";
+        charSpan.textContent = char;
+        wordSpan.appendChild(charSpan);
+      });
+      el.appendChild(wordSpan);
+      if (wi < words.length - 1) el.appendChild(document.createTextNode(" "));
     });
-    el.appendChild(wordSpan);
-    if (wi < words.length - 1) el.appendChild(document.createTextNode(" "));
   });
 }
 
@@ -627,19 +635,28 @@ function setupStickyHorizontal(): void {
       const distance = track.scrollWidth - window.innerWidth;
       if (distance <= 0) return;
 
-      const pinEl = wrapper.querySelector<HTMLElement>(".h-pin");
+      // .h-pin already has position:sticky in CSS — no GSAP pin needed.
+      // Setting height here gives the wrapper enough vertical scroll space
+      // so the sticky element stays fixed for the full horizontal travel.
+      const setHeight = (): void => {
+        const d = track.scrollWidth - window.innerWidth;
+        wrapper.style.height = `${window.innerHeight + d}px`;
+      };
+      setHeight();
 
-      // Track translation tied to scroll
+      // Track translation tied to scroll — CSS sticky handles pinning,
+      // GSAP only drives the X offset. No pin/anticipatePin avoids the
+      // position:fixed flip that caused the entry/exit jolt.
       const trackTween = gsap.to(track, {
-        x: -distance,
+        x: () => -(track.scrollWidth - window.innerWidth),
         ease: "none",
         scrollTrigger: {
           trigger: wrapper,
           start: "top top",
-          end: () => `+=${distance}`,
-          pin: pinEl,
+          end: () => `+=${track.scrollWidth - window.innerWidth}`,
           scrub: 0.4,
           invalidateOnRefresh: true,
+          onRefresh: setHeight,
         },
       });
 
@@ -793,14 +810,21 @@ setupHeaderReveal();
 
 // First load and every View Transitions navigation.
 document.addEventListener("astro:page-load", () => {
-  // Triple-reset of scroll: defensive against the "land mid-page"
-  // bug that bit Errigal. window.scrollTo before Lenis exists;
-  // Lenis constructor reads scrollY; then immediate lenis.scrollTo
-  // pins it at 0 in case anything intermediate moved it.
   window.scrollTo(0, 0);
   initSmoothScroll();
   lenis?.scrollTo(0, { immediate: true, force: true });
   build();
+  // Hash anchor (e.g. /#news) — jump immediately after layouts settle.
+  // immediate:true avoids the visible scroll journey through the whole page.
+  const hash = window.location.hash;
+  if (hash) {
+    const target = document.querySelector<HTMLElement>(hash);
+    if (target) {
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        lenis?.scrollTo(target, { offset: -80, immediate: true, force: true });
+      }));
+    }
+  }
 });
 
 document.addEventListener("astro:before-swap", destroy);

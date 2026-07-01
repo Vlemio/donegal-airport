@@ -2,27 +2,37 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { t } from "../i18n";
 import trim from "../data/video-trim.json";
+import { getCollection } from "astro:content";
+import flightsFeed from "../../public/api/flights-today.json";
+export const prerender = true;
 
 const locale = "en";
 const title = `${t("site.name", locale)} · ${t("site.tagline", locale)}`;
 const description = t("site.description", locale);
 
-// Live-flight placeholder (option A from discovery: "fake-live for
-// pitch, swap for real data post-firma"). Status pill colours come
-// from --color-status-* tokens.
-const flightsToday = [
-  { time: "08:25", flight: "EI 3680", to: "Dublin", dir: "DEP", status: "On time", tone: "ontime" },
-  { time: "09:55", flight: "EI 3681", to: "from Dublin", dir: "ARR", status: "On time", tone: "ontime" },
-  { time: "17:30", flight: "EI 3684", to: "Dublin", dir: "DEP", status: "On time", tone: "ontime" },
-  { time: "19:00", flight: "EI 3685", to: "from Dublin", dir: "ARR", status: "On time", tone: "ontime" },
-] as const;
+// Flight data — single source of truth is /public/api/flights-today.json.
+// The FIDS tab (separate project) will write to that file with live ADS-B data.
+// The board JS polls it every 60 s so it auto-refreshes without a page reload.
+const flightsToday = (flightsFeed as any).flights as {
+  t: string; f: string; city: string; dir: string; st: string; delayTo?: string;
+}[];
 
-// Hero ops-panel departures (next 3 from now — wire to FIDS post-firma)
-const heroDepartures = [
-  { time: "10:25", dest: "Dublin",  flight: "EI 3331 · Aer Lingus Regional", status: "On time", tone: "ok"   },
-  { time: "14:50", dest: "Glasgow", flight: "LM 562 · Loganair",             status: "Sat only", tone: "wknd" },
-  { time: "18:40", dest: "Dublin",  flight: "EI 3337 · Aer Lingus Regional", status: "On time", tone: "ok"   },
-] as const;
+// Hero ops-panel — derived from flightsToday so both are always in sync
+const carrierMap: Record<string, string> = { EI: "Aer Lingus Regional", LM: "Loganair" };
+const heroDepartures = flightsToday
+  .filter((f) => f.dir === "DEP" && f.st !== "departed")
+  .slice(0, 3)
+  .map((f) => ({
+    time: f.t,
+    dest: f.city,
+    flight: `${f.f} · ${carrierMap[f.f.split(" ")[0]] ?? ""}`,
+    status:
+      f.st === "delayed" && (f as any).delayTo ? `→ ${(f as any).delayTo}` :
+      f.st === "ontime" ? "On time" :
+      f.st === "boarding" ? "Boarding" : "Scheduled",
+    tone: f.st === "delayed" ? "warn" : "ok",
+  }));
+const nextArrival = flightsToday.find((f) => f.dir === "ARR" && f.st !== "landed") ?? null;
 
 // Hero weather (static placeholder — wire to Met Éireann or METAR post-firma)
 const heroWeather = { tempC: 12, condition: "Scattered cloud", windDir: "SW", windKt: 14, visKm: 10 };
@@ -46,7 +56,7 @@ const destinations = [
     city: "Glasgow",
     country: "Scotland",
     duration: "1 h 5 min",
-    schedule: "Friday & Sunday",
+    schedule: "Year-round",
     carrier: "Loganair",
     hero: "/photos/dest-gla.webp",
     photoPos: "center 20%",
@@ -77,25 +87,21 @@ const awards = [
   },
 ];
 
-// News — DD.MM.YYYY format throughout, Vágar style. Most-recent
-// first. Move to a typed JSON in src/data/ when we get past 3-4.
-const news = [
-  {
-    date: "08.05.2026",
-    kind: "Operations",
-    title: "Dublin route restored to twice-daily service.",
-  },
-  {
-    date: "21.04.2026",
-    kind: "Sustainability",
-    title: "ACA Level 4 'Transformation' confirmed — a first for Ireland.",
-  },
-  {
-    date: "03.03.2026",
-    kind: "Community",
-    title: "Scoil Gheimhridh winter school returns for a 17th year.",
-  },
-];
+// News — read from src/content/news/ (managed via Keystatic CMS).
+// Marketing adds items at /keystatic — no code needed.
+const newsEntries = await getCollection("news");
+const _newsSorted = newsEntries.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const _mapNews = (n: (typeof _newsSorted)[0]) => ({
+  slug: n.id,
+  date: n.data.date.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }),
+  kind: n.data.kind,
+  title: n.data.title,
+  image: n.data.image
+    ? n.data.image.startsWith("/") ? n.data.image : `/photos/${n.data.image}`
+    : "/photos/intro-airport.webp",
+});
+const news = _newsSorted.slice(0, 3).map(_mapNews);
+const allNews = _newsSorted.map(_mapNews);
 ---
 
 <BaseLayout title={title} description={description}>
@@ -124,12 +130,12 @@ const news = [
     <div class="sticky top-0 h-screen w-full overflow-hidden" aria-hidden="true">
       <img
         data-ken-burns
-        src="/photos/hero-poster.webp"
+        src="/video/frames/frame-0001.webp"
         alt=""
         class="absolute inset-0 h-full w-full object-cover object-[center_55%]"
         loading="eager"
         fetchpriority="high"
-        decoding="async"
+        decoding="sync"
       />
       {/* Scrub "video" is a frame sequence painted to a <canvas>, not an
           <video>. Seeking an <video> via currentTime stutters on scroll
@@ -169,7 +175,7 @@ const news = [
           <p
             data-animate="fade-up"
             data-edit="hero-eyebrow"
-            class="font-mono text-[13px] uppercase tracking-[0.26em]"
+            class="font-mono text-[15px] uppercase tracking-[0.26em]"
             style="color: var(--hi-soft)"
           >
             Donegal Airport · Co. Donegal · CFN
@@ -188,11 +194,11 @@ const news = [
             data-animate="fade-up"
             data-animate-delay="0.35"
             data-edit="hero-lede"
-            class="max-w-[440px] text-[21px] leading-[1.45]"
+            class="max-w-[480px] text-[24px] leading-[1.45]"
             style="color: var(--hi-soft)"
           >
             Dublin daily. Glasgow at weekends — and select summer weekdays.
-            The Atlantic on both sides of the runway.
+            Donegal's airport sits where the Atlantic begins.
           </p>
 
           <div
@@ -215,7 +221,7 @@ const news = [
           {/* Header row: title + live clock (local + UTC) */}
           <div class="flex items-start justify-between">
             <span
-              class="font-mono text-[12px] uppercase tracking-[0.18em]"
+              class="font-mono text-[14px] uppercase tracking-[0.18em]"
               style="color: var(--hi-amber)"
             >
               Inniu · Today
@@ -223,17 +229,17 @@ const news = [
             <div class="flex flex-col items-end gap-[3px]">
               <span
                 id="ops-clock"
-                class="font-mono text-[11px] tracking-[0.08em]"
+                class="font-mono text-[13.5px] tracking-[0.08em]"
                 style="color: var(--hi-faint)"
               >
                 — — : — —
               </span>
               <span
                 id="ops-clock-utc"
-                class="font-mono text-[10px] tracking-[0.06em]"
-                style="color: var(--hi-faint); opacity: 0.7"
+                class="font-mono text-[11.5px] tracking-[0.06em]"
+                style="color: rgba(238,244,251,0.82)"
               >
-                — — : — — <span style="opacity:0.6">UTC</span>
+                — — : — — <span style="opacity:0.75">UTC</span>
               </span>
             </div>
           </div>
@@ -277,8 +283,8 @@ const news = [
             </span>
           </div>
 
-          {/* Departures board */}
-          <ul class="mt-[6px]">
+          {/* Departures board — id="hero-deps" lets the board JS keep this in sync */}
+          <ul class="mt-[6px]" id="hero-deps">
             {heroDepartures.map((dep) => (
               <li class="ops-board-row">
                 <span class="b-time">{dep.time}</span>
@@ -289,17 +295,21 @@ const news = [
             ))}
           </ul>
 
-          {/* Footer row: next arrival + full board link */}
+          {/* Footer row: next arrival — id="hero-next-arr" kept in sync by board JS */}
           <div
             class="mt-[16px] flex items-center justify-between pt-[16px]"
             style="border-top: 1px solid var(--hi-line)"
           >
             <span
+              id="hero-next-arr"
               class="font-mono text-[10.5px] uppercase tracking-[0.06em]"
               style="color: var(--hi-faint)"
             >
-              Next arrival · 09:55 Dublin ·{" "}
-              <span style="color: var(--hi-soft)">Landed</span>
+              {nextArrival ? (
+                <>Next arrival · {nextArrival.t}{" "}{nextArrival.city} · <span style="color: var(--hi-soft)">{nextArrival.st === "landed" ? "Landed" : nextArrival.st === "enroute" ? "En route" : "Scheduled"}</span></>
+              ) : (
+                <>No more arrivals today</>
+              )}
             </span>
             <a href="/flights" class="ops-cta-link">
               Full board <span class="arrow">→</span>
@@ -319,7 +329,7 @@ const news = [
     </div>
 
     {/* Live clock script — ticks every minute, shows local + UTC */}
-    <script>
+    <script is:inline>
       (function () {
         const el    = document.getElementById('ops-clock');
         const utcEl = document.getElementById('ops-clock-utc');
@@ -327,12 +337,13 @@ const news = [
         const days   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
         const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         function tick() {
-          const d  = new Date();
-          const hh = String(d.getHours()).padStart(2,'0');
-          const mm = String(d.getMinutes()).padStart(2,'0');
-          el.textContent =
-            days[d.getDay()] + ' ' + d.getDate() + ' ' +
-            months[d.getMonth()] + ' · ' + hh + ':' + mm;
+          const d = new Date();
+          const parts = new Intl.DateTimeFormat('en-IE', {
+            timeZone: 'Europe/Dublin',
+            weekday: 'short', day: 'numeric', month: 'short',
+            hour: '2-digit', minute: '2-digit', hour12: false
+          }).formatToParts(d).reduce(function(acc, p) { acc[p.type] = p.value; return acc; }, {});
+          el.textContent = parts.weekday + ' ' + parts.day + ' ' + parts.month + ' · ' + parts.hour + ':' + parts.minute;
           if (utcEl) {
             const uh = String(d.getUTCHours()).padStart(2,'0');
             const um = String(d.getUTCMinutes()).padStart(2,'0');
@@ -347,7 +358,7 @@ const news = [
     {/* Live weather — Open-Meteo, same source as Bunbeg Coast Guard dashboard.
         Coordinates: Carrickfinn Airport (CFN/EIDL) 55.0441°N, 8.3411°W.
         Refreshes every 10 min. Falls back silently to static values on error. */}
-    <script>
+    <script is:inline>
       (function () {
         // WMO weather code → short description (matches coast guard mapping)
         const WMO = {
@@ -408,20 +419,40 @@ const news = [
   </section>
 
   {/* ---------- EDITORIAL INTRO ----------
-      The "Carrickfinn is a place" paragraph. Heavy display weight,
-      photo to the right on desktop, stacked on mobile. */}
-  <section class="border-t border-line">
-    <div class="mx-auto grid max-w-7xl gap-12 px-6 py-28 lg:grid-cols-12 lg:gap-16">
-      <div class="lg:col-span-7">
+      Full-bleed drone photo of the airport, with the Carrickfinn intro
+      text overlaid in light type over a left-weighted scrim. Uses the
+      cfn-hero-content tokens so text stays legible over the image. */}
+  <section class="relative isolate overflow-hidden">
+    {/* Background photo + slow Ken Burns */}
+    <div class="absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
+      <img
+        data-ken-burns
+        data-ken-burns-duration="26"
+        src="/photos/intro-sunrise.webp"
+        alt=""
+        class="h-full w-full object-cover"
+        loading="lazy"
+        decoding="async"
+      />
+      {/* Light left scrim — just enough to keep text legible without
+          washing the photo's colour out. The right half stays clear. */}
+      {/* Soft top seam blends this section into the hero above */}
+      <div class="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-[rgba(18,22,29,0.35)] to-transparent"></div>
+    </div>
+
+    <div class="cfn-hero-content mx-auto max-w-7xl px-6 py-32 lg:py-48">
+      <div class="max-w-3xl">
         <p
           data-animate="fade-up"
-          class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic"
+          class="font-mono text-[1.05rem] uppercase tracking-[0.2em]"
+          style="color: var(--hi-amber)"
         >
           Carraig Fhinn · Co. Donegal
         </p>
         <p
           data-split
-          class="mt-8 max-w-3xl font-display text-[clamp(2rem,4vw,3.6rem)] font-normal leading-[1.02] text-ink"
+          class="mt-8 max-w-3xl font-display text-[clamp(2.1rem,4.2vw,3.8rem)] font-normal leading-[1.02]"
+          style="color: var(--hi)"
         >
           We are the smallest international airport in the country, and the
           one with the best view.
@@ -429,102 +460,69 @@ const news = [
         <div
           data-animate="fade-up"
           data-animate-delay="0.25"
-          class="mt-8 max-w-xl text-base leading-relaxed text-mute"
+          class="mt-8 max-w-xl text-[1.05rem] leading-relaxed"
+          style="color: var(--hi-soft)"
         >
           <p>
             Carrickfinn sits on a sandbar between the Atlantic and Mount
-            Errigal. The runway runs straight along the beach. Pilots queue
-            for a slot here just to log the approach. Passengers walk to
-            arrivals in under a minute.
+            Errigal. The runway runs straight along the beach, with the sea
+            on both sides. It's been called one of the most scenic approaches
+            in the world — and it's still the fastest way in or out of the county.
           </p>
           <p class="mt-5">
             <a
               href="/story"
-              class="border-b border-ink/40 pb-0.5 transition-colors hover:border-sand hover:text-sand"
+              class="border-b pb-0.5 transition-colors hover:text-sand"
+              style="border-color: var(--hi-line); color: var(--hi)"
             >
               The full story — Malinair to today →
             </a>
           </p>
         </div>
       </div>
-
-      <figure
-        data-photo
-        class="relative lg:col-span-5"
-      >
-        <div
-          data-ken-burns
-          data-ken-burns-duration="22"
-          class="aspect-[3/4] w-full rounded-none bg-gradient-to-br from-sand via-atlantic-bright to-ink"
-          aria-hidden="true"
-        >
-        </div>
-        <figcaption
-          class="mt-4 font-mono text-[0.66rem] uppercase tracking-[0.22em] text-mute"
-        >
-          Photograph · Carrickfinn beach approach
-        </figcaption>
-      </figure>
     </div>
   </section>
 
-  {/* ---------- TODAY'S FLIGHTS — minimal mono table ---------- */}
-  <section class="border-t border-line bg-surface-lo/60">
-    <div class="mx-auto max-w-7xl px-6 py-24">
-      <div class="flex items-end justify-between gap-6">
+  {/* ─── THE BOARD · Live Departures & Arrivals (Option A) ─── */}
+  <section class="board-sec border-t border-line" data-texture="crt">
+    <div class="backdrop-tex" aria-hidden="true"></div>
+    <div class="mx-auto max-w-[1180px] px-6 py-20 lg:py-[5rem] lg:pb-[5.5rem]" style="position:relative;z-index:2">
+      <div class="board-head">
         <div>
-          <p
-            data-animate="fade-up"
-            class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic"
-          >
-            Today
+          <p class="board-eyebrow">
+            <span class="live-dot-green" aria-hidden="true"></span>
+            CFN/EIDL
           </p>
-          <h2
-            data-split
-            class="mt-3 font-display text-[clamp(2rem,4vw,3.4rem)] font-normal leading-[1.04]"
-          >
-            Live arrivals and departures.
-          </h2>
+          <h2 class="board-title">Departures and arrivals.</h2>
         </div>
-        <p class="hidden font-mono text-[0.66rem] uppercase tracking-[0.22em] text-mute sm:block">
-          Last updated · placeholder
-        </p>
+        <div class="text-right">
+          <div id="board-clock" class="board-clock-time">--:--:--</div>
+          <div class="board-clock-sub">Donegal &middot; Local time</div>
+        </div>
       </div>
-
-      <div data-animate="fade-up" class="mt-10">
-        <ul class="divide-y divide-line font-mono text-sm">
-          <li
-            class="grid grid-cols-[5rem_5.5rem_1fr_4rem_auto] items-center gap-6 py-2 text-[0.66rem] uppercase tracking-[0.18em] text-mute"
-          >
-            <span>Time</span><span>Flight</span><span>Route</span>
-            <span>Dir</span><span class="justify-self-end">Status</span>
-          </li>
-          {flightsToday.map((f) => (
-            <li
-              class="grid grid-cols-[5rem_5.5rem_1fr_4rem_auto] items-center gap-6 py-4 text-ink"
-            >
-              <span class="tabular-nums font-medium">{f.time}</span>
-              <span class="tabular-nums">{f.flight}</span>
-              <span class="truncate text-mute">{f.to}</span>
-              <span class="text-[0.66rem] uppercase tracking-[0.18em] text-mute">
-                {f.dir}
-              </span>
-              <span
-                class="justify-self-end text-[0.66rem] uppercase tracking-[0.18em]"
-                style={`color: var(--color-status-${f.tone})`}
-              >
-                {f.status}
-              </span>
-            </li>
-          ))}
-        </ul>
-
-        <a
-          href="/flights"
-          class="mt-10 inline-block border-b border-ink/60 pb-1 font-mono text-xs uppercase tracking-[0.22em] text-ink transition-colors hover:border-sand hover:text-sand"
-        >
-          Full timetable & live status →
-        </a>
+      <div class="mb-5">
+        <div id="board-tabs" class="board-tabs">
+          <span class="board-tab-pill" aria-hidden="true"></span>
+          <button data-f="ALL" aria-selected="true">All</button>
+          <button data-f="DEP" aria-selected="false">Departures</button>
+          <button data-f="ARR" aria-selected="false">Arrivals</button>
+        </div>
+      </div>
+      <div class="board-cols">
+        <span>Time</span>
+        <span class="c-flight">Flight</span>
+        <span>Route</span>
+        <span class="c-dir">Type</span>
+        <span>Status</span>
+      </div>
+      <div id="board-rows" class="board-rows"></div>
+      <div class="board-foot">
+        <div class="board-legend">
+          <span class="lg"><span class="sw" style="background:#4fb87a"></span>Scheduled / on time</span>
+          <span class="lg"><span class="sw" style="background:#3f7fb8"></span>En route / Boarding</span>
+          <span class="lg"><span class="sw" style="background:#c2683a"></span>Delayed</span>
+        </div>
+        <a href="/flights" class="board-link">Full timetable &amp; live status <span class="board-arrow">→</span></a>
       </div>
     </div>
   </section>
@@ -542,20 +540,22 @@ const news = [
     <div class="h-pin">
       <div class="h-track">
         <div
-          class="flex h-[80vh] w-[28rem] shrink-0 flex-col justify-between px-2 py-10"
+          class="flex h-[80vh] w-[32rem] shrink-0 flex-col justify-between px-2 py-12"
         >
-          <p class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic">
+          <p class="font-mono text-[1.5rem] font-semibold uppercase tracking-[0.22em] text-atlantic">
             Routes
           </p>
-          <h2
-            data-split
-            class="font-display text-[clamp(2rem,4vw,4rem)] font-normal leading-[0.98]"
-          >
-            Two flights, two cities.<br />Both arrive in time for dinner.
-          </h2>
-          <p class="max-w-xs text-sm leading-relaxed text-mute">
-            CFN's whole route map fits in one breath. That's the point.
-          </p>
+          <div>
+            <h2
+              data-split
+              class="font-display text-[clamp(3.2rem,6vw,7rem)] font-normal leading-[0.94]"
+            >
+              Two flights,<br />two cities.
+            </h2>
+            <p class="mt-4 max-w-sm text-lg leading-relaxed text-ink/70">
+              Dublin twice a day, every day. Loganair connects to Glasgow on selected days. A short route map — and every seat is a window seat.
+            </p>
+          </div>
         </div>
 
         {destinations.map((d) => (
@@ -576,13 +576,12 @@ const news = [
             >
             </div>
             <div class="cfn-hero-content relative z-10 p-10">
-              <p class="font-mono text-[0.72rem] uppercase tracking-[0.3em] text-sand">
-                {d.code} · {d.country}
+              <p class="font-mono text-[0.85rem] font-bold uppercase tracking-[0.3em] text-sand">
+                {d.country}
               </p>
               <h3 class="mt-3 font-display text-[clamp(2.5rem,5vw,5rem)] font-normal leading-[0.95] text-ink">
                 {d.city}
               </h3>
-              <p class="mt-4 max-w-md text-base text-mute">{d.caption}</p>
               <dl class="mt-8 grid grid-cols-3 gap-6 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-mute">
                 <div>
                   <dt class="text-sand">Duration</dt>
@@ -609,7 +608,7 @@ const news = [
     <div class="mx-auto max-w-3xl px-6 py-20">
       <p
         data-animate="fade-up"
-        class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic"
+        class="font-mono text-[1.5rem] font-semibold uppercase tracking-[0.22em] text-atlantic"
       >
         Routes
       </p>
@@ -618,7 +617,7 @@ const news = [
         data-animate-delay="0.1"
         class="mt-3 font-display text-4xl leading-[1.02]"
       >
-        Two flights, two cities.
+        Two <span class="f-fix">f</span>lights, two cities.
       </h2>
       <div class="mt-10 space-y-12">
         {destinations.map((d, i) => (
@@ -641,13 +640,12 @@ const news = [
               >
               </div>
               <div class="cfn-hero-content absolute inset-x-0 bottom-0 p-6">
-                <p class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-sand">
-                  {d.code} · {d.country}
+                <p class="font-mono text-[0.8rem] font-bold uppercase tracking-[0.28em] text-sand">
+                  {d.country}
                 </p>
                 <h3 class="mt-2 font-display text-4xl leading-[0.95] text-ink">
                   {d.city}
                 </h3>
-                <p class="mt-3 text-sm text-mute">{d.caption}</p>
               </div>
             </div>
           </article>
@@ -656,40 +654,57 @@ const news = [
     </div>
   </section>
 
-  {/* ---------- AWARDS — editorial, no cards ---------- */}
-  <section class="border-t border-line">
+  {/* ---------- AWARDS — photo bg light, years as graphic anchors ----------
+      Runway aerial photo washed to near-white with a cream scrim.
+      Year numbers are oversized decorative anchors (option 3 merged).  */}
+  <section class="relative isolate overflow-hidden">
+    <div class="absolute inset-0 -z-10" aria-hidden="true">
+      <img
+        src="/photos/intro-airport.webp"
+        alt=""
+        class="h-full w-full object-cover object-[center_35%]"
+        loading="lazy"
+        decoding="async"
+      />
+      {/* Light cream wash — photo visible but text stays readable in dark ink */}
+      <div class="absolute inset-0 bg-[var(--color-surface)]/45"></div>
+    </div>
+
     <div class="mx-auto max-w-7xl px-6 py-28">
       <p
         data-animate="fade-up"
-        class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic"
+        class="font-mono text-[1.5rem] font-semibold uppercase tracking-[0.22em] text-[#0f3550]"
       >
         Recognition
       </p>
       <h2
         data-split
-        class="mt-3 max-w-4xl font-display text-[clamp(2.25rem,5vw,5rem)] font-normal leading-[0.98]"
+        class="mt-3 max-w-4xl font-display text-[clamp(3rem,5.5vw,6rem)] font-normal leading-[0.98] text-[#0f3550]"
       >
         A small airport with a long shelf of awards.
       </h2>
 
-      <ul class="mt-16 divide-y divide-line">
+      <ul class="mt-16 divide-y divide-ink/10">
         {awards.map((award, i) => (
           <li
             data-animate="fade-up"
             data-animate-delay={`${0.05 + i * 0.06}`}
-            class="grid items-baseline gap-6 py-10 md:grid-cols-[7rem_1fr_auto] md:gap-12"
+            class="relative grid items-center gap-6 py-10 md:grid-cols-[13rem_1fr_auto] md:gap-12"
           >
-            <p class="font-display text-5xl text-sand md:text-6xl">{award.year}</p>
+            {/* Year — oversized, decorative anchor */}
+            <p class="font-display text-[4rem] leading-none text-[#0f3550] md:text-[5.5rem]">
+              {award.year}
+            </p>
             <div>
               <h3 class="font-display text-2xl leading-tight text-ink md:text-3xl">
                 {award.title}
               </h3>
-              <p class="mt-2 text-base leading-relaxed text-mute">
+              <p class="mt-2 text-base leading-relaxed text-ink">
                 {award.detail}
               </p>
             </div>
             <p
-              class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-mute md:text-right"
+              class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.18em] text-[#0f3550] md:text-right"
             >
               {award.source}
             </p>
@@ -699,97 +714,594 @@ const news = [
     </div>
   </section>
 
-  {/* ---------- NEWS — DD.MM.YYYY editorial list ---------- */}
-  <section class="border-t border-line bg-surface-lo/60">
-    <div class="mx-auto max-w-7xl px-6 py-24">
-      <div class="flex items-end justify-between gap-6">
+  {/* ---------- NEWS — Card deck ---------- */}
+  <section id="news" class="news-sec border-t border-line">
+    <div class="news-sec__inner">
+      <div class="news-sec__head">
         <div>
-          <p
-            data-animate="fade-up"
-            class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic"
-          >
-            Recent
+          <p class="font-mono text-[1.5rem] font-semibold uppercase tracking-[0.22em] text-atlantic">
+            News
           </p>
-          <h2
-            data-animate="fade-up"
-            data-animate-delay="0.1"
-            class="mt-3 font-display text-[clamp(2rem,4vw,3.4rem)] font-normal leading-[1.04]"
-          >
-            From the airport.
-          </h2>
+          <h2 class="news-sec__title"><span class="f-fix">F</span>rom the airport.</h2>
         </div>
-        <a
-          href="/story#news"
-          class="hidden border-b border-ink/60 pb-1 font-mono text-xs uppercase tracking-[0.22em] text-ink transition-colors hover:border-sand hover:text-sand sm:inline-block"
-        >
-          All news →
+        <a href="/news" class="all-news-lnk">
+          All news <span class="ar">→</span>
         </a>
       </div>
 
-      <ul class="mt-10 divide-y divide-line">
-        {news.map((item, i) => (
-          <li
-            data-animate="fade-up"
-            data-animate-delay={`${0.05 + i * 0.05}`}
-          >
-            <a
-              href="/story#news"
-              class="group grid items-baseline gap-4 py-8 transition-colors md:grid-cols-[7rem_8rem_1fr_2rem]"
-            >
-              <p class="font-mono text-[0.78rem] tabular-nums text-mute">
-                {item.date}
-              </p>
-              <p class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-sand">
-                {item.kind}
-              </p>
-              <p class="font-display text-xl leading-snug text-ink md:text-2xl">
-                {item.title}
-              </p>
-              <span
-                class="hidden font-mono text-xs text-mute transition-transform group-hover:translate-x-1 md:block md:text-right"
-              >
-                →
-              </span>
+      <div class="nc-carousel">
+        <button class="nc-arr" id="nc-prev" aria-label="Previous">←</button>
+        <div class="news-deck">
+          {news.map((item) => (
+            <a href={`/news/${item.slug}`} class="nc reveal">
+              <div class="nc__media">
+                <span class="nc__flag">{item.kind}</span>
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  class="nc__img"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <p class="nc__date">{item.date}</p>
+              <h3 class="nc__title">{item.title}</h3>
+              <div class="nc__foot">
+                <span>Read</span><span class="ar">→</span>
+              </div>
             </a>
-          </li>
-        ))}
-      </ul>
+          ))}
+        </div>
+        <button class="nc-arr" id="nc-next" aria-label="Next">→</button>
+      </div>
     </div>
   </section>
 
-  {/* ---------- INQUIRY CTA — clean editorial closer ---------- */}
-  <section class="border-t border-line">
+  <style is:global>
+    .news-sec {
+      background-color: var(--color-surface, #f3f2ee);
+    }
+    .news-sec__inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 5rem 2.5rem 5.5rem;
+    }
+    .news-sec__head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 2rem;
+      margin-bottom: 3.2rem;
+    }
+    .news-sec__title {
+      font-family: var(--font-display);
+      font-weight: 300;
+      font-size: clamp(2.6rem, 5.2vw, 4.6rem);
+      line-height: 0.96;
+      letter-spacing: -0.025em;
+      margin-top: 1.1rem;
+    }
+    .all-news-lnk {
+      align-self: end;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-ink, #181d16);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px solid currentColor;
+      white-space: nowrap;
+      transition: gap 0.25s;
+    }
+    .all-news-lnk .ar { transition: transform 0.25s; }
+    .all-news-lnk:hover { gap: 1.1rem; }
+    .all-news-lnk:hover .ar { transform: translateX(4px); }
+
+    .nc-carousel {
+      display: flex;
+      align-items: center;
+    }
+    .nc-arr {
+      flex: none;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      border: 1px solid var(--color-line, rgba(24,29,22,0.11));
+      background: transparent;
+      font-size: 1rem;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      color: var(--color-ink, #181d16);
+    }
+    .nc-arr:hover { background: var(--color-ink, #181d16); color: var(--color-surface, #f3f2ee); border-color: var(--color-ink, #181d16); }
+    .nc-arr:disabled { opacity: 0.3; cursor: default; pointer-events: none; }
+    #nc-prev { margin-right: 1.1rem; }
+    #nc-next { margin-left: 1.1rem; }
+    .news-deck {
+      flex: 1;
+      display: flex;
+      gap: 1.8rem;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    .news-deck::-webkit-scrollbar { display: none; }
+    .nc {
+      flex: 0 0 calc((100% - 3.6rem) / 3);
+      min-width: 220px;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      text-decoration: none;
+      color: inherit;
+    }
+    .nc__media {
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px;
+    }
+    .nc__img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.5s cubic-bezier(.2,.7,.2,1);
+    }
+    .nc:hover .nc__img { transform: scale(1.04); }
+    .nc__flag {
+      position: absolute;
+      top: 0.85rem;
+      left: 0.85rem;
+      z-index: 3;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.95);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.65);
+    }
+    .nc__flag::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #c4733a;
+      flex: none;
+    }
+    .nc__date {
+      margin: 1.3rem 0 0.7rem;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      color: var(--color-mute, #56605a);
+    }
+    .nc__title {
+      font-family: var(--font-display);
+      font-weight: 400;
+      font-size: 1.5rem;
+      line-height: 1.12;
+      letter-spacing: -0.015em;
+      text-wrap: pretty;
+      transition: color 0.25s;
+    }
+    .nc:hover .nc__title { color: var(--color-atlantic, #1a4a6e); }
+    .nc__foot {
+      margin-top: auto;
+      padding-top: 1.1rem;
+      border-top: 1px solid var(--color-line, rgba(24,29,22,0.11));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--color-mute, #56605a);
+      transition: color 0.25s;
+    }
+    .nc__foot .ar { transition: transform 0.25s; }
+    .nc:hover .nc__foot { color: var(--color-atlantic, #1a4a6e); }
+    .nc:hover .nc__foot .ar { transform: translateX(5px); }
+
+    /* reveal animation */
+    .js-ready .nc.reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.7s cubic-bezier(.2,.7,.2,1), transform 0.7s cubic-bezier(.2,.7,.2,1);
+    }
+    .js-ready .nc.reveal.in {
+      opacity: 1;
+      transform: none;
+    }
+
+    @media (max-width: 900px) {
+      .nc { flex: 0 0 78%; }
+      .news-sec__head { grid-template-columns: 1fr; }
+      #nc-prev, #nc-next { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .nc.reveal { opacity: 1 !important; transform: none !important; }
+    }
+
+  </style>
+
+  <script is:inline>
+    (function () {
+      document.documentElement.classList.add('js-ready');
+      var deck = document.querySelector('.news-deck');
+      if (!deck) return;
+      var cards = Array.prototype.slice.call(deck.querySelectorAll('.nc.reveal'));
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) {
+            cards.forEach(function (card, i) {
+              setTimeout(function () { card.classList.add('in'); }, i * 90);
+            });
+            io.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      io.observe(deck);
+    })();
+
+    // News deck carousel arrows
+    (function () {
+      var d = document.querySelector('.news-deck');
+      var prev = document.getElementById('nc-prev');
+      var next = document.getElementById('nc-next');
+      if (!d || !prev || !next) return;
+      function cw() { var c = d.querySelector('.nc'); return c ? c.getBoundingClientRect().width + 29 : 300; }
+      function upd() {
+        prev.disabled = d.scrollLeft <= 4;
+        next.disabled = d.scrollLeft + d.clientWidth >= d.scrollWidth - 4;
+      }
+      prev.addEventListener('click', function () { d.scrollBy({ left: -cw(), behavior: 'smooth' }); });
+      next.addEventListener('click', function () { d.scrollBy({ left: cw(), behavior: 'smooth' }); });
+      d.addEventListener('scroll', upd, { passive: true });
+      upd();
+    })();
+  </script>
+
+  {/* ---------- INQUIRY CTA — Wild Atlantic Way closer ---------- */}
+  <section class="relative isolate overflow-hidden border-t border-line">
+    {/* Errigal winter — full bleed background */}
+    <div class="absolute inset-0 -z-10" aria-hidden="true">
+      <img
+        src="/photos/errigal-winter.jpg"
+        alt=""
+        class="h-full w-full object-cover object-[center_60%]"
+        loading="lazy"
+        decoding="async"
+      />
+      <div class="absolute inset-0 bg-black/30"></div>
+    </div>
     <div class="mx-auto max-w-5xl px-6 py-32 text-center">
       <p
         data-animate="fade-up"
-        class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic"
+        class="font-mono text-[1.5rem] font-semibold uppercase tracking-[0.22em] text-white/70"
       >
         Plan your visit
       </p>
       <h2
         data-split
-        class="mt-4 font-display text-[clamp(2.25rem,5.5vw,5.5rem)] font-normal leading-[0.98]"
+        class="mt-4 font-display text-[clamp(2.5rem,6vw,6.5rem)] font-normal leading-[0.98] text-white"
       >
-        Fly in. Drive ten minutes.<br />You're on the Wild Atlantic Way.
+        Fly in. The Wild Atlantic Way <br />is waiting at the gate.
       </h2>
       <div
         data-animate="fade-up"
         data-animate-delay="0.35"
-        class="mt-12 flex flex-wrap justify-center gap-6"
+        class="mt-12 flex flex-wrap justify-center gap-8"
       >
         <a
           href="/discover"
-          class="border-b border-ink/60 pb-1 font-mono text-xs uppercase tracking-[0.22em] text-ink transition-colors hover:border-sand hover:text-sand"
+          class="border-b border-white/60 pb-1 font-mono text-sm font-medium uppercase tracking-[0.22em] text-white transition-colors hover:border-sand hover:text-sand"
         >
           Discover Donegal →
         </a>
         <a
           href="/contact"
-          class="border-b border-transparent pb-1 font-mono text-xs uppercase tracking-[0.22em] text-mute transition-colors hover:border-sand hover:text-sand"
+          class="border-b border-white/60 pb-1 font-mono text-sm font-medium uppercase tracking-[0.22em] text-white transition-colors hover:border-sand hover:text-sand"
         >
           Talk to us →
         </a>
       </div>
     </div>
   </section>
+<style is:global>
+  @keyframes boardDotPulse {
+    0%   { box-shadow: 0 0 0 0 var(--pc, rgba(79,184,122,.5)); }
+    70%  { box-shadow: 0 0 0 7px transparent; }
+    100% { box-shadow: 0 0 0 0 transparent; }
+  }
+
+  /* ── Night surface ── */
+  .board-sec {
+    position: relative;
+    overflow: hidden;
+    background-color: #0b1827;
+    background-image:
+      radial-gradient(120% 120% at 82% -10%, rgba(59,130,196,0.22), transparent 60%),
+      linear-gradient(155deg, #0b1827 0%, #122339 46%, #163049 78%, #0b1827 100%);
+    color: #eef4fb;
+  }
+
+  /* ── Board backdrop textures (handoff: backdrop-texture.css) ── */
+  [data-texture] {
+    --tex-line: rgba(159,198,234,0.12);
+    --tex-dot:  rgba(159,198,234,0.20);
+    --tex-fade: 1;
+    --tex-contours: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='760' height='760'%3E%3Cdefs%3E%3Cfilter id='d' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.009 0.012' numOctaves='2' seed='7' result='n'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='n' scale='88' xChannelSelector='R' yChannelSelector='G'/%3E%3C/filter%3E%3C/defs%3E%3Cpath filter='url(%23d)' fill='none' stroke='%239fc6ea' stroke-width='1' opacity='0.55' d='M-80 30H840M-80 64H840M-80 98H840M-80 132H840M-80 166H840M-80 200H840M-80 234H840M-80 268H840M-80 302H840M-80 336H840M-80 370H840M-80 404H840M-80 438H840M-80 472H840M-80 506H840M-80 540H840M-80 574H840M-80 608H840M-80 642H840M-80 676H840M-80 710H840M-80 744H840'/%3E%3C/svg%3E");
+  }
+  .backdrop-tex {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    opacity: var(--tex-fade);
+    -webkit-mask: radial-gradient(135% 110% at 82% -8%, #000 12%, rgba(0,0,0,0.35) 78%, transparent 100%);
+            mask: radial-gradient(135% 110% at 82% -8%, #000 12%, rgba(0,0,0,0.35) 78%, transparent 100%);
+  }
+  [data-texture="none"] .backdrop-tex { display: none; }
+  [data-texture="dots"] .backdrop-tex {
+    background-image: radial-gradient(var(--tex-dot) 1px, transparent 1.6px);
+    background-size: 26px 26px;
+  }
+  [data-texture="grid"] .backdrop-tex {
+    background-image:
+      linear-gradient(var(--tex-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--tex-line) 1px, transparent 1px),
+      linear-gradient(var(--tex-dot) 1px, transparent 1px),
+      linear-gradient(90deg, var(--tex-dot) 1px, transparent 1px);
+    background-size: 132px 132px, 132px 132px, 26.4px 26.4px, 26.4px 26.4px;
+  }
+  [data-texture="radar"] .backdrop-tex {
+    background-image: repeating-radial-gradient(circle at 90% -6%,
+      transparent 0 46px, var(--tex-line) 46px 47px);
+  }
+  [data-texture="scan"] .backdrop-tex {
+    background-image: repeating-linear-gradient(0deg,
+      var(--tex-line) 0 1px, transparent 1px 5px);
+  }
+  [data-texture="crt"] .backdrop-tex {
+    background-image: repeating-linear-gradient(0deg,
+      rgba(0,0,0,0.34) 0 1px, transparent 1px 3px);
+    mix-blend-mode: soft-light;
+  }
+  [data-texture="led"] .backdrop-tex {
+    background-image:
+      radial-gradient(circle, var(--tex-dot) 1.1px, transparent 1.6px),
+      repeating-linear-gradient(0deg, rgba(0,0,0,0.16) 0 1px, transparent 1px 4px);
+    background-size: 13px 13px, 100% 4px;
+  }
+  [data-texture="contours"] .backdrop-tex {
+    background-image: var(--tex-contours);
+    background-size: 760px 760px;
+    background-position: 60% 0;
+  }
+  .board-head { display:flex; align-items:flex-end; justify-content:space-between; gap:2rem; flex-wrap:wrap; margin-bottom:2.4rem; }
+  .board-eyebrow { font-family:var(--font-mono); font-size:0.72rem; letter-spacing:0.3em; text-transform:uppercase; color:#9fc6ea; margin-bottom:1rem; display:flex; align-items:center; gap:0.7rem; }
+  .live-dot-green { width:8px; height:8px; border-radius:50%; background:#4fb87a; flex:none; --pc:rgba(79,184,122,.5); animation:boardDotPulse 2s infinite; }
+  .board-title { font-family:var(--font-display); font-weight:300; font-size:clamp(2.4rem,5vw,4.4rem); line-height:0.96; letter-spacing:-0.025em; color:#eef4fb; }
+  .board-clock-time { font-family:var(--font-sans); font-weight:600; font-size:2.1rem; line-height:1; font-variant-numeric:tabular-nums; color:#eef4fb; }
+  .board-clock-sub { font-family:var(--font-mono); font-size:0.66rem; letter-spacing:0.12em; text-transform:uppercase; color:rgba(233,241,248,0.55); margin-top:0.5rem; }
+  .board-tabs { display:inline-flex; position:relative; padding:0.28rem; border-radius:999px; background:rgba(255,255,255,0.06); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.1); }
+  .board-tabs button { position:relative; z-index:2; border:0; background:transparent; cursor:pointer; font-family:var(--font-mono); font-size:0.68rem; letter-spacing:0.14em; text-transform:uppercase; padding:0.5rem 1.05rem; border-radius:999px; transition:color .25s; color:rgba(233,241,248,0.6); }
+  .board-tabs button[aria-selected="true"] { color:#0b1827; }
+  .board-tab-pill { position:absolute; z-index:1; top:0.28rem; bottom:0.28rem; left:0; border-radius:999px; background:#e9f1f8; transition:transform .42s cubic-bezier(.5,1.4,.4,1), width .42s cubic-bezier(.5,1.4,.4,1); }
+  .board-cols, .fb-row { display:grid; grid-template-columns:5.4rem 6.4rem 1fr 5rem 8.8rem; align-items:center; gap:1.2rem; }
+  .board-cols { padding:0 0.2rem 0.7rem; font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.18em; text-transform:uppercase; color:rgba(233,241,248,0.55); border-bottom:1px solid rgba(255,255,255,0.1); }
+  .board-rows { display:flex; flex-direction:column; }
+  .fb-row { padding:0.95rem 0.2rem; border-bottom:1px solid rgba(255,255,255,0.1); position:relative; opacity:0; transform:perspective(700px) rotateX(-72deg); transform-origin:top center; }
+  .fb-row.in { opacity:1; transform:none; transition:opacity .5s ease, transform .55s cubic-bezier(.2,.8,.25,1); }
+  .flap-chip { display:inline-block; white-space:nowrap; font-family:var(--font-sans); font-weight:600; position:relative; background:linear-gradient(#1c3047,#16273a); border-radius:4px; padding:0.36rem 0.55rem; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.1), 0 1px 3px rgba(0,0,0,0.4); letter-spacing:0; color:#f4f9ff; font-variant-numeric:tabular-nums; }
+  .flap-chip::after { content:''; position:absolute; left:0; right:0; top:50%; height:1px; background:rgba(0,0,0,0.5); box-shadow:0 1px 0 rgba(255,255,255,0.06); }
+  .fb-time .flap-chip { font-size:1.12rem; }
+  .fb-flight .flap-chip { font-size:0.92rem; background:linear-gradient(#16273a,#122036); }
+  .fb-city { font-family:var(--font-display); font-weight:400; font-size:1.35rem; letter-spacing:-0.01em; line-height:1; color:#eef4fb; }
+  .fb-dir { font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.16em; font-weight:700; display:inline-flex; align-items:center; gap:0.4rem; }
+  .fb-dir.dep { color:#8fc0ea; }
+  .fb-dir.arr { color:#e0a86a; }
+  .fb-status { justify-self:start; display:inline-flex; align-items:center; gap:0.55rem; font-family:var(--font-mono); font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; white-space:nowrap; }
+  .fb-status .st-dot { width:8px; height:8px; border-radius:50%; flex:none; background:currentColor; --pc:currentColor; }
+  .fb-status.is-live .st-dot { animation:boardDotPulse 1.9s infinite; }
+  .fb-status .st-strike { text-decoration:line-through; opacity:0.55; margin-right:0.4rem; color:rgba(233,241,248,0.55); }
+  .fb-status[data-st="scheduled"],.fb-status[data-st="ontime"],.fb-status[data-st="boarding"] { color:#5fcf8e; }
+  .fb-status[data-st="enroute"] { color:#8fc0ea; }
+  .fb-status[data-st="departed"] { color:#6a9dbe; }
+  .fb-status[data-st="landed"]   { color:#6abf8a; }
+  .fb-status[data-st="delayed"]  { color:#e89163; }
+  .board-foot { margin-top:2.6rem; display:flex; justify-content:space-between; align-items:center; gap:1.5rem; flex-wrap:wrap; }
+  .board-legend { display:flex; gap:1.3rem; flex-wrap:wrap; font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; color:rgba(233,241,248,0.55); }
+  .board-legend .lg { display:flex; align-items:center; gap:0.45rem; }
+  .board-legend .sw { width:9px; height:9px; border-radius:50%; flex:none; }
+  .board-link { font-family:var(--font-mono); font-size:0.74rem; letter-spacing:0.16em; text-transform:uppercase; text-decoration:none; display:inline-flex; align-items:center; gap:0.6rem; padding-bottom:0.3rem; border-bottom:1px solid currentColor; transition:gap .25s; color:#eef4fb; }
+  .board-link:hover { gap:1rem; }
+  .board-arrow { transition:transform .25s; display:inline-block; }
+  .board-link:hover .board-arrow { transform:translateX(4px); }
+  @media (max-width:720px) {
+    .board-cols,.fb-row { grid-template-columns:4.4rem 1fr 8rem; }
+    .board-cols .c-flight,.board-cols .c-dir,.fb-flight,.fb-dir { display:none; }
+  }
+  @media (prefers-reduced-motion:reduce) {
+    .fb-row { opacity:1 !important; transform:none !important; transition:none !important; }
+    .live-dot-green,.fb-status.is-live .st-dot { animation:none !important; }
+  }
+</style>
+
+<script is:inline define:vars={{ boardFlights: flightsToday }}>
+(function () {
+  var STATUS = {
+    scheduled:{ label:'Scheduled', live:false },
+    ontime:   { label:'On time',   live:false },
+    boarding: { label:'Boarding',  live:true  },
+    enroute:  { label:'En route',  live:true  },
+    landed:   { label:'Landed',    live:false },
+    departed: { label:'Departed',  live:false },
+    delayed:  { label:'Delayed',   live:true  }
+  };
+
+  // Seed from SSR so the board is instant on first paint.
+  // Subsequent updates come from polling /api/flights-today.json.
+  var FLIGHTS = boardFlights;
+  var activeFilter = 'ALL';
+
+  var GLYPHS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  function scramble(el, final, delay) {
+    if (!el) return;
+    if (window.matchMedia('(prefers-reduced-motion:reduce)').matches) { el.textContent = final; return; }
+    var locked = 0, frames = 0;
+    el.textContent = final.replace(/[^\s]/g, ' ');
+    setTimeout(function () {
+      var iv = setInterval(function () {
+        frames++;
+        if (frames % 2 === 0) locked = Math.min(final.length, locked + 1);
+        var out = '';
+        for (var i = 0; i < final.length; i++) {
+          var c = final[i];
+          out += (i < locked || c === ' ' || c === ':') ? c : GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+        }
+        el.textContent = out;
+        if (locked >= final.length) { clearInterval(iv); el.textContent = final; }
+      }, 45);
+    }, delay);
+  }
+
+  function render(filter, animate) {
+    activeFilter = filter;
+    var wrap = document.getElementById('board-rows');
+    if (!wrap) return;
+    wrap.innerHTML = '';
+    FLIGHTS.filter(function (f) { return filter === 'ALL' || f.dir === filter; })
+      .forEach(function (f, i) {
+        var s = STATUS[f.st] || { label: f.st, live: false };
+        var arrow = f.dir === 'DEP' ? '↗' : '↘';
+        var stHtml = (f.st === 'delayed' && f.delayTo)
+          ? '<span class="st-strike">' + f.t + '</span> ' + f.delayTo
+          : s.label;
+        var row = document.createElement('div');
+        row.className = 'fb-row';
+        row.innerHTML =
+          '<div class="fb-time"><span class="flap-chip">' + f.t + '</span></div>' +
+          '<div class="fb-flight"><span class="flap-chip">' + f.f + '</span></div>' +
+          '<div class="fb-route"><span class="fb-city">' + f.city + '</span></div>' +
+          '<div class="fb-dir ' + (f.dir === 'DEP' ? 'dep' : 'arr') + '"><span>' + arrow + '</span>' + f.dir + '</div>' +
+          '<div class="fb-status' + (s.live ? ' is-live' : '') + '" data-st="' + f.st + '"><span class="st-dot"></span>' + stHtml + '</div>';
+        wrap.appendChild(row);
+        if (animate !== false) {
+          setTimeout(function () { row.classList.add('in'); }, 60 + i * 70);
+          scramble(row.querySelector('.fb-time .flap-chip'), f.t, 120 + i * 70);
+          scramble(row.querySelector('.fb-flight .flap-chip'), f.f, 200 + i * 70);
+        } else {
+          row.classList.add('in');
+        }
+      });
+  }
+
+  // ── Hero panel sync ──────────────────────────────────────────────
+  var CARRIER = { EI: 'Aer Lingus Regional', LM: 'Loganair' };
+
+  function updateHero() {
+    // Departures list — upcoming only (not departed)
+    var ul = document.getElementById('hero-deps');
+    if (ul) {
+      var deps = FLIGHTS.filter(function (f) { return f.dir === 'DEP' && f.st !== 'departed'; }).slice(0, 3);
+      ul.innerHTML = deps.map(function (f) {
+        var carrier = CARRIER[f.f.split(' ')[0]] || '';
+        var lbl = f.st === 'delayed' && f.delayTo ? '→ ' + f.delayTo
+                : f.st === 'ontime'   ? 'On time'
+                : f.st === 'boarding' ? 'Boarding'
+                : 'Scheduled';
+        var tone = f.st === 'delayed' ? 'warn' : 'ok';
+        return '<li class="ops-board-row">' +
+          '<span class="b-time">' + f.t + '</span>' +
+          '<span class="b-dest">' + f.city + '</span>' +
+          '<span class="b-status ' + tone + '">' + lbl + '</span>' +
+          '<span class="b-flight">' + f.f + ' · ' + carrier + '</span>' +
+          '</li>';
+      }).join('');
+    }
+
+    // Next arrival footer
+    var arrEl = document.getElementById('hero-next-arr');
+    if (arrEl) {
+      var arr = FLIGHTS.find(function (f) { return f.dir === 'ARR' && f.st !== 'landed'; });
+      if (arr) {
+        var stLbl = arr.st === 'landed' ? 'Landed' : arr.st === 'enroute' ? 'En route' : 'Scheduled';
+        arrEl.innerHTML = 'Next arrival · ' + arr.t + ' ' + arr.city +
+          ' · <span style="color:var(--hi-soft)">' + stLbl + '</span>';
+      } else {
+        arrEl.textContent = 'No more arrivals today';
+      }
+    }
+  }
+
+  // Poll /api/flights-today.json every 60 s.
+  // When the FIDS tab writes fresh data there, board + hero both update silently.
+  function fetchFlights() {
+    fetch('/api/flights-today.json?_=' + Date.now())
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data && Array.isArray(data.flights)) {
+          FLIGHTS = data.flights;
+          render(activeFilter, false);
+          updateHero();
+        }
+      })
+      .catch(function () {});
+  }
+  setInterval(fetchFlights, 60000);
+
+  function tick() {
+    var el = document.getElementById('board-clock');
+    if (!el) return;
+    el.textContent = new Date().toLocaleTimeString('en-IE', {
+      timeZone: 'Europe/Dublin', hour12: false,
+      hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+  }
+  tick(); setInterval(tick, 1000);
+
+  var tabsEl = document.getElementById('board-tabs');
+  if (tabsEl) {
+    var btns = Array.prototype.slice.call(tabsEl.querySelectorAll('button'));
+    var pill = tabsEl.querySelector('.board-tab-pill');
+    function movePill(btn) {
+      if (!pill || !btn) return;
+      pill.style.width = btn.offsetWidth + 'px';
+      pill.style.transform = 'translateX(' + (btn.offsetLeft - 4) + 'px)';
+    }
+    btns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        btns.forEach(function (b) { b.setAttribute('aria-selected', b === btn ? 'true' : 'false'); });
+        movePill(btn);
+        render(btn.getAttribute('data-f'), true);
+      });
+    });
+    movePill(btns[0]);
+    window.addEventListener('resize', function () {
+      var a = tabsEl.querySelector('[aria-selected="true"]'); if (a) movePill(a);
+    });
+    if (document.fonts) document.fonts.ready.then(function () {
+      var a = tabsEl.querySelector('[aria-selected="true"]'); if (a) movePill(a);
+    });
+  }
+
+  render('ALL', true);
+  updateHero();
+})();
+</script>
+
 </BaseLayout>

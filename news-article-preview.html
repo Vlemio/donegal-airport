@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>News Article — Current Layout · Donegal Airport</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet" />
+<style>
+  /* ── Reset ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ── Tokens (matches global.css Atlantic Daylight palette) ── */
+  :root {
+    --ink:      #181d16;
+    --surface:  #f3f2ee;
+    --atlantic: #1a4a6e;
+    --mute:     #56605a;
+    --sand:     #8b6e4e;
+    --line:     rgba(24,29,22,0.11);
+
+    --font-display: "Playfair Display", ui-serif, Georgia, serif;
+    --font-mono:    "Space Mono", ui-monospace, monospace;
+    --font-body:    -apple-system, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  body {
+    background: var(--surface);
+    color: var(--ink);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Fixed back link (desktop) ── */
+  .back-fixed {
+    position: fixed;
+    top: 1.5rem;
+    left: 1.5rem;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(0,0,0,0.40);
+    backdrop-filter: blur(6px);
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.25rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #fff;
+    text-decoration: none;
+    transition: background 0.2s;
+  }
+  .back-fixed:hover { background: rgba(0,0,0,0.60); }
+
+  /* ── Hero ── */
+  .hero {
+    position: relative;
+    height: 68vh;
+    min-height: 440px;
+    overflow: hidden;
+  }
+  .hero__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 50% 50%;
+    display: block;
+    user-select: none;
+  }
+  .hero__gradient {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.10) 40%, transparent 100%);
+  }
+  .hero__title-block {
+    pointer-events: none;
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 8rem 1.5rem 2.5rem;
+  }
+  /* mobile back (shown when fixed pill is hidden) */
+  .back-mobile {
+    display: none;
+    margin-bottom: 1.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.60);
+    text-decoration: none;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .hero__meta {
+    margin-bottom: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.60);
+  }
+  .hero__h1 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(2rem, 5vw, 4rem);
+    line-height: 1.05;
+    color: #fff;
+    max-width: 48rem;
+  }
+
+  /* ── Article body ── */
+  .article {
+    max-width: 42rem;      /* max-w-2xl ≈ 672px */
+    margin: 0 auto;
+    padding: 4rem 1.5rem;
+  }
+  .article__lead {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: clamp(1.35rem, 2.5vw, 1.75rem);
+    line-height: 1.35;
+    color: var(--ink);
+    margin-bottom: 3rem;
+  }
+  .article__divider {
+    width: 4rem;
+    height: 1px;
+    background: var(--atlantic);
+    margin-bottom: 3rem;
+  }
+  .article__body {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .article__body p {
+    font-size: 1.05rem;
+    line-height: 1.75;
+    color: rgba(24,29,22,0.80);
+  }
+  .article__footer {
+    margin-top: 5rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--line);
+  }
+  .article__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--atlantic);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .article__back:hover { color: var(--ink); }
+
+  /* ── Layout annotation overlay ── */
+  .annotation {
+    position: relative;
+    outline: 2px dashed rgba(26,74,110,0.35);
+    outline-offset: -2px;
+  }
+  .annotation::after {
+    content: attr(data-label);
+    position: absolute;
+    top: 0; right: 0;
+    background: rgba(26,74,110,0.85);
+    color: #fff;
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.5rem;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  @media (max-width: 768px) {
+    .back-fixed { display: none; }
+    .back-mobile { display: flex; }
+    .hero__title-block { padding: 6rem 1.5rem 2rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Fixed pill (desktop) -->
+<a href="#" class="back-fixed">← All news</a>
+
+<!-- ══════════════════════════════════════════
+     HERO — 68vh full-bleed photo + title overlay
+     ══════════════════════════════════════════ -->
+<section class="hero annotation" data-label="hero · 68vh · overflow-hidden">
+
+  <!-- Photo placeholder (replace src with real image) -->
+  <img
+    class="hero__img"
+    src="https://images.unsplash.com/photo-1448630360428-65456885c650?w=1600&q=80"
+    alt="Donegal Airport"
+  />
+
+  <!-- Bottom gradient -->
+  <div class="hero__gradient"></div>
+
+  <!-- Title block (bottom-left of hero) -->
+  <div class="hero__title-block">
+    <!-- Mobile back link -->
+    <a href="#" class="back-mobile">← All news</a>
+
+    <!-- Category · Date -->
+    <p class="hero__meta">
+      Sustainability &nbsp;·&nbsp; 21 April 2026
+    </p>
+
+    <!-- Article headline -->
+    <h1 class="hero__h1">
+      ACA Level 4 Transformation confirmed — a first for Ireland.
+    </h1>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════
+     ARTICLE — max-w-2xl centred column
+     ══════════════════════════════════════════ -->
+<article class="article">
+
+  <!-- Lead paragraph — display font, large -->
+  <p class="article__lead annotation" data-label="lead · display · 2xl-3xl">
+    Level 4 is the highest tier in airport carbon accreditation.
+    No airport on this island had reached it before.
+  </p>
+
+  <!-- Atlantic-blue rule -->
+  <div class="article__divider annotation" data-label="divider · 64px · atlantic blue"></div>
+
+  <!-- Body paragraphs -->
+  <div class="article__body annotation" data-label="body · 1.05rem · space-y-6">
+    <p>
+      Donegal Airport became the first airport in Ireland to achieve Level 4 Transformation
+      certification in the Airport Carbon Accreditation programme. The programme runs from
+      Level 1 to Level 4 — most airports stop at Level 2 or 3.
+    </p>
+    <p>
+      Level 4 requires more than internal improvements. It asks airports to extend
+      accountability across the full supply chain — airlines, ground handlers, concessions,
+      contractors. Achieving it requires independent audit, not self-declaration.
+    </p>
+    <p>
+      The certification is backed by concrete targets: a 70% reduction in Scope 1 and Scope 2
+      emissions by 2030, and net-zero across all emission scopes by 2050. Ongoing initiatives
+      include LED lighting upgrades across the terminal, solar PV installation, and electric
+      vehicle deployment on the apron.
+    </p>
+    <p>
+      The accreditation is issued by Airports Council International. It reflects years of
+      staff and stakeholder commitment — and will require the same to maintain.
+    </p>
+  </div>
+
+  <!-- Footer nav -->
+  <div class="article__footer annotation" data-label="footer nav · border-t · mt-20">
+    <a href="#" class="article__back">← Back to all news</a>
+  </div>
+
+</article>
+
+<!-- ══════════════════════════════════════════
+     SPEC SUMMARY (for Claude Design)
+     ══════════════════════════════════════════ -->
+<div style="background:#1a4a6e; color:#eef4fb; padding:2.5rem; font-family:var(--font-mono); font-size:0.72rem; line-height:1.9; letter-spacing:0.06em;">
+  <p style="font-size:0.85rem; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; margin-bottom:1.5rem;">
+    CURRENT SPEC · src/pages/news/[slug].astro
+  </p>
+  <p>HERO ················ height: 68vh · min-height: 440px · overflow: hidden</p>
+  <p>HERO PHOTO ·········· object-fit: cover · object-position: configurable per article</p>
+  <p>HERO GRADIENT ······· linear-gradient(to-top) · black/65 → black/10 → transparent</p>
+  <p>HERO META ··········· font-mono · 0.7rem · tracking-[0.22em] · white/60</p>
+  <p>HERO HEADLINE ······· font-display · clamp(2rem,5vw,4rem) · white · max-w-3xl</p>
+  <p>BACK LINK (desktop) · fixed top-6 left-6 · pill: black/40 backdrop-blur · mono xs</p>
+  <p>BACK LINK (mobile) ·· inside hero, above meta · white/60</p>
+  <p>─────────────────────────────────────────────────────────────</p>
+  <p>ARTICLE COLUMN ······ max-w-2xl (42rem) · mx-auto · px-6 · py-16</p>
+  <p>LEAD ················ font-display · clamp(1.35rem,2.5vw,1.75rem) · leading-snug</p>
+  <p>DIVIDER ············· h-px · w-16 · bg-atlantic (#1a4a6e) · mb-12</p>
+  <p>BODY TEXT ··········· font-body · 1.05rem · leading-relaxed · ink/80 · space-y-6</p>
+  <p>FOOTER NAV ·········· border-t border-line · mt-20 · pt-10</p>
+  <p>BACK LINK (article) · font-mono · xs · atlantic · hover→ink</p>
+  <p>─────────────────────────────────────────────────────────────</p>
+  <p>FONTS ··············· display: PP Editorial New → Bricolage Grotesque (fallback)</p>
+  <p>                      mono: Space Mono · body: Switzer → Inter Variable (fallback)</p>
+  <p>PALETTE ············· ink #181d16 · surface #f3f2ee · atlantic #1a4a6e</p>
+  <p>                      mute #56605a · sand #8b6e4e · line rgba(24,29,22,0.11)</p>
+  <p>─────────────────────────────────────────────────────────────</p>
+  <p>DRAG-TO-REPOSITION ·· photo has JS drag handler to adjust object-position live</p>
+  <p>                      readout shown bottom-right of hero (dev tool, hide in redesign)</p>
+</div>
+
+</body>
+</html>

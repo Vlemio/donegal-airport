@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Car-hire animation prototype</title>
+<style>
+  :root{
+    --bg:#f3f2ee; --ink:#181d16; --mute:#56605a; --line:rgba(24,29,22,.11);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;}
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 24px 90px;}
+  .label{font-family:ui-monospace,Menlo,monospace;font-size:13px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.3em;color:#1a4a6e;}
+  h1{font-size:clamp(2.4rem,5vw,4rem);font-weight:400;line-height:1.02;margin:.35em 0 0;}
+  .sub{color:var(--mute);max-width:38rem;margin-top:1rem;font-size:1.05rem;}
+
+  .stage{position:relative;margin-top:44px;height:560px;overflow:hidden;border-radius:18px;}
+  .stage canvas{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;}
+
+  /* 2x2 grid of final cards */
+  .grid{position:absolute;inset:0;z-index:2;display:grid;
+    grid-template-columns:1fr 1fr;gap:14px;align-content:center;
+    padding:24px;max-width:880px;margin:0 auto;left:0;right:0;}
+  /* final cards — text on the left, brand symbol pinned right, rounded corners */
+  .card{position:relative;border-radius:14px;overflow:hidden;display:flex;align-items:stretch;
+    opacity:0;transform:scale(.96);box-shadow:0 26px 50px -22px rgba(0,0,0,.4);}
+  .card .overlay{flex:1;min-width:0;z-index:2;padding:26px;
+    display:flex;flex-direction:column;justify-content:space-between;}
+  .card .overlay ul{list-style:none;margin:0;padding:0;}
+  .card .overlay li{font-size:.8rem;line-height:1.5;color:#fff;
+    text-shadow:0 1px 8px rgba(0,0,0,.5);}
+  .card .overlay .book{margin-top:14px;font-family:ui-monospace,Menlo,monospace;
+    font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.18em;
+    color:#fff;text-shadow:0 1px 8px rgba(0,0,0,.5);}
+  .card .logobox{flex:0 0 36%;display:flex;align-items:center;justify-content:flex-end;padding:16px;}
+  .card .logobox img{max-width:100%;max-height:58%;object-fit:contain;opacity:1;}
+
+  /* driving cars */
+  .car{position:absolute;left:0;top:0;z-index:4;will-change:transform;}
+  .car .body{display:block;width:200px;height:auto;
+    filter:drop-shadow(0 12px 14px rgba(0,0,0,.28));}
+  .car.flip .body{transform:scaleX(-1);}
+  .car .roof{position:absolute;top:50%;height:auto;transform:translate(-50%,-50%);}
+
+  .controls{margin-top:26px;display:flex;gap:12px;align-items:center}
+  button{font-family:ui-monospace,Menlo,monospace;font-size:.72rem;font-weight:700;
+    text-transform:uppercase;letter-spacing:.14em;cursor:pointer;
+    border:1px solid var(--line);background:#fff;color:var(--ink);
+    padding:12px 20px;border-radius:999px;transition:opacity .2s;}
+  button:hover{opacity:.7}
+  .hint{color:var(--mute);font-size:.85rem}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <p class="label">Car hire · prototype</p>
+    <h1>Collect from arrivals.</h1>
+    <p class="sub">Each branded car drives in from its side, leaves a fading tyre
+      trail, parks, and transitions into its card.</p>
+
+    <div class="stage" id="stage">
+      <canvas id="trail"></canvas>
+
+      <div class="grid" id="grid">
+        <!-- top-left Enterprise -->
+        <div class="card" data-card="enterprise" style="background:#089759">
+          <div class="overlay">
+            <ul>
+              <li>Ages 25+</li>
+              <li>Pick-up &amp; drop-off at the terminal</li>
+              <li>Business &amp; leisure</li>
+              <li>+353 74 910 3202</li>
+            </ul>
+            <p class="book">Book now ↗</p>
+          </div>
+          <div class="logobox"><img src="/proto/logo-enterprise-white.png" alt="" /></div>
+        </div>
+        <!-- top-right Yuko -->
+        <div class="card" data-card="yuko" style="background:#E62334">
+          <div class="overlay">
+            <ul>
+              <li>Ages 22–70</li>
+              <li>Toyota fleet — manual &amp; automatic</li>
+              <li>Book online via the Yuko app</li>
+              <li>+353 74 912 1385</li>
+            </ul>
+            <p class="book">Book now ↗</p>
+          </div>
+          <div class="logobox"><img src="/proto/logo-yuko-decal.png" alt="" /></div>
+        </div>
+        <!-- bottom-left Europcar -->
+        <div class="card" data-card="europcar" style="background:#009B01">
+          <div class="overlay">
+            <ul>
+              <li>07:30–20:30 daily</li>
+              <li>10% off direct bookings</li>
+              <li>+353 74 970 7000</li>
+              <li>+353 86 199 1651 — after hours</li>
+            </ul>
+            <p class="book">Book now ↗</p>
+          </div>
+          <div class="logobox"><img src="/proto/logo-europcar-white.png" alt="" /></div>
+        </div>
+        <!-- bottom-right GoCar -->
+        <div class="card" data-card="gocar" style="background:#8DC73F">
+          <div class="overlay">
+            <ul>
+              <li>Hourly rental</li>
+              <li>Fuel &amp; insurance included</li>
+              <li>Flexible — no long-term commitment</li>
+            </ul>
+            <p class="book">Book now ↗</p>
+          </div>
+          <div class="logobox"><img src="/proto/logo-gocar-white.png" alt="" /></div>
+        </div>
+      </div>
+
+      <!-- cars (created/positioned by JS) -->
+      <div class="car" data-car="enterprise"><img class="body" src="/proto/car-enterprise.png" alt=""><img class="roof" src="/proto/logo-enterprise-white.png" alt=""></div>
+      <div class="car flip" data-car="yuko"><img class="body" src="/proto/car-yuko.png" alt=""><img class="roof" src="/proto/logo-yuko-decal.png" alt=""></div>
+      <div class="car" data-car="europcar"><img class="body" src="/proto/car-europcar.png" alt=""><img class="roof" src="/proto/logo-europcar-white.png" alt=""></div>
+      <div class="car flip" data-car="gocar"><img class="body" src="/proto/car-gocar.png" alt=""><img class="roof" src="/proto/logo-gocar-white.png" alt=""></div>
+    </div>
+
+    <div class="controls">
+      <button id="replay">▶ Replay</button>
+      <span class="hint">Auto-plays on load</span>
+    </div>
+  </div>
+
+<script>
+  const stage = document.getElementById('stage');
+  const cv = document.getElementById('trail');
+  const ctx = cv.getContext('2d');
+
+  // per-car config: side it enters from, logo size/x on the roof
+  const CFG = {
+    enterprise:{ side:'left',  logoW:54, logoLeft:44 },
+    yuko:      { side:'right', logoW:38, logoLeft:56 },
+    europcar:  { side:'left',  logoW:44, logoLeft:43 },
+    gocar:     { side:'right', logoW:38, logoLeft:56 },
+  };
+
+  const cars = [...document.querySelectorAll('.car')].map(el=>{
+    const name = el.dataset.car;
+    const cfg = CFG[name];
+    const roof = el.querySelector('.roof');
+    roof.style.width = cfg.logoW+'px';
+    roof.style.left = cfg.logoLeft+'%';
+    roof.style.transform = 'translate(-50%,-50%)';
+    return { name, el, cfg, card: document.querySelector(`.card[data-card="${name}"]`) };
+  });
+
+  let W=0,H=0, dpr=Math.min(window.devicePixelRatio||1,2);
+  const easeOutCubic = t => 1 - Math.pow(1-t,3);
+  let raf=0;
+
+  function setup(){
+    W = stage.clientWidth; H = stage.clientHeight;
+    cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+    const sRect = stage.getBoundingClientRect();
+    cars.forEach(c=>{
+      const carW = c.el.querySelector('.body').offsetWidth || 200;
+      const carH = c.el.offsetHeight || carW*0.66;
+      const cardR = c.card.getBoundingClientRect();
+      const cardCx = cardR.left - sRect.left + cardR.width/2;
+      const cardCy = cardR.top  - sRect.top  + cardR.height/2;
+      c.carW = carW; c.carH = carH; c.cy = cardCy;
+      c.endX = cardCx - carW/2;
+      if(c.cfg.side==='left'){ c.startX = -carW - 60; c.dir = 1; }
+      else { c.startX = W + 60; c.dir = -1; }
+      // place at vertical position now
+      c.el.style.transform = `translate(${c.startX}px, ${c.cy - carH/2}px)`;
+      c.el.style.opacity = '1';
+    });
+  }
+
+  function play(){
+    cancelAnimationFrame(raf);
+    setup();
+    ctx.clearRect(0,0,W,H);
+    cars.forEach(c=>{
+      c.card.style.transition='none';
+      c.card.style.opacity='0';
+      c.card.style.transform='scale(.96)';
+    });
+
+    const driveMs=1700, stagger=110;
+    let t0=null, done=0;
+    function frame(ts){
+      if(!t0)t0=ts;
+      ctx.clearRect(0,0,W,H);
+      done=0;
+      cars.forEach((c,idx)=>{
+        const local = Math.min(Math.max((ts-t0-idx*stagger)/driveMs,0),1);
+        const e = easeOutCubic(local);
+        const x = c.startX + (c.endX-c.startX)*e;
+        c.el.style.transform = `translate(${x}px, ${c.cy - c.carH/2}px)`;
+        // tyre trail behind the car
+        const carCx = x + c.carW/2;
+        const rearX = carCx - c.dir*c.carW*0.30;
+        const edgeX = c.dir>0 ? 0 : W;
+        const grad = ctx.createLinearGradient(edgeX,0,rearX,0);
+        grad.addColorStop(0,'rgba(24,29,22,0)');
+        grad.addColorStop(1,'rgba(24,29,22,.18)');
+        ctx.strokeStyle=grad; ctx.lineWidth=4; ctx.lineCap='round';
+        const dy=c.carH*0.16;
+        [c.cy-dy, c.cy+dy].forEach(y=>{ ctx.beginPath(); ctx.moveTo(edgeX,y); ctx.lineTo(rearX,y); ctx.stroke(); });
+        if(local>=1) done++;
+      });
+      if(done<cars.length){ raf=requestAnimationFrame(frame); }
+      else arrive();
+    }
+    raf=requestAnimationFrame(frame);
+  }
+
+  function arrive(){
+    cars.forEach(c=>{
+      c.card.style.transition='opacity .55s ease, transform .55s ease';
+      c.card.style.opacity='1';
+      c.card.style.transform='scale(1)';
+      c.el.style.transition='opacity .5s ease';
+      c.el.style.opacity='0';
+    });
+    const snap=new Image();
+    snap.onload=()=>{ let a=1; const fade=()=>{ a-=0.05; ctx.clearRect(0,0,W,H);
+      if(a>0){ ctx.globalAlpha=a; ctx.drawImage(snap,0,0,W,H); ctx.globalAlpha=1; requestAnimationFrame(fade);} };
+      requestAnimationFrame(fade); };
+    snap.src=cv.toDataURL();
+  }
+
+  document.getElementById('replay').addEventListener('click', play);
+  window.addEventListener('resize', ()=>{ /* re-layout on resize between plays */ });
+  window.addEventListener('load', ()=> setTimeout(play, 450));
+</script>
+</body>
+</html>

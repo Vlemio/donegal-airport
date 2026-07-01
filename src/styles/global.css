@@ -9,6 +9,17 @@
 /* Space Mono — typewriter mono face for airport-style labels */
 @import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap");
 
+/* F-glyph fix: span applied to F/f chars in display headings */
+.f-fix {
+  font-family: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+}
+/* At hero-display size Inter's f top-curve overlaps the preceding glyph —
+   push it right with margin-left and compensate the right side too */
+.hero-display .f-fix {
+  margin-left: 0.07em;
+  margin-right: 0.02em;
+}
+
 /*
   PP Editorial New — display face. Personal-use free, paid for
   commercial. Files must be dropped into /public/fonts/ — see the
@@ -124,6 +135,7 @@
     font-weight: 400;
     line-height: 1.02;
     letter-spacing: -0.018em;
+    font-variant-ligatures: no-common-ligatures;
   }
 
   ::selection {
@@ -407,7 +419,7 @@
 .cfn-hero-content .hero-display {
   font-family: "Bricolage Grotesque Variable", "Bricolage Grotesque",
                system-ui, sans-serif;
-  font-size: clamp(2.6rem, 5.3vw, 76px);
+  font-size: clamp(2.9rem, 6vw, 90px);
   font-weight: 800;
   line-height: 0.96;
   letter-spacing: -0.025em;
@@ -434,7 +446,7 @@
 /* ── Hero CTAs ───────────────────────────────────────────────── */
 .hero-cta {
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 15px;
   letter-spacing: 0.13em;
   text-transform: uppercase;
   color: var(--hi);

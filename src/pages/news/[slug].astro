@@ -1,0 +1,160 @@
+---
+import { getCollection, getEntry } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("news");
+  return entries.map((entry) => ({ params: { slug: entry.id } }));
+}
+
+const { slug } = Astro.params;
+const entry = await getEntry("news", slug);
+if (!entry) return Astro.redirect("/404");
+
+const { title, date, kind, image, imagePosition, lead, body } = entry.data;
+
+const dateFormatted = date.toLocaleDateString("en-GB", {
+  day: "numeric",
+  month: "long",
+  year: "numeric",
+});
+
+const heroBg = image
+  ? (image.startsWith("/") ? image : `/photos/${image}`)
+  : "/photos/intro-airport.webp";
+
+const objPos = imagePosition ?? "50% 50%";
+
+const paragraphs = body.split(/\n\n+/).filter(Boolean);
+---
+
+<BaseLayout title={`${title} · Donegal Airport`} description={lead}>
+  <!-- Back link — fixed top-left -->
+  <a
+    href="/#news"
+    class="fixed left-6 top-6 z-50 hidden items-center gap-2 rounded bg-black/40 px-3 py-1.5 font-mono text-xs uppercase tracking-[0.2em] text-white backdrop-blur-sm transition-colors hover:bg-black/60 lg:flex"
+  >
+    <span>←</span> All news
+  </a>
+
+  <!-- Hero: photo + title overlaid -->
+  <section class="relative h-[68vh] min-h-[440px] overflow-hidden">
+    <!-- Photo -->
+    <img
+      id="hero-img"
+      src={heroBg}
+      alt=""
+      class="h-full w-full object-cover select-none"
+      style={`object-position: ${objPos}`}
+      loading="eager"
+      decoding="sync"
+      draggable="false"
+    />
+
+    <!-- Drag overlay (invisible, captures mouse) -->
+    <div
+      id="pos-overlay"
+      class="absolute inset-0 cursor-grab active:cursor-grabbing"
+      title="Drag to reposition photo"
+    ></div>
+
+    <!-- Gradient: only bottom third darkened for legibility -->
+    <div
+      class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent"
+    ></div>
+
+    <!-- Title block at bottom of hero -->
+    <div class="pointer-events-none absolute bottom-0 left-0 right-0 px-6 pb-10 pt-32 lg:px-12">
+      <!-- mobile back -->
+      <a
+        href="/#news"
+        class="pointer-events-auto mb-6 flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-white/60 transition-colors hover:text-white lg:hidden"
+      >
+        ← All news
+      </a>
+      <p class="mb-4 font-mono text-xs uppercase tracking-[0.22em] text-white/60">
+        {kind} &nbsp;·&nbsp; {dateFormatted}
+      </p>
+      <h1 class="font-display text-4xl leading-[1.05] text-white sm:text-5xl lg:text-[3.5rem] xl:text-[4rem] max-w-3xl">
+        {title}
+      </h1>
+    </div>
+
+    <!-- Position readout -->
+    <div
+      id="pos-readout"
+      class="pointer-events-none absolute bottom-3 right-3 rounded bg-black/60 px-3 py-1.5 font-mono text-xs text-white backdrop-blur-sm select-none"
+    >
+      {objPos}
+    </div>
+  </section>
+
+  <!-- Content -->
+  <article class="mx-auto max-w-2xl px-6 py-16 lg:px-8">
+    <!-- Lead -->
+    <p class="mb-12 font-display text-2xl leading-snug text-ink sm:text-3xl">
+      {lead}
+    </p>
+
+    <!-- Divider -->
+    <div class="mb-12 h-px w-16 bg-atlantic"></div>
+
+    <!-- Body paragraphs -->
+    <div class="space-y-6">
+      {paragraphs.map((p) => (
+        <p class="font-body text-[1.05rem] leading-relaxed text-ink/80">
+          {p}
+        </p>
+      ))}
+    </div>
+
+    <!-- Footer nav -->
+    <div class="mt-20 border-t border-line pt-10">
+      <a
+        href="/#news"
+        class="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.22em] text-atlantic transition-colors hover:text-ink"
+      >
+        ← Back to all news
+      </a>
+    </div>
+  </article>
+</BaseLayout>
+
+<script>
+  const img = document.getElementById("hero-img") as HTMLImageElement | null;
+  const overlay = document.getElementById("pos-overlay");
+  const readout = document.getElementById("pos-readout");
+  if (!img || !overlay || !readout) throw new Error("missing elements");
+
+  // Parse initial position from the rendered style
+  const initial = img.style.objectPosition || "50% 50%";
+  const [ix, iy] = initial.split(" ").map((v) => parseFloat(v));
+  let posX = isNaN(ix) ? 50 : ix;
+  let posY = isNaN(iy) ? 50 : iy;
+
+  let dragging = false;
+  let startX = 0, startY = 0;
+
+  function clamp(v: number) { return Math.max(0, Math.min(100, v)); }
+
+  overlay.addEventListener("mousedown", (e) => {
+    dragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    e.preventDefault();
+  });
+
+  window.addEventListener("mousemove", (e) => {
+    if (!dragging) return;
+    const rect = overlay.getBoundingClientRect();
+    posX = clamp(posX - (e.clientX - startX) / rect.width * 100);
+    posY = clamp(posY - (e.clientY - startY) / rect.height * 100);
+    startX = e.clientX;
+    startY = e.clientY;
+    const val = `${Math.round(posX)}% ${Math.round(posY)}%`;
+    img.style.objectPosition = val;
+    readout.textContent = val;
+  });
+
+  window.addEventListener("mouseup", () => { dragging = false; });
+</script>

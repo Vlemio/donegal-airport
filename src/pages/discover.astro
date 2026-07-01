@@ -846,10 +846,6 @@ const islands = [
       style="display:block;width:100%;height:min(88vh,860px);min-height:600px;border:none;"
       allow="fullscreen"
     ></iframe>
-    {/* Scroll shield: sits over the iframe so wheel events reach the parent
-        synchronously. Disappears on click so the map becomes interactive.
-        Re-appears on the next parent scroll to restore smooth page scrolling. */}
-    <div id="map-shield" style="position:absolute;top:0;right:298px;bottom:0;left:0;z-index:10;cursor:pointer;" aria-hidden="true"></div>
   </section>
 
 
@@ -1225,25 +1221,23 @@ const islands = [
       }, { threshold: 0 });
       wawVis.observe(frame);
 
-      // Scroll shield: a transparent div over the iframe that captures wheel
-      // events on the parent synchronously, preventing the iframe from swallowing
-      // them. Dismissed on click (map becomes interactive); re-shown on next scroll.
-      const shield = document.getElementById('map-shield');
-      if (shield) {
-        shield.addEventListener('click', () => { shield.style.display = 'none'; });
-        // Ctrl+scroll on the shield: forward zoom to iframe without requiring a click first
-        shield.addEventListener('wheel', (e) => {
-          if (e.ctrlKey) {
-            e.preventDefault();
-            frame.contentWindow?.postMessage(
-              { type: 'don-wheel-zoom', deltaY: e.deltaY, deltaMode: e.deltaMode }, '*'
-            );
-          }
-        }, { passive: false });
-        window.addEventListener('scroll', () => {
-          if (shield.style.display === 'none') shield.style.display = '';
-        }, { passive: true });
-      }
+      // While the page is scrolling, disable pointer-events on the iframe so wheel
+      // events reach the parent directly (no postMessage latency = smooth scroll).
+      // Ctrl+scroll is forwarded manually so map zoom still works from outside the iframe.
+      let _scrollTimer = 0;
+      window.addEventListener('scroll', () => {
+        frame.style.pointerEvents = 'none';
+        clearTimeout(_scrollTimer);
+        _scrollTimer = window.setTimeout(() => { frame.style.pointerEvents = ''; }, 180);
+      }, { passive: true });
+
+      window.addEventListener('wheel', (e) => {
+        if (!e.ctrlKey) return;
+        const r = frame.getBoundingClientRect();
+        if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
+        e.preventDefault();
+        frame.contentWindow?.postMessage({ type: 'don-wheel-zoom', deltaY: e.deltaY, deltaMode: e.deltaMode }, '*');
+      }, { passive: false });
 
       // Replay intro animation every time "Explore destinations →" is clicked
       const exploreLink = document.querySelector<HTMLAnchorElement>('a[href="#destinations"]');

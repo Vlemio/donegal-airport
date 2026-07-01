@@ -57,7 +57,7 @@
       <span style="width:26px;height:1px;background:#cbb67e;"></span>Donegal Airport · Carrickfinn
     </div>
     <h1 style="margin:8px 0 0;font-family:Marcellus,serif;font-weight:400;color:#fbf6ea;font-size:54px;line-height:.98;letter-spacing:.01em;text-shadow:0 2px 24px rgba(0,0,0,.45);">Places to visit</h1>
-    <p style="margin:12px 0 0;max-width:480px;color:#dfe6dc;font-size:15px;line-height:1.5;text-shadow:0 1px 10px rgba(0,0,0,.5);">The wild northwest of Ireland in real relief — filter, fly and explore. <span style="opacity:.7;font-size:13px;">Ctrl+scroll to zoom &nbsp;·&nbsp; Ctrl+Alt+drag to rotate</span></p>
+    <p style="margin:12px 0 0;max-width:480px;color:#dfe6dc;font-size:15px;line-height:1.5;text-shadow:0 1px 10px rgba(0,0,0,.5);">The wild northwest of Ireland in real relief — filter, fly and explore. <span style="opacity:.7;font-size:13px;">Ctrl+scroll to zoom &nbsp;·&nbsp; Ctrl+drag to tilt &amp; rotate</span></p>
   </header>
 
   <!-- Side panel -->
@@ -75,7 +75,7 @@
 
   <!-- Scroll hints -->
   <div id="hint-ctrl" class="don-hint">Ctrl + scroll to zoom</div>
-  <div id="hint-alt" class="don-hint">Ctrl + Alt + drag to tilt</div>
+  <div id="hint-alt" class="don-hint">Ctrl + drag to tilt &amp; rotate</div>
 
   <!-- Loading screen -->
   <div id="don-loading" style="position:absolute;inset:0;background:#0e1c17;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:30;animation:fadein .3s;">
@@ -735,7 +735,7 @@ function initMap() {
   let hintCtrlTimeout = null, hintAltTimeout = null;
 
   canvas.addEventListener('wheel', e => {
-    if(e.ctrlKey && !e.altKey) {
+    if(e.ctrlKey) {
       e.preventDefault();
       e.stopPropagation();
       const delta = e.deltaY * (e.deltaMode === 1 ? 20 : 1);
@@ -748,22 +748,6 @@ function initMap() {
     }
   }, { passive: false });
 
-  // Custom: Ctrl+Alt+drag = vertical pitch tilt (drag up = more 3D, drag down = flatter)
-  let tiltState = null, tiltRaf = 0, tiltPending = 0;
-  canvas.addEventListener('mousedown', e => {
-    if(e.ctrlKey && e.altKey) {
-      tiltState = { y: e.clientY, pitch: map.getPitch() };
-      e.preventDefault();
-      if(hintAlt) { hintAlt.classList.add('show'); clearTimeout(hintAltTimeout); hintAltTimeout = setTimeout(() => hintAlt.classList.remove('show'), 2600); }
-    }
-  });
-  window.addEventListener('mousemove', e => {
-    if(!tiltState) return;
-    tiltPending = Math.max(0, Math.min(80, tiltState.pitch - (e.clientY - tiltState.y) * 0.4));
-    if(tiltRaf) return;
-    tiltRaf = requestAnimationFrame(() => { tiltRaf = 0; map.setPitch(tiltPending); });
-  });
-  window.addEventListener('mouseup', () => { tiltState = null; });
 
   map.on('load', () => {
     try {
@@ -802,6 +786,7 @@ function initMap() {
     document.addEventListener('visibilitychange', () => {
       if(document.hidden) pauseWAWAnim(); else resumeWAWAnim();
     });
+
 
     // Fallback: auto-start if no message received within 10s (standalone / direct open)
     setTimeout(startIntro, 10000);

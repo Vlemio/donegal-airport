@@ -2,9 +2,18 @@
 import { defineConfig } from 'astro/config';
 import fs   from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+// Absolute path of this config file's directory (= project root).
+// Used instead of process.cwd() so the path is correct regardless of
+// which directory the dev server / build is invoked from.
+const __projectRoot = fileURLToPath(new URL('.', import.meta.url));
 
 import tailwindcss from '@tailwindcss/vite';
 import sitemap from '@astrojs/sitemap';
+import vercel from '@astrojs/vercel';
+import react from '@astrojs/react';
+import keystatic from '@keystatic/astro';
 
 // https://astro.build/config
 export default defineConfig({
@@ -12,6 +21,11 @@ export default defineConfig({
   // canonical / sitemap tags can output fully-qualified URLs. Update
   // when the airport's real domain is wired up.
   site: 'https://donegal-airport-git-master-errigal.vercel.app',
+
+  // static (default in Astro 6): all pages pre-rendered. Individual routes
+  // can opt out with `export const prerender = false` — Keystatic uses this
+  // for its admin API. Vercel adapter handles the SSR routes in production.
+  adapter: vercel(),
 
   // English is the default locale and renders WITHOUT a /en/ prefix
   // so the URL the average traveller types stays clean. Irish lives
@@ -32,10 +46,46 @@ export default defineConfig({
     sitemap({
       filter: (page) => !page.endsWith('/404'),
     }),
+
+    // React — required by Keystatic admin UI (its panel is a React app).
+    react(),
+
+    // Keystatic CMS — admin panel at /keystatic (server-rendered only).
+    // In dev: login via Keystatic Cloud (Allow local development is on).
+    // In prod: same login at /keystatic.
+    keystatic(),
   ],
 
   vite: {
+    optimizeDeps: {
+      include: [
+        '@keystatic/core',
+        '@keystatic/core/ui',
+        '@keystatic/astro/ui',
+      ],
+    },
+
     plugins: [
+      // Keystatic's virtual:keystatic-config doesn't resolve in Astro 6's
+      // Environment API client context. This plugin uses Rollup's null-byte
+      // convention to provide it in ALL environments (client + ssr).
+      {
+        name: 'keystatic-config-resolver',
+        resolveId(id) {
+          if (id === 'virtual:keystatic-config') {
+            return '\0virtual:keystatic-config';
+          }
+          return null;
+        },
+        load(id) {
+          if (id === '\0virtual:keystatic-config') {
+            const cfgPath = path.resolve(__projectRoot, 'keystatic.config.ts').replace(/\\/g, '/');
+            return `export { default } from '${cfgPath}';`;
+          }
+          return null;
+        },
+      },
+
       tailwindcss(),
 
       // ── Dev-only trim API ──────────────────────────────────────────────
