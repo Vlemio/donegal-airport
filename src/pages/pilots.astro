@@ -88,7 +88,9 @@ const comms = [
 const ops = [
   ["RFFS", "CAT 5 (scheduled flights) · fire cover during operating hours"],
   ["North apron", "Bitumen / macadam · PCR 134/F/C/X/T"],
-  ["South apron", "Concrete · MTOW 5700 kg"],
+  ["South apron", "Concrete · MTOW 5700 kg · GA parking"],
+  ["Taxiway A", "Asphalt · PCN 23/F/B/X/T · 25 m"],
+  ["Taxiway B", "Concrete · 12 m"],
   ["Fuel", "Jet A1 only · 10000 L bowser"],
   ["Security", "H24"],
   ["PPR", "Required for all flights"],
@@ -153,23 +155,23 @@ const droneZones = [
 
 <BaseLayout title={title} description={description}>
   {/* ─── HERO ─────────────────────────────────────────────────── */}
-  <section class="relative overflow-hidden">
+  <section class="relative isolate flex min-h-[82vh] w-full items-center overflow-hidden">
     <img src="/photos/pilots/pilots-hero.webp" alt="" aria-hidden="true" class="absolute inset-0 h-full w-full object-cover object-center" />
-    <div class="relative mx-auto max-w-7xl px-6 pb-14 pt-40 [text-shadow:0_2px_18px_rgba(0,0,0,0.55)]">
-      <p class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-white/85">Pilots &amp; drones</p>
-      <h1 data-split class="mt-4 max-w-4xl font-display text-[clamp(2.5rem,6vw,5.5rem)] font-normal leading-[0.98] text-white">Operations at CFN.</h1>
-      <p class="mt-7 max-w-2xl text-base leading-relaxed text-white/90 sm:text-lg">
-        Aerodrome reference data, frequencies, the PPR procedure, fees and drone
+    <div class="relative z-10 mx-auto w-full max-w-7xl px-6 py-28 [text-shadow:0_2px_10px_rgba(0,0,0,0.55),0_1px_30px_rgba(0,0,0,0.4)]">
+      <p data-animate="fade-up" class="font-mono text-[0.9rem] font-bold uppercase tracking-[0.28em] text-white">Pilots &amp; drones</p>
+      <h1 data-split class="hero-display mt-6 max-w-4xl font-display text-[clamp(2.75rem,7vw,6.5rem)] font-normal leading-[0.95] text-white">Operations at CFN.</h1>
+      <p data-animate="fade-up" data-animate-delay="0.15" class="mt-8 max-w-2xl text-base font-medium leading-relaxed text-white [text-shadow:0_2px_6px_rgba(0,0,0,0.75),0_1px_16px_rgba(0,0,0,0.6)] sm:text-lg">
+        Aerodrome reference data, frequencies, PPR procedure, fees and drone
         operations in the Donegal (EIDL) control zone — from AIP Ireland AD 2.
       </p>
     </div>
   </section>
 
   {/* ─── ANCHOR NAV ───────────────────────────────────────────── */}
-  <nav class="sticky top-[var(--header-h)] z-30 border-y border-line bg-[color-mix(in_srgb,var(--color-surface)_88%,transparent)] backdrop-blur">
+  <nav class="sticky top-[var(--header-h)] z-30 border-y border-line bg-[color-mix(in_srgb,var(--color-surface-lo)_94%,transparent)] shadow-[0_1px_3px_rgba(24,29,22,0.08)] backdrop-blur">
     <div class="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-6">
       {nav.map((n) => (
-        <a href={`#${n.id}`} data-nav-link={n.id} class="shrink-0 border-b-2 border-transparent py-4 pr-6 font-mono text-[0.7rem] font-bold uppercase tracking-[0.18em] text-mute transition-colors hover:text-ink">{n.label}</a>
+        <a href={`#${n.id}`} data-nav-link={n.id} class="shrink-0 border-b-2 border-transparent py-5 pr-7 font-mono text-[0.82rem] font-bold uppercase tracking-[0.14em] text-ink/70 transition-colors hover:text-atlantic">{n.label}</a>
       ))}
     </div>
   </nav>
@@ -356,22 +358,23 @@ const droneZones = [
   {/* ─── PPR & PROCEDURES ─────────────────────────────────────── */}
   <section id="ppr" class="relative scroll-mt-[calc(var(--header-h)+3.5rem)] overflow-hidden border-t border-line">
     <img src="/photos/pilots/ppr-bg.webp" alt="" aria-hidden="true" class="absolute inset-0 h-full w-full object-cover" />
-    <div class="relative mx-auto max-w-7xl px-6 py-20 [text-shadow:0_2px_16px_rgba(0,0,0,0.6)]">
-      <p data-animate="fade-up" class="font-mono text-base font-bold uppercase tracking-[0.3em] text-[#9ec5e6]">PPR &amp; procedures</p>
+    <div class="absolute inset-0 bg-ink/62"></div>
+    <div class="relative z-10 mx-auto max-w-7xl px-6 py-20 [text-shadow:0_2px_16px_rgba(0,0,0,0.6)]">
+      <p data-animate="fade-up" class="font-mono text-base font-bold uppercase tracking-[0.3em] text-[#bcd8f0]">PPR &amp; procedures</p>
       <h2 data-split class="mt-3 font-display text-[clamp(2.2rem,4vw,3.4rem)] font-normal leading-[1.02] text-white">Call the tower first.</h2>
-      <p data-animate="fade-up" data-animate-delay="0.05" class="mt-5 max-w-2xl text-base leading-relaxed text-white/80">Prior Permission Required for all flights. Contact ATC before planning an arrival or departure at Carrickfinn.</p>
+      <p data-animate="fade-up" data-animate-delay="0.05" class="mt-5 max-w-2xl text-base leading-relaxed text-white/95">Prior Permission Required for all flights. Contact ATC before planning an arrival or departure at Carrickfinn.</p>
 
-      <div class="mt-12 grid gap-px overflow-hidden rounded-xl bg-white/15 sm:grid-cols-3">
-        <div class="group bg-black/30 p-7 backdrop-blur-sm transition-colors duration-300 hover:bg-black/45">
+      <div data-animate="fade-up" class="mt-12 grid gap-px overflow-hidden rounded-xl bg-white/15 sm:grid-cols-3">
+        <div class="group bg-black/35 p-7 transition-colors duration-300 hover:bg-black/50">
           <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">ATC</p>
           <p class="mt-3 inline-block origin-left font-mono text-lg text-white transition-transform duration-300 group-hover:scale-110">+353 74 9548604</p>
           <p class="mt-1 font-mono text-sm text-white/70">atc@donegalairport.ie</p>
         </div>
-        <div class="group bg-black/30 p-7 backdrop-blur-sm transition-colors duration-300 hover:bg-black/45">
+        <div class="group bg-black/35 p-7 transition-colors duration-300 hover:bg-black/50">
           <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">Fax</p>
           <p class="mt-3 inline-block origin-left font-mono text-lg text-white transition-transform duration-300 group-hover:scale-110">+353 74 9562916</p>
         </div>
-        <div class="group bg-black/30 p-7 backdrop-blur-sm transition-colors duration-300 hover:bg-black/45">
+        <div class="group bg-black/35 p-7 transition-colors duration-300 hover:bg-black/50">
           <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">ATIS</p>
           <p class="mt-3 inline-block origin-left font-mono text-lg text-white transition-transform duration-300 group-hover:scale-110">129.930 MHz</p>
           <p class="mt-1 font-mono text-sm text-white/70">Listen before first call</p>
@@ -380,16 +383,16 @@ const droneZones = [
 
       <div data-animate="fade-up" class="mt-10 grid gap-x-12 gap-y-8 lg:grid-cols-3">
         <div>
-          <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-[#9ec5e6]">Arrival</p>
-          <p class="mt-3 text-sm leading-relaxed text-white/80">Clearance to enter the CTR is issued by Donegal ATC on 129.805 MHz. Arriving aircraft call no later than 25 DME IFN. Shannon usually clears descent to the lowest usable level (FL080 / transition level if higher) before hand-off.</p>
+          <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-[#bcd8f0]">Arrival</p>
+          <p class="mt-3 text-sm leading-relaxed text-white/90">Clearance to enter the CTR is issued by Donegal ATC on 129.805 MHz. Arriving aircraft call no later than 25 DME IFN. Shannon usually clears descent to the lowest usable level (FL080 / transition level if higher) before hand-off.</p>
         </div>
         <div>
-          <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-[#9ec5e6]">VFR traffic</p>
-          <p class="mt-3 text-sm leading-relaxed text-white/80">VFR flights need ATC clearance to enter the CTR — Class C within ATS hours, Class G outside. Join as instructed and maintain active listening on 129.805 MHz.</p>
+          <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-[#bcd8f0]">VFR traffic</p>
+          <p class="mt-3 text-sm leading-relaxed text-white/90">VFR flights need ATC clearance to enter the CTR — Class C within ATS hours, Class G outside. Join as instructed and maintain active listening on 129.805 MHz.</p>
         </div>
         <div>
-          <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-[#9ec5e6]">Communication failure</p>
-          <p class="mt-3 text-sm leading-relaxed text-white/80">Act in accordance with ICAO Annex 2. Squawk 7600 and continue as last cleared, or follow the published lost-comms procedure for the arrival in use.</p>
+          <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-[#bcd8f0]">Communication failure</p>
+          <p class="mt-3 text-sm leading-relaxed text-white/90">Act in accordance with ICAO Annex 2. Squawk 7600 and continue as last cleared, or follow the published lost-comms procedure for the arrival in use.</p>
         </div>
       </div>
     </div>
@@ -502,7 +505,7 @@ const droneZones = [
         <a href="https://donegalairport.ie/wp-content/uploads/2026/03/IAA-Drone-Request-Blank-Form.docx" target="_blank" rel="noopener" download class="inline-flex shrink-0 items-center gap-2 self-start rounded-full bg-atlantic px-6 py-3.5 font-mono text-[0.72rem] font-bold uppercase tracking-[0.16em] text-white transition-colors hover:bg-ink sm:self-auto">Download form ↓</a>
       </div>
 
-      <div class="mt-10 flex flex-col gap-6 border-t border-line pt-8 sm:flex-row sm:items-center sm:justify-between">
+      <div data-animate="fade-up" class="mt-10 flex flex-col gap-6 border-t border-line pt-8 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-sand">Aerodrome reference point</p>
           <p class="mt-2 font-mono text-sm text-ink">55°02′39″N 008°20′28″W</p>
@@ -624,6 +627,30 @@ const droneZones = [
       // Map label editor — authoring only. On automatically in local dev,
       // or with ?edit in the URL. Never ships to production visitors.
       if (new URLSearchParams(location.search).has("edit")) initMapEditor();
+
+      // Hero F-glyph size editor — authoring only (?edit). The F is created
+      // at runtime by data-split, so poll until the .f-fix span exists, then
+      // let me resize it with a slider and read back the em value.
+      if (new URLSearchParams(location.search).has("edit")) {
+        let tries = 0;
+        const wait = setInterval(() => {
+          const f = document.querySelector<HTMLElement>("h1.hero-display .f-fix");
+          if (f) { clearInterval(wait); mountFEditor(f); }
+          else if (++tries > 60) clearInterval(wait);
+        }, 100);
+      }
+      function mountFEditor(f: HTMLElement) {
+        let em = 1;
+        const panel = document.createElement("div");
+        panel.style.cssText = "position:fixed;left:14px;bottom:14px;z-index:9999;background:#fff;border:1px solid #1a4a6e;border-radius:10px;padding:10px 12px;box-shadow:0 4px 16px rgba(0,0,0,.18);font:600 12px/1.6 ui-monospace,monospace;color:#1a4a6e;display:flex;gap:10px;align-items:center";
+        panel.innerHTML = 'F size <input type="range" min="0.6" max="1.3" step="0.01" value="1" style="vertical-align:middle"> <span data-f-read></span>';
+        document.body.appendChild(panel);
+        const range = panel.querySelector("input") as HTMLInputElement;
+        const read = panel.querySelector("[data-f-read]") as HTMLElement;
+        const apply = () => { f.style.fontSize = em + "em"; read.textContent = "font-size: " + em.toFixed(2) + "em"; };
+        range.addEventListener("input", () => { em = +range.value; apply(); });
+        apply();
+      }
 
       function initTowerHours() {
         const host = document.getElementById("tower-hours");
@@ -832,6 +859,11 @@ const droneZones = [
   </script>
 
   <style>
+    /* Hero "CFN" — the split engine renders F in Inter (.f-fix); at this
+       size it reads larger than the PP Editorial caps, so trim it to match.
+       :global reaches the runtime-created span; the cid on .hero-display
+       keeps this scoped to the pilots hero (the homepage "Aerfort" F is safe). */
+    .hero-display :global(.f-fix) { font-size: 0.91em; }
     [data-nav-link].is-active { border-color: var(--color-atlantic); color: var(--color-ink); }
     .map-item { white-space: nowrap; }
     .uas-ring { transition: fill-opacity .2s ease, stroke-width .2s ease; cursor: pointer; }
