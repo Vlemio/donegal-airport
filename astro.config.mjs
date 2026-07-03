@@ -100,7 +100,9 @@ export default defineConfig({
           const trimJson = path.join(process.cwd(), 'src', 'data', 'video-trim.json');
 
           server.middlewares.use('/api/trim', (req, res) => {
-            res.setHeader('Access-Control-Allow-Origin', '*');
+            // Same-origin only (no CORS header) — this writes to a file on
+            // disk, so it shouldn't be reachable from any other site the
+            // developer happens to have open in another tab.
             res.setHeader('Content-Type', 'application/json');
 
             if (req.method === 'OPTIONS') { res.end('{}'); return; }

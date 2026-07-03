@@ -3,36 +3,39 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import { t } from "../i18n";
 import trim from "../data/video-trim.json";
 import { getCollection } from "astro:content";
-import flightsFeed from "../../public/api/flights-today.json";
+import type { SyncedFlight } from "../lib/flightsStore";
 export const prerender = true;
 
 const locale = "en";
 const title = `${t("site.name", locale)} · ${t("site.tagline", locale)}`;
 const description = t("site.description", locale);
 
-// Flight data — single source of truth is /public/api/flights-today.json.
-// The FIDS tab (separate project) will write to that file with live ADS-B data.
-// The board JS polls it every 60 s so it auto-refreshes without a page reload.
-const flightsToday = (flightsFeed as any).flights as {
-  t: string; f: string; city: string; dir: string; st: string; delayTo?: string;
-}[];
+// Flight data — single source of truth is the /api/flights-today.json
+// endpoint (src/pages/api/flights-today.json.ts), which the Donegal FIDS
+// pushes to. This page is statically prerendered, so it has no live data
+// at build time — start empty (never show made-up sample flights as if
+// real) and let the client poll fill in genuine data once it loads.
+const flightsToday: SyncedFlight[] = [];
 
-// Hero ops-panel — derived from flightsToday so both are always in sync
-const carrierMap: Record<string, string> = { EI: "Aer Lingus Regional", LM: "Loganair" };
+function statusKey(s: string) { return String(s || "").toLowerCase().replace(/[^a-z]/g, ""); }
+
+// Hero ops-panel — derived from flightsToday so both are always in sync.
+// Capped at the 4 nearest departures; the card shows a fallback line
+// (below) when there are none left today.
+const HERO_MAX = 4;
 const heroDepartures = flightsToday
-  .filter((f) => f.dir === "DEP" && f.st !== "departed")
-  .slice(0, 3)
+  .filter((f) => f.type === "departure" && f.status !== "Departed")
+  .slice(0, HERO_MAX)
   .map((f) => ({
-    time: f.t,
+    time: f.time,
     dest: f.city,
-    flight: `${f.f} · ${carrierMap[f.f.split(" ")[0]] ?? ""}`,
+    flight: `${f.flightNo} · ${f.airline}`,
     status:
-      f.st === "delayed" && (f as any).delayTo ? `→ ${(f as any).delayTo}` :
-      f.st === "ontime" ? "On time" :
-      f.st === "boarding" ? "Boarding" : "Scheduled",
-    tone: f.st === "delayed" ? "warn" : "ok",
+      statusKey(f.status) === "delayed" && f.estTime ? `→ ${f.estTime}` :
+      f.status,
+    tone: statusKey(f.status) === "delayed" ? "warn" : "ok",
   }));
-const nextArrival = flightsToday.find((f) => f.dir === "ARR" && f.st !== "landed") ?? null;
+const nextArrival = flightsToday.find((f) => f.type === "arrival" && f.status !== "Landed") ?? null;
 
 // Hero weather (static placeholder — wire to Met Éireann or METAR post-firma)
 const heroWeather = { tempC: 12, condition: "Scattered cloud", windDir: "SW", windKt: 14, visKm: 10 };
@@ -50,6 +53,7 @@ const destinations = [
     hero: "/photos/dest-dub.webp",
     photoPos: "center center",
     caption: "An overnight bag and you're halfway to the city by lunch.",
+    bookUrl: "https://www.aerlingus.com",
   },
   {
     code: "GLA",
@@ -61,6 +65,7 @@ const destinations = [
     hero: "/photos/dest-gla.webp",
     photoPos: "center 20%",
     caption: "Weekend in the Highlands. Home before bedtime.",
+    bookUrl: "https://www.loganair.co.uk",
   },
 ];
 
@@ -176,7 +181,7 @@ const allNews = _newsSorted.map(_mapNews);
             data-animate="fade-up"
             data-edit="hero-eyebrow"
             class="font-mono text-[15px] uppercase tracking-[0.26em]"
-            style="color: var(--hi-soft)"
+            style="color: var(--hi)"
           >
             Donegal Airport · Co. Donegal · CFN
           </p>
@@ -195,7 +200,7 @@ const allNews = _newsSorted.map(_mapNews);
             data-animate-delay="0.35"
             data-edit="hero-lede"
             class="max-w-[480px] text-[24px] leading-[1.45]"
-            style="color: var(--hi-soft)"
+            style="color: var(--hi)"
           >
             Dublin daily. Glasgow at weekends — and select summer weekdays.
             Donegal's airport sits where the Atlantic begins.
@@ -230,14 +235,14 @@ const allNews = _newsSorted.map(_mapNews);
               <span
                 id="ops-clock"
                 class="font-mono text-[13.5px] tracking-[0.08em]"
-                style="color: var(--hi-faint)"
+                style="color: var(--hi)"
               >
                 — — : — —
               </span>
               <span
                 id="ops-clock-utc"
                 class="font-mono text-[11.5px] tracking-[0.06em]"
-                style="color: rgba(238,244,251,0.82)"
+                style="color: var(--hi)"
               >
                 — — : — — <span style="opacity:0.75">UTC</span>
               </span>
@@ -271,8 +276,8 @@ const allNews = _newsSorted.map(_mapNews);
 
           {/* Section label: "Next departures" + Live chip */}
           <div
-            class="mt-[18px] flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.16em]"
-            style="color: var(--hi-soft)"
+            class="mt-[18px] flex items-center justify-between font-mono text-[12.5px] uppercase tracking-[0.16em]"
+            style="color: var(--hi)"
           >
             <span>Next departures · Imeachtaí</span>
             <span
@@ -285,32 +290,44 @@ const allNews = _newsSorted.map(_mapNews);
 
           {/* Departures board — id="hero-deps" lets the board JS keep this in sync */}
           <ul class="mt-[6px]" id="hero-deps">
-            {heroDepartures.map((dep) => (
-              <li class="ops-board-row">
-                <span class="b-time">{dep.time}</span>
-                <span class="b-dest">{dep.dest}</span>
-                <span class={`b-status ${dep.tone}`}>{dep.status}</span>
-                <span class="b-flight">{dep.flight}</span>
+            {heroDepartures.length ? (
+              heroDepartures.map((dep) => (
+                <li class="ops-board-row">
+                  <span class="b-time">{dep.time}</span>
+                  <span class="b-dest">{dep.dest}</span>
+                  <span class={`b-status ${dep.tone}`}>{dep.status}</span>
+                  <span class="b-flight">{dep.flight}</span>
+                </li>
+              ))
+            ) : (
+              <li class="py-2 font-mono text-[12.5px] uppercase tracking-[0.1em]" style="color: var(--hi-soft)">
+                No more departures today
               </li>
-            ))}
+            )}
           </ul>
 
-          {/* Footer row: next arrival — id="hero-next-arr" kept in sync by board JS */}
+          {/* Next arrival — id="hero-next-arr" kept in sync by board JS */}
           <div
-            class="mt-[16px] flex items-center justify-between pt-[16px]"
-            style="border-top: 1px solid var(--hi-line)"
+            class="mt-[18px] flex items-center justify-between pt-[16px] font-mono text-[12.5px] uppercase tracking-[0.16em]"
+            style="border-top: 1px solid var(--hi-line); color: var(--hi)"
           >
-            <span
-              id="hero-next-arr"
-              class="font-mono text-[10.5px] uppercase tracking-[0.06em]"
-              style="color: var(--hi-faint)"
-            >
-              {nextArrival ? (
-                <>Next arrival · {nextArrival.t}{" "}{nextArrival.city} · <span style="color: var(--hi-soft)">{nextArrival.st === "landed" ? "Landed" : nextArrival.st === "enroute" ? "En route" : "Scheduled"}</span></>
-              ) : (
-                <>No more arrivals today</>
-              )}
-            </span>
+            <span>Next arrivals · Teachtaí</span>
+          </div>
+          <div class="mt-[6px]" id="hero-next-arr">
+            {nextArrival ? (
+              <p class="py-2 font-mono text-[12.5px] uppercase tracking-[0.1em]" style="color: var(--hi-soft)">
+                {nextArrival.time} {nextArrival.city} · <span style="color: var(--hi)">{nextArrival.status}</span>
+              </p>
+            ) : (
+              <p class="py-2 font-mono text-[12.5px] uppercase tracking-[0.1em]" style="color: var(--hi-soft)">
+                No more arrivals today
+              </p>
+            )}
+          </div>
+
+          {/* Footer: full-board CTA on its own row so it never collides
+              with the arrival line above it */}
+          <div class="mt-[10px] flex justify-end">
             <a href="/flights" class="ops-cta-link">
               Full board <span class="arrow">→</span>
             </a>
@@ -328,30 +345,38 @@ const allNews = _newsSorted.map(_mapNews);
       </div>
     </div>
 
-    {/* Live clock script — ticks every minute, shows local + UTC */}
+    {/* Live clock script — ticks every minute, shows local + UTC.
+        Registered on astro:page-load (not a bare top-level IIFE) so it
+        re-runs and re-attaches to the fresh #ops-clock node after an
+        Astro view-transition navigation — otherwise the placeholder
+        "— — : — —" markup is left stuck forever on any page reached
+        by a client-side nav rather than a full reload. */}
     <script is:inline>
       (function () {
-        const el    = document.getElementById('ops-clock');
-        const utcEl = document.getElementById('ops-clock-utc');
-        if (!el) return;
-        const days   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-        function tick() {
-          const d = new Date();
-          const parts = new Intl.DateTimeFormat('en-IE', {
-            timeZone: 'Europe/Dublin',
-            weekday: 'short', day: 'numeric', month: 'short',
-            hour: '2-digit', minute: '2-digit', hour12: false
-          }).formatToParts(d).reduce(function(acc, p) { acc[p.type] = p.value; return acc; }, {});
-          el.textContent = parts.weekday + ' ' + parts.day + ' ' + parts.month + ' · ' + parts.hour + ':' + parts.minute;
-          if (utcEl) {
-            const uh = String(d.getUTCHours()).padStart(2,'0');
-            const um = String(d.getUTCMinutes()).padStart(2,'0');
-            utcEl.innerHTML = uh + ':' + um + ' <span style="opacity:0.6">UTC</span>';
+        let clockTimer = null;
+        function startClock() {
+          const el    = document.getElementById('ops-clock');
+          const utcEl = document.getElementById('ops-clock-utc');
+          if (!el) return;
+          if (clockTimer) clearInterval(clockTimer);
+          function tick() {
+            const d = new Date();
+            const parts = new Intl.DateTimeFormat('en-IE', {
+              timeZone: 'Europe/Dublin',
+              weekday: 'short', day: 'numeric', month: 'short',
+              hour: '2-digit', minute: '2-digit', hour12: false
+            }).formatToParts(d).reduce(function(acc, p) { acc[p.type] = p.value; return acc; }, {});
+            el.textContent = parts.weekday + ' ' + parts.day + ' ' + parts.month + ' · ' + parts.hour + ':' + parts.minute;
+            if (utcEl) {
+              const uh = String(d.getUTCHours()).padStart(2,'0');
+              const um = String(d.getUTCMinutes()).padStart(2,'0');
+              utcEl.innerHTML = uh + ':' + um + ' <span>UTC</span>';
+            }
           }
+          tick();
+          clockTimer = setInterval(tick, 60_000);
         }
-        tick();
-        setInterval(tick, 60_000);
+        document.addEventListener('astro:page-load', startClock);
       })();
     </script>
 
@@ -451,6 +476,7 @@ const allNews = _newsSorted.map(_mapNews);
         </p>
         <p
           data-split
+          data-split-link="hero-lead"
           class="mt-8 max-w-3xl font-display text-[clamp(2.1rem,4.2vw,3.8rem)] font-normal leading-[1.02]"
           style="color: var(--hi)"
         >
@@ -458,10 +484,9 @@ const allNews = _newsSorted.map(_mapNews);
           one with the best view.
         </p>
         <div
-          data-animate="fade-up"
-          data-animate-delay="0.25"
+          data-reveal-after="hero-lead"
           class="mt-8 max-w-xl text-[1.05rem] leading-relaxed"
-          style="color: var(--hi-soft)"
+          style="color: var(--hi)"
         >
           <p>
             Carrickfinn sits on a sandbar between the Atlantic and Mount
@@ -479,50 +504,6 @@ const allNews = _newsSorted.map(_mapNews);
             </a>
           </p>
         </div>
-      </div>
-    </div>
-  </section>
-
-  {/* ─── THE BOARD · Live Departures & Arrivals (Option A) ─── */}
-  <section class="board-sec border-t border-line" data-texture="crt">
-    <div class="backdrop-tex" aria-hidden="true"></div>
-    <div class="mx-auto max-w-[1180px] px-6 py-20 lg:py-[5rem] lg:pb-[5.5rem]" style="position:relative;z-index:2">
-      <div class="board-head">
-        <div>
-          <p class="board-eyebrow">
-            <span class="live-dot-green" aria-hidden="true"></span>
-            CFN/EIDL
-          </p>
-          <h2 class="board-title">Departures and arrivals.</h2>
-        </div>
-        <div class="text-right">
-          <div id="board-clock" class="board-clock-time">--:--:--</div>
-          <div class="board-clock-sub">Donegal &middot; Local time</div>
-        </div>
-      </div>
-      <div class="mb-5">
-        <div id="board-tabs" class="board-tabs">
-          <span class="board-tab-pill" aria-hidden="true"></span>
-          <button data-f="ALL" aria-selected="true">All</button>
-          <button data-f="DEP" aria-selected="false">Departures</button>
-          <button data-f="ARR" aria-selected="false">Arrivals</button>
-        </div>
-      </div>
-      <div class="board-cols">
-        <span>Time</span>
-        <span class="c-flight">Flight</span>
-        <span>Route</span>
-        <span class="c-dir">Type</span>
-        <span>Status</span>
-      </div>
-      <div id="board-rows" class="board-rows"></div>
-      <div class="board-foot">
-        <div class="board-legend">
-          <span class="lg"><span class="sw" style="background:#4fb87a"></span>Scheduled / on time</span>
-          <span class="lg"><span class="sw" style="background:#3f7fb8"></span>En route / Boarding</span>
-          <span class="lg"><span class="sw" style="background:#c2683a"></span>Delayed</span>
-        </div>
-        <a href="/flights" class="board-link">Full timetable &amp; live status <span class="board-arrow">→</span></a>
       </div>
     </div>
   </section>
@@ -548,11 +529,12 @@ const allNews = _newsSorted.map(_mapNews);
           <div>
             <h2
               data-split
+              data-split-link="routes-head"
               class="font-display text-[clamp(3.2rem,6vw,7rem)] font-normal leading-[0.94]"
             >
               Two flights,<br />two cities.
             </h2>
-            <p class="mt-4 max-w-sm text-lg leading-relaxed text-ink/70">
+            <p data-reveal-after="routes-head" class="mt-4 max-w-sm text-lg leading-relaxed text-ink">
               Dublin twice a day, every day. Loganair connects to Glasgow on selected days. A short route map — and every seat is a window seat.
             </p>
           </div>
@@ -579,23 +561,37 @@ const allNews = _newsSorted.map(_mapNews);
               <p class="font-mono text-[0.85rem] font-bold uppercase tracking-[0.3em] text-sand">
                 {d.country}
               </p>
-              <h3 class="mt-3 font-display text-[clamp(2.5rem,5vw,5rem)] font-normal leading-[0.95] text-ink">
+              <h3
+                class="mt-3 font-display text-[clamp(2.5rem,5vw,5rem)] font-bold leading-[0.95] text-ink"
+                style="text-shadow: 0 2px 18px rgba(0,0,0,0.55), 0 1px 4px rgba(0,0,0,0.5)"
+              >
                 {d.city}
               </h3>
-              <dl class="mt-8 grid grid-cols-3 gap-6 font-mono text-[0.7rem] uppercase tracking-[0.18em] text-mute">
+              <dl
+                class="mt-8 grid grid-cols-3 gap-6 font-mono text-[0.78rem] uppercase tracking-[0.18em] text-mute"
+                style="text-shadow: 0 1px 10px rgba(0,0,0,0.5)"
+              >
                 <div>
-                  <dt class="text-sand">Duration</dt>
+                  <dt class="font-bold text-sand">Duration</dt>
                   <dd class="mt-1 text-ink">{d.duration}</dd>
                 </div>
                 <div>
-                  <dt class="text-sand">Schedule</dt>
+                  <dt class="font-bold text-sand">Schedule</dt>
                   <dd class="mt-1 text-ink">{d.schedule}</dd>
                 </div>
                 <div>
-                  <dt class="text-sand">Carrier</dt>
+                  <dt class="font-bold text-sand">Carrier</dt>
                   <dd class="mt-1 text-ink">{d.carrier}</dd>
                 </div>
               </dl>
+              <a
+                href={d.bookUrl}
+                target="_blank"
+                rel="noopener"
+                class="mt-7 inline-flex w-fit items-center gap-2 rounded-full bg-atlantic px-6 py-3 font-mono text-[0.7rem] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-ink"
+              >
+                Book {d.city} →
+              </a>
             </div>
           </article>
         ))}
@@ -643,9 +639,20 @@ const allNews = _newsSorted.map(_mapNews);
                 <p class="font-mono text-[0.8rem] font-bold uppercase tracking-[0.28em] text-sand">
                   {d.country}
                 </p>
-                <h3 class="mt-2 font-display text-4xl leading-[0.95] text-ink">
+                <h3
+                  class="mt-2 font-display text-4xl font-bold leading-[0.95] text-ink"
+                  style="text-shadow: 0 2px 16px rgba(0,0,0,0.55), 0 1px 4px rgba(0,0,0,0.5)"
+                >
                   {d.city}
                 </h3>
+                <a
+                  href={d.bookUrl}
+                  target="_blank"
+                  rel="noopener"
+                  class="mt-4 inline-flex w-fit items-center gap-2 rounded-full bg-atlantic px-5 py-2.5 font-mono text-[0.65rem] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-ink"
+                >
+                  Book {d.city} →
+                </a>
               </div>
             </div>
           </article>
@@ -679,6 +686,7 @@ const allNews = _newsSorted.map(_mapNews);
       </p>
       <h2
         data-split
+        data-split-link="awards-head"
         class="mt-3 max-w-4xl font-display text-[clamp(3rem,5.5vw,6rem)] font-normal leading-[0.98] text-[#0f3550]"
       >
         A small airport with a long shelf of awards.
@@ -687,8 +695,8 @@ const allNews = _newsSorted.map(_mapNews);
       <ul class="mt-16 divide-y divide-ink/10">
         {awards.map((award, i) => (
           <li
-            data-animate="fade-up"
-            data-animate-delay={`${0.05 + i * 0.06}`}
+            data-reveal-after="awards-head"
+            data-reveal-delay={`${i * 0.06}`}
             class="relative grid items-center gap-6 py-10 md:grid-cols-[13rem_1fr_auto] md:gap-12"
           >
             {/* Year — oversized, decorative anchor */}
@@ -1020,243 +1028,80 @@ const allNews = _newsSorted.map(_mapNews);
       </div>
     </div>
   </section>
-<style is:global>
-  @keyframes boardDotPulse {
-    0%   { box-shadow: 0 0 0 0 var(--pc, rgba(79,184,122,.5)); }
-    70%  { box-shadow: 0 0 0 7px transparent; }
-    100% { box-shadow: 0 0 0 0 transparent; }
-  }
-
-  /* ── Night surface ── */
-  .board-sec {
-    position: relative;
-    overflow: hidden;
-    background-color: #0b1827;
-    background-image:
-      radial-gradient(120% 120% at 82% -10%, rgba(59,130,196,0.22), transparent 60%),
-      linear-gradient(155deg, #0b1827 0%, #122339 46%, #163049 78%, #0b1827 100%);
-    color: #eef4fb;
-  }
-
-  /* ── Board backdrop textures (handoff: backdrop-texture.css) ── */
-  [data-texture] {
-    --tex-line: rgba(159,198,234,0.12);
-    --tex-dot:  rgba(159,198,234,0.20);
-    --tex-fade: 1;
-    --tex-contours: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='760' height='760'%3E%3Cdefs%3E%3Cfilter id='d' x='-20%25' y='-20%25' width='140%25' height='140%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.009 0.012' numOctaves='2' seed='7' result='n'/%3E%3CfeDisplacementMap in='SourceGraphic' in2='n' scale='88' xChannelSelector='R' yChannelSelector='G'/%3E%3C/filter%3E%3C/defs%3E%3Cpath filter='url(%23d)' fill='none' stroke='%239fc6ea' stroke-width='1' opacity='0.55' d='M-80 30H840M-80 64H840M-80 98H840M-80 132H840M-80 166H840M-80 200H840M-80 234H840M-80 268H840M-80 302H840M-80 336H840M-80 370H840M-80 404H840M-80 438H840M-80 472H840M-80 506H840M-80 540H840M-80 574H840M-80 608H840M-80 642H840M-80 676H840M-80 710H840M-80 744H840'/%3E%3C/svg%3E");
-  }
-  .backdrop-tex {
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-    opacity: var(--tex-fade);
-    -webkit-mask: radial-gradient(135% 110% at 82% -8%, #000 12%, rgba(0,0,0,0.35) 78%, transparent 100%);
-            mask: radial-gradient(135% 110% at 82% -8%, #000 12%, rgba(0,0,0,0.35) 78%, transparent 100%);
-  }
-  [data-texture="none"] .backdrop-tex { display: none; }
-  [data-texture="dots"] .backdrop-tex {
-    background-image: radial-gradient(var(--tex-dot) 1px, transparent 1.6px);
-    background-size: 26px 26px;
-  }
-  [data-texture="grid"] .backdrop-tex {
-    background-image:
-      linear-gradient(var(--tex-line) 1px, transparent 1px),
-      linear-gradient(90deg, var(--tex-line) 1px, transparent 1px),
-      linear-gradient(var(--tex-dot) 1px, transparent 1px),
-      linear-gradient(90deg, var(--tex-dot) 1px, transparent 1px);
-    background-size: 132px 132px, 132px 132px, 26.4px 26.4px, 26.4px 26.4px;
-  }
-  [data-texture="radar"] .backdrop-tex {
-    background-image: repeating-radial-gradient(circle at 90% -6%,
-      transparent 0 46px, var(--tex-line) 46px 47px);
-  }
-  [data-texture="scan"] .backdrop-tex {
-    background-image: repeating-linear-gradient(0deg,
-      var(--tex-line) 0 1px, transparent 1px 5px);
-  }
-  [data-texture="crt"] .backdrop-tex {
-    background-image: repeating-linear-gradient(0deg,
-      rgba(0,0,0,0.34) 0 1px, transparent 1px 3px);
-    mix-blend-mode: soft-light;
-  }
-  [data-texture="led"] .backdrop-tex {
-    background-image:
-      radial-gradient(circle, var(--tex-dot) 1.1px, transparent 1.6px),
-      repeating-linear-gradient(0deg, rgba(0,0,0,0.16) 0 1px, transparent 1px 4px);
-    background-size: 13px 13px, 100% 4px;
-  }
-  [data-texture="contours"] .backdrop-tex {
-    background-image: var(--tex-contours);
-    background-size: 760px 760px;
-    background-position: 60% 0;
-  }
-  .board-head { display:flex; align-items:flex-end; justify-content:space-between; gap:2rem; flex-wrap:wrap; margin-bottom:2.4rem; }
-  .board-eyebrow { font-family:var(--font-mono); font-size:0.72rem; letter-spacing:0.3em; text-transform:uppercase; color:#9fc6ea; margin-bottom:1rem; display:flex; align-items:center; gap:0.7rem; }
-  .live-dot-green { width:8px; height:8px; border-radius:50%; background:#4fb87a; flex:none; --pc:rgba(79,184,122,.5); animation:boardDotPulse 2s infinite; }
-  .board-title { font-family:var(--font-display); font-weight:300; font-size:clamp(2.4rem,5vw,4.4rem); line-height:0.96; letter-spacing:-0.025em; color:#eef4fb; }
-  .board-clock-time { font-family:var(--font-sans); font-weight:600; font-size:2.1rem; line-height:1; font-variant-numeric:tabular-nums; color:#eef4fb; }
-  .board-clock-sub { font-family:var(--font-mono); font-size:0.66rem; letter-spacing:0.12em; text-transform:uppercase; color:rgba(233,241,248,0.55); margin-top:0.5rem; }
-  .board-tabs { display:inline-flex; position:relative; padding:0.28rem; border-radius:999px; background:rgba(255,255,255,0.06); box-shadow:inset 0 0 0 1px rgba(255,255,255,0.1); }
-  .board-tabs button { position:relative; z-index:2; border:0; background:transparent; cursor:pointer; font-family:var(--font-mono); font-size:0.68rem; letter-spacing:0.14em; text-transform:uppercase; padding:0.5rem 1.05rem; border-radius:999px; transition:color .25s; color:rgba(233,241,248,0.6); }
-  .board-tabs button[aria-selected="true"] { color:#0b1827; }
-  .board-tab-pill { position:absolute; z-index:1; top:0.28rem; bottom:0.28rem; left:0; border-radius:999px; background:#e9f1f8; transition:transform .42s cubic-bezier(.5,1.4,.4,1), width .42s cubic-bezier(.5,1.4,.4,1); }
-  .board-cols, .fb-row { display:grid; grid-template-columns:5.4rem 6.4rem 1fr 5rem 8.8rem; align-items:center; gap:1.2rem; }
-  .board-cols { padding:0 0.2rem 0.7rem; font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.18em; text-transform:uppercase; color:rgba(233,241,248,0.55); border-bottom:1px solid rgba(255,255,255,0.1); }
-  .board-rows { display:flex; flex-direction:column; }
-  .fb-row { padding:0.95rem 0.2rem; border-bottom:1px solid rgba(255,255,255,0.1); position:relative; opacity:0; transform:perspective(700px) rotateX(-72deg); transform-origin:top center; }
-  .fb-row.in { opacity:1; transform:none; transition:opacity .5s ease, transform .55s cubic-bezier(.2,.8,.25,1); }
-  .flap-chip { display:inline-block; white-space:nowrap; font-family:var(--font-sans); font-weight:600; position:relative; background:linear-gradient(#1c3047,#16273a); border-radius:4px; padding:0.36rem 0.55rem; box-shadow:inset 0 0 0 1px rgba(255,255,255,0.1), 0 1px 3px rgba(0,0,0,0.4); letter-spacing:0; color:#f4f9ff; font-variant-numeric:tabular-nums; }
-  .flap-chip::after { content:''; position:absolute; left:0; right:0; top:50%; height:1px; background:rgba(0,0,0,0.5); box-shadow:0 1px 0 rgba(255,255,255,0.06); }
-  .fb-time .flap-chip { font-size:1.12rem; }
-  .fb-flight .flap-chip { font-size:0.92rem; background:linear-gradient(#16273a,#122036); }
-  .fb-city { font-family:var(--font-display); font-weight:400; font-size:1.35rem; letter-spacing:-0.01em; line-height:1; color:#eef4fb; }
-  .fb-dir { font-family:var(--font-mono); font-size:0.7rem; letter-spacing:0.16em; font-weight:700; display:inline-flex; align-items:center; gap:0.4rem; }
-  .fb-dir.dep { color:#8fc0ea; }
-  .fb-dir.arr { color:#e0a86a; }
-  .fb-status { justify-self:start; display:inline-flex; align-items:center; gap:0.55rem; font-family:var(--font-mono); font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase; white-space:nowrap; }
-  .fb-status .st-dot { width:8px; height:8px; border-radius:50%; flex:none; background:currentColor; --pc:currentColor; }
-  .fb-status.is-live .st-dot { animation:boardDotPulse 1.9s infinite; }
-  .fb-status .st-strike { text-decoration:line-through; opacity:0.55; margin-right:0.4rem; color:rgba(233,241,248,0.55); }
-  .fb-status[data-st="scheduled"],.fb-status[data-st="ontime"],.fb-status[data-st="boarding"] { color:#5fcf8e; }
-  .fb-status[data-st="enroute"] { color:#8fc0ea; }
-  .fb-status[data-st="departed"] { color:#6a9dbe; }
-  .fb-status[data-st="landed"]   { color:#6abf8a; }
-  .fb-status[data-st="delayed"]  { color:#e89163; }
-  .board-foot { margin-top:2.6rem; display:flex; justify-content:space-between; align-items:center; gap:1.5rem; flex-wrap:wrap; }
-  .board-legend { display:flex; gap:1.3rem; flex-wrap:wrap; font-family:var(--font-mono); font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; color:rgba(233,241,248,0.55); }
-  .board-legend .lg { display:flex; align-items:center; gap:0.45rem; }
-  .board-legend .sw { width:9px; height:9px; border-radius:50%; flex:none; }
-  .board-link { font-family:var(--font-mono); font-size:0.74rem; letter-spacing:0.16em; text-transform:uppercase; text-decoration:none; display:inline-flex; align-items:center; gap:0.6rem; padding-bottom:0.3rem; border-bottom:1px solid currentColor; transition:gap .25s; color:#eef4fb; }
-  .board-link:hover { gap:1rem; }
-  .board-arrow { transition:transform .25s; display:inline-block; }
-  .board-link:hover .board-arrow { transform:translateX(4px); }
-  @media (max-width:720px) {
-    .board-cols,.fb-row { grid-template-columns:4.4rem 1fr 8rem; }
-    .board-cols .c-flight,.board-cols .c-dir,.fb-flight,.fb-dir { display:none; }
-  }
-  @media (prefers-reduced-motion:reduce) {
-    .fb-row { opacity:1 !important; transform:none !important; transition:none !important; }
-    .live-dot-green,.fb-status.is-live .st-dot { animation:none !important; }
-  }
-</style>
 
 <script is:inline define:vars={{ boardFlights: flightsToday }}>
 (function () {
-  var STATUS = {
-    scheduled:{ label:'Scheduled', live:false },
-    ontime:   { label:'On time',   live:false },
-    boarding: { label:'Boarding',  live:true  },
-    enroute:  { label:'En route',  live:true  },
-    landed:   { label:'Landed',    live:false },
-    departed: { label:'Departed',  live:false },
-    delayed:  { label:'Delayed',   live:true  }
-  };
+  // FIDS sends human-readable status strings (e.g. "On Approach"); this key
+  // matches the .b-status tone classes below.
+  function statusKey(s) { return String(s || '').toLowerCase().replace(/[^a-z]/g, ''); }
 
-  // Seed from SSR so the board is instant on first paint.
+  // Seed from SSR so the hero panel is instant on first paint.
   // Subsequent updates come from polling /api/flights-today.json.
   var FLIGHTS = boardFlights;
-  var activeFilter = 'ALL';
-
-  var GLYPHS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  function scramble(el, final, delay) {
-    if (!el) return;
-    if (window.matchMedia('(prefers-reduced-motion:reduce)').matches) { el.textContent = final; return; }
-    var locked = 0, frames = 0;
-    el.textContent = final.replace(/[^\s]/g, ' ');
-    setTimeout(function () {
-      var iv = setInterval(function () {
-        frames++;
-        if (frames % 2 === 0) locked = Math.min(final.length, locked + 1);
-        var out = '';
-        for (var i = 0; i < final.length; i++) {
-          var c = final[i];
-          out += (i < locked || c === ' ' || c === ':') ? c : GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
-        }
-        el.textContent = out;
-        if (locked >= final.length) { clearInterval(iv); el.textContent = final; }
-      }, 45);
-    }, delay);
-  }
-
-  function render(filter, animate) {
-    activeFilter = filter;
-    var wrap = document.getElementById('board-rows');
-    if (!wrap) return;
-    wrap.innerHTML = '';
-    FLIGHTS.filter(function (f) { return filter === 'ALL' || f.dir === filter; })
-      .forEach(function (f, i) {
-        var s = STATUS[f.st] || { label: f.st, live: false };
-        var arrow = f.dir === 'DEP' ? '↗' : '↘';
-        var stHtml = (f.st === 'delayed' && f.delayTo)
-          ? '<span class="st-strike">' + f.t + '</span> ' + f.delayTo
-          : s.label;
-        var row = document.createElement('div');
-        row.className = 'fb-row';
-        row.innerHTML =
-          '<div class="fb-time"><span class="flap-chip">' + f.t + '</span></div>' +
-          '<div class="fb-flight"><span class="flap-chip">' + f.f + '</span></div>' +
-          '<div class="fb-route"><span class="fb-city">' + f.city + '</span></div>' +
-          '<div class="fb-dir ' + (f.dir === 'DEP' ? 'dep' : 'arr') + '"><span>' + arrow + '</span>' + f.dir + '</div>' +
-          '<div class="fb-status' + (s.live ? ' is-live' : '') + '" data-st="' + f.st + '"><span class="st-dot"></span>' + stHtml + '</div>';
-        wrap.appendChild(row);
-        if (animate !== false) {
-          setTimeout(function () { row.classList.add('in'); }, 60 + i * 70);
-          scramble(row.querySelector('.fb-time .flap-chip'), f.t, 120 + i * 70);
-          scramble(row.querySelector('.fb-flight .flap-chip'), f.f, 200 + i * 70);
-        } else {
-          row.classList.add('in');
-        }
-      });
-  }
 
   // ── Hero panel sync ──────────────────────────────────────────────
-  var CARRIER = { EI: 'Aer Lingus Regional', LM: 'Loganair' };
-
+  // Same rule as render() above: createElement/textContent only, no
+  // innerHTML, since every field is FIDS-feed data.
   function updateHero() {
-    // Departures list — upcoming only (not departed)
+    // Departures list — upcoming only (not departed), capped at 4
     var ul = document.getElementById('hero-deps');
     if (ul) {
-      var deps = FLIGHTS.filter(function (f) { return f.dir === 'DEP' && f.st !== 'departed'; }).slice(0, 3);
-      ul.innerHTML = deps.map(function (f) {
-        var carrier = CARRIER[f.f.split(' ')[0]] || '';
-        var lbl = f.st === 'delayed' && f.delayTo ? '→ ' + f.delayTo
-                : f.st === 'ontime'   ? 'On time'
-                : f.st === 'boarding' ? 'Boarding'
-                : 'Scheduled';
-        var tone = f.st === 'delayed' ? 'warn' : 'ok';
-        return '<li class="ops-board-row">' +
-          '<span class="b-time">' + f.t + '</span>' +
-          '<span class="b-dest">' + f.city + '</span>' +
-          '<span class="b-status ' + tone + '">' + lbl + '</span>' +
-          '<span class="b-flight">' + f.f + ' · ' + carrier + '</span>' +
-          '</li>';
-      }).join('');
+      var deps = FLIGHTS.filter(function (f) { return f.type === 'departure' && f.status !== 'Departed'; }).slice(0, 4);
+      ul.innerHTML = '';
+      if (!deps.length) {
+        var empty = document.createElement('li');
+        empty.className = 'py-2 font-mono text-[11px] uppercase tracking-[0.1em]';
+        empty.style.color = 'var(--hi-soft)';
+        empty.textContent = 'No more departures today';
+        ul.appendChild(empty);
+      }
+      deps.forEach(function (f) {
+        var key = statusKey(f.status);
+        var lbl = key === 'delayed' && f.estTime ? '→ ' + f.estTime : f.status;
+        var tone = key === 'delayed' ? 'warn' : 'ok';
+        var li = document.createElement('li');
+        li.className = 'ops-board-row';
+        var timeSpan = document.createElement('span'); timeSpan.className = 'b-time'; timeSpan.textContent = f.time;
+        var destSpan = document.createElement('span'); destSpan.className = 'b-dest'; destSpan.textContent = f.city;
+        var statusSpan = document.createElement('span'); statusSpan.className = 'b-status ' + tone; statusSpan.textContent = lbl;
+        var flightSpan = document.createElement('span'); flightSpan.className = 'b-flight'; flightSpan.textContent = f.flightNo + ' · ' + (f.airline || '');
+        li.appendChild(timeSpan); li.appendChild(destSpan); li.appendChild(statusSpan); li.appendChild(flightSpan);
+        ul.appendChild(li);
+      });
     }
 
-    // Next arrival footer
+    // Next arrival
     var arrEl = document.getElementById('hero-next-arr');
     if (arrEl) {
-      var arr = FLIGHTS.find(function (f) { return f.dir === 'ARR' && f.st !== 'landed'; });
+      var arr = FLIGHTS.find(function (f) { return f.type === 'arrival' && f.status !== 'Landed'; });
+      arrEl.innerHTML = '';
+      var p = document.createElement('p');
+      p.className = 'py-2 font-mono text-[12.5px] uppercase tracking-[0.1em]';
+      p.style.color = 'var(--hi-soft)';
       if (arr) {
-        var stLbl = arr.st === 'landed' ? 'Landed' : arr.st === 'enroute' ? 'En route' : 'Scheduled';
-        arrEl.innerHTML = 'Next arrival · ' + arr.t + ' ' + arr.city +
-          ' · <span style="color:var(--hi-soft)">' + stLbl + '</span>';
+        p.appendChild(document.createTextNode(arr.time + ' ' + arr.city + ' · '));
+        var statusSpan = document.createElement('span');
+        statusSpan.style.color = 'var(--hi)';
+        statusSpan.textContent = arr.status;
+        p.appendChild(statusSpan);
       } else {
-        arrEl.textContent = 'No more arrivals today';
+        p.textContent = 'No more arrivals today';
       }
+      arrEl.appendChild(p);
     }
   }
 
   // Poll /api/flights-today.json every 60 s.
-  // When the FIDS tab writes fresh data there, board + hero both update silently.
+  // When the FIDS pushes fresh data there, the hero panel updates silently.
+  // Only ever apply genuinely live data (data.live === true) — the endpoint
+  // falls back to sample placeholder flights when the FIDS hasn't synced,
+  // and that must never be shown here as if it were real.
   function fetchFlights() {
     fetch('/api/flights-today.json?_=' + Date.now())
       .then(function (r) { return r.json(); })
       .then(function (data) {
-        if (data && Array.isArray(data.flights)) {
+        if (data && data.live === true && Array.isArray(data.flights)) {
           FLIGHTS = data.flights;
-          render(activeFilter, false);
           updateHero();
         }
       })
@@ -1264,43 +1109,71 @@ const allNews = _newsSorted.map(_mapNews);
   }
   setInterval(fetchFlights, 60000);
 
-  function tick() {
-    var el = document.getElementById('board-clock');
-    if (!el) return;
-    el.textContent = new Date().toLocaleTimeString('en-IE', {
-      timeZone: 'Europe/Dublin', hour12: false,
-      hour: '2-digit', minute: '2-digit', second: '2-digit'
-    });
-  }
-  tick(); setInterval(tick, 1000);
-
-  var tabsEl = document.getElementById('board-tabs');
-  if (tabsEl) {
-    var btns = Array.prototype.slice.call(tabsEl.querySelectorAll('button'));
-    var pill = tabsEl.querySelector('.board-tab-pill');
-    function movePill(btn) {
-      if (!pill || !btn) return;
-      pill.style.width = btn.offsetWidth + 'px';
-      pill.style.transform = 'translateX(' + (btn.offsetLeft - 4) + 'px)';
-    }
-    btns.forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        btns.forEach(function (b) { b.setAttribute('aria-selected', b === btn ? 'true' : 'false'); });
-        movePill(btn);
-        render(btn.getAttribute('data-f'), true);
-      });
-    });
-    movePill(btns[0]);
-    window.addEventListener('resize', function () {
-      var a = tabsEl.querySelector('[aria-selected="true"]'); if (a) movePill(a);
-    });
-    if (document.fonts) document.fonts.ready.then(function () {
-      var a = tabsEl.querySelector('[aria-selected="true"]'); if (a) movePill(a);
-    });
-  }
-
-  render('ALL', true);
   updateHero();
+  fetchFlights();
+})();
+</script>
+
+{/* Links a data-split headline to a paragraph below it: instead of the
+    paragraph waiting for its OWN scroll position to cross the viewport
+    (which needs extra scrolling since it sits lower on the page), it
+    watches the headline and reveals itself the moment the headline's
+    char-by-char animation finishes — no further scrolling required. */}
+<script is:inline>
+(function () {
+  // bodySel may match one element (a paragraph) or several (e.g. a list of
+  // award rows) — each gets hidden immediately and revealed once the
+  // headline's char-by-char animation finishes, plus its own optional
+  // data-reveal-delay (seconds) for a staggered look across the group.
+  function linkedReveal(headSel, bodySel) {
+    var head = document.querySelector('[data-split-link="' + headSel + '"]');
+    var bodies = document.querySelectorAll('[data-reveal-after="' + bodySel + '"]');
+    if (!head || !bodies.length) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    bodies.forEach(function (body) {
+      // Hide instantly (no transition yet) — otherwise the browser treats
+      // this initial hide itself as an animated change (fading FROM the
+      // default visible state), which is a visible flash we don't want.
+      body.style.transition = 'none';
+      body.style.opacity = '0';
+      body.style.transform = 'translateY(24px)';
+      void body.offsetHeight; // force a reflow so the above is committed as a discrete state
+      body.style.transition = 'opacity .8s ease, transform .8s cubic-bezier(.22,.61,.36,1)';
+    });
+
+    // Matches the stagger/duration setupSplitText() uses in animations.ts.
+    // Each char eases with power3.out, which visually settles well before
+    // its nominal duration ends — counting the full duration for the last
+    // char reads as a noticeable extra pause, so only count a fraction of it.
+    var STAGGER = 0.018, DURATION = 0.9, DURATION_VISUAL_FRACTION = 0.45;
+    var chars = (head.textContent || '').replace(/\s+/g, '').length;
+    var splitDelay = parseFloat(head.dataset.splitDelay || '0');
+    var totalMs = (splitDelay + STAGGER * Math.max(0, chars - 1) + DURATION * DURATION_VISUAL_FRACTION) * 1000;
+
+    var fired = false;
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (fired || !entry.isIntersecting) return;
+        fired = true;
+        bodies.forEach(function (body) {
+          var extraMs = parseFloat(body.dataset.revealDelay || '0') * 1000;
+          setTimeout(function () {
+            body.style.opacity = '1';
+            body.style.transform = 'none';
+          }, totalMs + extraMs);
+        });
+        obs.disconnect();
+      });
+    }, { rootMargin: '0px 0px -15% 0px', threshold: 0.01 });
+    obs.observe(head);
+  }
+
+  document.addEventListener('astro:page-load', function () {
+    linkedReveal('hero-lead', 'hero-lead');
+    linkedReveal('routes-head', 'routes-head');
+    linkedReveal('awards-head', 'awards-head');
+  });
 })();
 </script>
 

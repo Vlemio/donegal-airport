@@ -1,33 +1,554 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { FALLBACK_FLIGHTS } from "../lib/flightsStore";
 
 const title = "Flights · Donegal Airport";
-const description = "Live arrivals and departures, full timetable, carrier information and check-in for Donegal Airport (CFN).";
+const description = "Live arrivals and departures for Donegal Airport (CFN) — Aer Lingus Regional to Dublin, Loganair to Glasgow.";
+
+// Prerendered seed (build-time fallback); the board below polls the live
+// /api/flights-today.json endpoint every 15 s for the real, current data —
+// see src/pages/api/flights-today.json.ts and src/lib/flightsStore.ts.
+const flightsToday = FALLBACK_FLIGHTS.flights;
 ---
 
 <BaseLayout title={title} description={description} pageTheme="ops-theme">
-  <section class="mx-auto max-w-7xl px-6 pb-24 pt-40">
-    <p class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic">
-      Flights
-    </p>
-    <h1
-      data-split
-      class="mt-4 max-w-4xl font-display text-[clamp(2.5rem,6vw,5.5rem)] font-normal leading-[0.98]"
-    >
-      Live arrivals and departures.
-    </h1>
-    <p class="mt-7 max-w-2xl text-base leading-relaxed text-mute sm:text-lg">
-      Aer Lingus Regional to Dublin · Loganair to Glasgow (weekends).
-      Full timetable, baggage allowances, cut-offs.
-    </p>
+  {/* ─── LIVE FLIGHTS BOARD — Solari split-flap design (handoff: design_handoff_flights) ─── */}
+  <section class="eidl-page">
+    <div class="eidl-inner">
 
-    <div data-animate="fade-up" class="mt-16 border-t border-line pt-10">
-      <p class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-mute">
-        Coming next
-      </p>
-      <p class="mt-4 max-w-2xl font-display text-2xl leading-snug text-ink">
-        Live board · timetable by carrier · baggage rules · student fare.
-      </p>
+      <div class="eidl-head">
+        <div>
+          <p class="eidl-eyebrow">Live Flight Information</p>
+          <h1 class="eidl-h1">Today&rsquo;s flights.</h1>
+        </div>
+        <div class="eidl-clockwrap">
+          <div class="eidl-clock"><span id="eidl-clock-text">--:--</span></div>
+          <div class="eidl-date" id="eidl-date">&mdash; &middot; Local time</div>
+        </div>
+      </div>
+
+      <div class="eidl-board">
+        <div class="eidl-topbar">
+          <div class="eidl-live">
+            <span id="eidl-live-dot" class="eidl-live-dot"></span>
+            <span id="eidl-live-label" class="eidl-live-label">Live</span>
+          </div>
+          <div class="eidl-controls">
+            <div class="eidl-tabs" id="eidl-tabs" role="tablist">
+              <button type="button" data-view="all" aria-selected="true">All</button>
+              <button type="button" data-view="dep" aria-selected="false">Departures</button>
+              <button type="button" data-view="arr" aria-selected="false">Arrivals</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="eidl-dep-section" class="eidl-section">
+          <div class="eidl-section-head">
+            <img class="eidl-section-ic" src="/photos/flights/dep-icon.png" alt="" />
+            <span class="eidl-section-title">Departures</span>
+            <span class="eidl-section-ga">Imeachta&iacute;</span>
+          </div>
+          <div class="eidl-colhead">
+            <span>Time</span><span>Airline</span><span>To</span><span>Flight</span><span class="eidl-col-status">Status</span>
+          </div>
+          <div id="eidl-dep-rows"></div>
+        </div>
+
+        <div id="eidl-arr-section" class="eidl-section eidl-section--arr">
+          <div class="eidl-section-head">
+            <img class="eidl-section-ic" src="/photos/flights/arr-icon.png" alt="" />
+            <span class="eidl-section-title">Arrivals</span>
+            <span class="eidl-section-ga">Teachta&iacute;</span>
+          </div>
+          <div class="eidl-colhead">
+            <span>Time</span><span>Airline</span><span>From</span><span>Flight</span><span class="eidl-col-status">Status</span>
+          </div>
+          <div id="eidl-arr-rows"></div>
+        </div>
+      </div>
+
+      <p class="eidl-footnote">All times local (IST). Information is advisory — confirm with your airline before travelling. <span id="eidl-updated"></span></p>
+    </div>
+  </section>
+
+  <section class="eidl-next-wrap">
+    <div class="mx-auto max-w-7xl px-6 py-16">
+      <div data-animate="fade-up" class="border-t border-line pt-10">
+        <p class="font-mono text-base font-bold uppercase tracking-[0.3em] text-atlantic">Book a flight</p>
+        <h2 class="mt-2 font-display text-[clamp(1.6rem,3vw,2.2rem)] leading-snug text-ink">Dublin, daily. Glasgow, weekends.</h2>
+
+        <div class="mt-8 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2">
+          <div class="flex flex-col justify-between gap-5 bg-surface p-7">
+            <div>
+              <p class="font-mono text-[0.68rem] font-bold uppercase tracking-[0.16em] text-sand">Aer Lingus Regional</p>
+              <p class="mt-2 font-display text-xl leading-tight text-ink">Donegal &rarr; Dublin</p>
+              <p class="mt-2 text-sm text-mute">Daily.</p>
+            </div>
+            <a href="https://www.aerlingus.com" target="_blank" rel="noopener" class="inline-flex w-fit items-center gap-2 rounded-full bg-atlantic px-6 py-3 font-mono text-[0.7rem] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-ink">Book Dublin &rarr;</a>
+          </div>
+          <div class="flex flex-col justify-between gap-5 bg-surface p-7">
+            <div>
+              <p class="font-mono text-[0.68rem] font-bold uppercase tracking-[0.16em] text-sand">Loganair</p>
+              <p class="mt-2 font-display text-xl leading-tight text-ink">Donegal &rarr; Glasgow</p>
+              <p class="mt-2 text-sm text-mute">Summer: Wed, Sat, Sun. Winter: Wed, Sun.</p>
+            </div>
+            <a href="https://www.loganair.co.uk" target="_blank" rel="noopener" class="inline-flex w-fit items-center gap-2 rounded-full bg-atlantic px-6 py-3 font-mono text-[0.7rem] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-ink">Book Glasgow &rarr;</a>
+          </div>
+        </div>
+
+        <div data-animate="fade-up" class="mt-10 flex flex-col gap-6 border-t border-line pt-8 sm:flex-row sm:items-center sm:justify-between">
+          <dl class="flex flex-wrap gap-x-10 gap-y-3">
+            <div>
+              <dt class="font-mono text-[0.62rem] font-bold uppercase tracking-[0.14em] text-atlantic">Bag drop closes</dt>
+              <dd class="mt-1 text-sm text-ink">45 min before</dd>
+            </div>
+            <div>
+              <dt class="font-mono text-[0.62rem] font-bold uppercase tracking-[0.14em] text-atlantic">Security &amp; gate</dt>
+              <dd class="mt-1 text-sm text-ink">30 min before</dd>
+            </div>
+            <div>
+              <dt class="font-mono text-[0.62rem] font-bold uppercase tracking-[0.14em] text-atlantic">Online check-in opens</dt>
+              <dd class="mt-1 text-sm text-ink">Aer Lingus 48h &middot; Loganair 96h</dd>
+            </div>
+          </dl>
+          <a href="/plan#checkin" class="font-mono text-[0.7rem] font-bold uppercase tracking-[0.14em] text-atlantic transition-colors hover:text-ink">Full check-in &amp; baggage details &rarr;</a>
+        </div>
+      </div>
     </div>
   </section>
 </BaseLayout>
+
+<style>
+  @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap");
+
+  .eidl-page {
+    background: #EDE9DE;
+    color: #1A1915;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    padding: 9.5rem clamp(18px, 5vw, 64px) 72px;
+  }
+  .eidl-inner { max-width: 1240px; margin: 0 auto; }
+
+  .eidl-head { display: flex; flex-wrap: wrap; gap: 18px 24px; align-items: flex-end; justify-content: space-between; margin-bottom: 30px; }
+  .eidl-eyebrow { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #1a4a6e; margin: 0 0 14px; }
+  h1.eidl-h1 { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important; font-size: clamp(34px, 6vw, 64px); font-weight: 700; line-height: 0.96; letter-spacing: -0.03em; margin: 0; color: #1A1915; }
+  .eidl-clockwrap { text-align: right; }
+  .eidl-clock { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 700; font-size: clamp(30px, 5vw, 46px); letter-spacing: 0.01em; line-height: 1; color: #1A1915; font-variant-numeric: tabular-nums; }
+  .eidl-date { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: 600; font-size: 13px; letter-spacing: 0.14em; text-transform: uppercase; color: #57534a; margin-top: 9px; }
+
+  .eidl-board { background: #12110E; border-radius: 18px; overflow: hidden; box-shadow: 0 20px 46px -22px rgba(0,0,0,0.55); }
+
+  .eidl-topbar { display: flex; flex-wrap: wrap; gap: 14px 18px; align-items: center; justify-content: space-between; padding: 18px clamp(18px, 3vw, 30px); border-bottom: 1px solid #ffffff12; background: #17150F; }
+  .eidl-live { display: flex; align-items: center; gap: 12px; }
+  .eidl-live-dot { width: 9px; height: 9px; border-radius: 50%; background: #38C172; box-shadow: 0 0 0 4px #38C17230; animation: eidlPulse 1.8s ease-in-out infinite; display: inline-block; }
+  .eidl-live-dot.is-stale { background: #E0A94D; box-shadow: 0 0 0 4px #E0A94D30; }
+  .eidl-live-label { font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; color: #c9c4b6; }
+  .eidl-controls { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .eidl-tabs { display: flex; gap: 4px; background: #00000040; border: 1px solid #ffffff12; border-radius: 10px; padding: 4px; }
+  .eidl-tabs button { font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; border: none; border-radius: 7px; padding: 8px 16px; transition: all .15s ease; background: transparent; color: #c9c4b6; }
+  .eidl-tabs button[aria-selected="true"] { background: #E0A94D; color: #12110E; }
+
+  .eidl-section { padding: 22px clamp(18px, 3vw, 30px) 8px; }
+  .eidl-section--arr { padding-bottom: 14px; border-top: 1px solid #ffffff0d; }
+  .eidl-section[hidden] { display: none; }
+  .eidl-section-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .eidl-section-ic { width: 24px !important; height: 24px !important; flex: 0 0 auto; border-radius: 6px; object-fit: contain; }
+  .eidl-section-title { font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: #EDE9DE; }
+  .eidl-section-ga { font-family: 'IBM Plex Mono', monospace; font-size: 13.5px; font-weight: 600; letter-spacing: 0.1em; color: #c9c4b6; }
+
+  .eidl-colhead {
+    display: grid; grid-template-columns: 96px minmax(150px,1.3fr) minmax(90px,1fr) 118px minmax(120px,0.9fr);
+    align-items: center; gap: 16px; padding: 10px 14px; border-radius: 8px; background: #E0A94D;
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #12110E;
+  }
+  .eidl-col-status { text-align: right; }
+
+  .eidl-footnote { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; letter-spacing: 0.04em; color: #57534a; margin-top: 18px; }
+  .eidl-next-wrap { background: #EDE9DE; }
+
+  @media (max-width: 720px) {
+    .eidl-colhead .eidl-col-flight, .eidl-colhead .eidl-col-to { display: none; }
+  }
+</style>
+
+{/* Astro's scoped styles only reach elements present at build time — the
+    flight rows below are created entirely by client-side JS, so their
+    styling has to live in a global (unscoped) block or none of it would
+    ever match. */}
+<style is:global>
+  @keyframes eidlPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+  @keyframes eidlFlip { 0% { transform: translateY(-108%); } 60% { transform: translateY(6%); } 100% { transform: translateY(0); } }
+
+  .eidl-row { display: grid; grid-template-columns: 96px minmax(150px,1.3fr) minmax(90px,1fr) 118px minmax(120px,0.9fr); align-items: center; gap: 16px; padding: 14px 14px; border-bottom: 1px solid #ffffff0d; transition: background .18s ease; }
+  .eidl-row:nth-child(odd) { background: #ffffff05; }
+  .eidl-row:hover { background: #ffffff08 !important; }
+  .eidl-row:last-child { border-bottom: 0; }
+
+  .eidl-airline { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .eidl-iata { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; color: #12110E; background: #E0A94D; border-radius: 4px; padding: 3px 7px; flex: 0 0 auto; line-height: 1; }
+  .eidl-airline-name { font-size: 17px; font-weight: 600; color: #EDE9DE; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .eidl-city { font-size: 17px; font-weight: 700; color: #d8d4c8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .eidl-status { display: inline-flex; align-items: center; gap: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; justify-self: end; white-space: nowrap; }
+  .eidl-status-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
+  .eidl-empty { padding: 26px 4px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.08em; color: #6f6b61; text-align: center; }
+
+  .eidl-flap-field { display: inline-flex; gap: 2px; align-items: center; }
+  .eidl-flap-tile { position: relative; display: inline-flex; align-items: center; justify-content: center; overflow: hidden; background: linear-gradient(#1c1a14,#0a0906); border-radius: 3px; box-shadow: inset 0 0 0 1px #ffffff10, 0 1px 2px #00000080; font-family: 'Helvetica Neue', Arial, sans-serif; font-weight: 700; line-height: 1; }
+  .eidl-flap-tile .glyph { display: block; animation: eidlFlip .14s ease-out; }
+  .eidl-flap-tile .seam { position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: rgba(0,0,0,0.6); z-index: 2; }
+  .eidl-flap-static { font-family: 'IBM Plex Mono', monospace; font-weight: 700; padding: 0 1px; }
+
+  @media (max-width: 720px) {
+    .eidl-row { grid-template-columns: 76px minmax(120px,1.3fr) minmax(70px,1fr) 96px minmax(100px,0.9fr); gap: 10px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .eidl-flap-tile .glyph { animation: none !important; }
+    .eidl-live-dot { animation: none !important; }
+  }
+</style>
+
+<script is:inline define:vars={{ boardFlights: flightsToday }}>
+(function () {
+  var ACCENT = '#E0A94D';
+  // Exact match to the FIDS kiosk board's own palette (donegal-fids/public/board.css)
+  // so a status reads the same colour on both displays.
+  var STATUS_COLORS = {
+    scheduled: '#8b9897', checkin: '#8b9897',
+    ontime: '#36d07f', landed: '#36d07f', boarding: '#36d07f',
+    departed: '#4db8ff',
+    enroute: '#ff8c21',
+    onapproach: '#ffc31e', finalcall: '#ffc31e', delayed: '#ffc31e',
+    approaching: '#ffd966',
+    gateclosed: '#ff5b4d', cancelled: '#ff5b4d', diverted: '#ff5b4d',
+  };
+  function statusColor(s) {
+    var k = String(s || '').toLowerCase().replace(/[^a-z]/g, '');
+    return STATUS_COLORS[k] || '#8b9897';
+  }
+  function dirCode(f) { return f.type === 'departure' ? 'dep' : 'arr'; }
+
+  // ---------- Split-flap tile engine ----------
+  var DIGITS = '0123456789', LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  function charsetFor(c) { return /[0-9]/.test(c) ? DIGITS : /[A-Za-z]/.test(c) ? LETTERS : null; }
+
+  function createTile(ch, color, fontSize) {
+    var cs = charsetFor(ch);
+    var w = Math.round(fontSize * 0.66), h = Math.round(fontSize * 1.32);
+    var el = document.createElement('span');
+    el.className = 'eidl-flap-tile';
+    el.style.width = w + 'px'; el.style.height = h + 'px'; el.style.fontSize = fontSize + 'px'; el.style.color = color;
+    var glyph = document.createElement('span');
+    glyph.className = 'glyph';
+    glyph.textContent = cs ? cs[0] : ch;
+    var seam = document.createElement('span');
+    seam.className = 'seam';
+    el.appendChild(glyph); el.appendChild(seam);
+    el._cur = cs ? cs[0] : ch;
+    el._cs = cs;
+    el._to = null; el._iv = null;
+    return el;
+  }
+  function rollTile(el, target, index, fromStart) {
+    var cs = el._cs;
+    if (!cs) { el._cur = target; el.querySelector('.glyph').textContent = target; return; }
+    clearTimeout(el._to); clearInterval(el._iv);
+    var idx = fromStart ? 0 : cs.indexOf(el._cur);
+    if (idx < 0) idx = 0;
+    if (fromStart) { el._cur = cs[0]; el.querySelector('.glyph').textContent = cs[0]; }
+    var delay = (index || 0) * 120;
+    el._to = setTimeout(function () {
+      var steps = 0;
+      el._iv = setInterval(function () {
+        idx = (idx + 1) % cs.length; steps++;
+        el._cur = cs[idx];
+        var g = el.querySelector('.glyph');
+        g.textContent = cs[idx];
+        g.style.animation = 'none'; void g.offsetWidth; g.style.animation = '';
+        if (cs[idx] === target || steps > cs.length * 2) { el._cur = target; g.textContent = target; clearInterval(el._iv); }
+      }, 95);
+    }, delay);
+  }
+
+  // Builds/updates an inline split-flap field. Returns a handle with .set(text, fromZero).
+  function createFlapField(text, color, fontSize) {
+    var wrap = document.createElement('span');
+    wrap.className = 'eidl-flap-field';
+    var tiles = [];
+    function build(t) {
+      wrap.innerHTML = '';
+      tiles = [];
+      var ai = 0;
+      String(t).split('').forEach(function (ch) {
+        if (/[0-9A-Za-z]/.test(ch)) {
+          var tile = createTile(ch, color, fontSize);
+          wrap.appendChild(tile);
+          tiles.push({ el: tile, index: ai++ });
+        } else {
+          var s = document.createElement('span');
+          s.className = 'eidl-flap-static';
+          s.style.color = color; s.style.fontSize = Math.round(fontSize * 0.9) + 'px';
+          s.textContent = ch;
+          wrap.appendChild(s);
+        }
+      });
+    }
+    build(text);
+    wrap._text = text;
+    wrap._roll = function (fromStart) {
+      tiles.forEach(function (t) { rollTile(t.el, t.el._cs ? t.el._targetChar : t.el._cur, t.index, fromStart); });
+    };
+    // Kick initial cascade on mount
+    setTimeout(function () {
+      var chars = String(text).split('').filter(function (c) { return /[0-9A-Za-z]/.test(c); });
+      tiles.forEach(function (t, i) { rollTile(t.el, chars[i], t.index, true); });
+    }, 0);
+    wrap.set = function (newText, fromZero) {
+      if (newText === wrap._text && !fromZero) return;
+      var changed = newText !== wrap._text;
+      wrap._text = newText;
+      if (String(newText).length !== tiles.length + (String(newText).match(/[^0-9A-Za-z]/g) || []).length || fromZero && changed) {
+        // structure changed (different length) — rebuild fully
+      }
+      var newChars = String(newText).split('').filter(function (c) { return /[0-9A-Za-z]/.test(c); });
+      if (newChars.length !== tiles.length) {
+        build(newText);
+        var chars2 = newChars;
+        tiles.forEach(function (t, i) { rollTile(t.el, chars2[i], t.index, true); });
+        return;
+      }
+      tiles.forEach(function (t, i) { rollTile(t.el, newChars[i], t.index, fromZero); });
+    };
+    return wrap;
+  }
+
+  // ---------- Rendering ----------
+  var FLIGHTS = boardFlights;
+  var rendered = { dep: new Map(), arr: new Map() }; // id -> {rowEl, timeField, flightField, cityEl, statusTextEl, statusDotEl, iataEl, airlineEl}
+
+  function rowKey(f) { return f.id || (f.type + '-' + f.flightNo + '-' + f.time); }
+
+  function buildRow(f) {
+    var row = document.createElement('div');
+    row.className = 'eidl-row';
+
+    var timeCell = document.createElement('span');
+    var timeField = createFlapField(f.time || '--:--', ACCENT, 19);
+    timeCell.appendChild(timeField);
+
+    var airlineCell = document.createElement('span');
+    airlineCell.className = 'eidl-airline';
+    var iataEl = document.createElement('span'); iataEl.className = 'eidl-iata'; iataEl.textContent = f.airlineCode || '';
+    var airlineEl = document.createElement('span'); airlineEl.className = 'eidl-airline-name'; airlineEl.textContent = f.airline || '';
+    airlineCell.appendChild(iataEl); airlineCell.appendChild(airlineEl);
+
+    var cityCell = document.createElement('span'); cityCell.className = 'eidl-city'; cityCell.textContent = f.city || '';
+
+    var flightCell = document.createElement('span');
+    var flightField = createFlapField(f.flightNo || '', '#EDE9DE', 15);
+    flightCell.appendChild(flightField);
+
+    var statusCell = document.createElement('span');
+    var statusInner = document.createElement('span'); statusInner.className = 'eidl-status';
+    var dot = document.createElement('span'); dot.className = 'eidl-status-dot';
+    var statusText = document.createElement('span'); statusText.textContent = f.status || 'Scheduled';
+    var c = statusColor(f.status);
+    dot.style.background = c; dot.style.boxShadow = '0 0 0 3px ' + c + '2b';
+    statusInner.style.color = c;
+    statusInner.appendChild(dot); statusInner.appendChild(statusText);
+    statusCell.appendChild(statusInner);
+    statusCell.style.display = 'flex'; statusCell.style.justifyContent = 'flex-end';
+
+    row.appendChild(timeCell); row.appendChild(airlineCell); row.appendChild(cityCell); row.appendChild(flightCell); row.appendChild(statusCell);
+
+    return { row: row, timeField: timeField, flightField: flightField, iataEl: iataEl, airlineEl: airlineEl, cityEl: cityCell, statusText: statusText, statusDot: dot, statusInner: statusInner };
+  }
+
+  function renderSection(type, wrapId, map) {
+    var wrap = document.getElementById(wrapId);
+    if (!wrap) return;
+    var list = FLIGHTS.filter(function (f) { return f.type === type; }).sort(function (a, b) { return (a.time || '').localeCompare(b.time || ''); });
+
+    var seen = new Set();
+    if (!list.length) {
+      if (!wrap.querySelector('.eidl-empty')) {
+        wrap.innerHTML = '';
+        var empty = document.createElement('div');
+        empty.className = 'eidl-empty';
+        empty.textContent = type === 'departure' ? 'No departures scheduled' : 'No arrivals scheduled';
+        wrap.appendChild(empty);
+      }
+      map.forEach(function (v) { v.row.remove(); });
+      map.clear();
+      return;
+    }
+    var existingEmpty = wrap.querySelector('.eidl-empty');
+    if (existingEmpty) existingEmpty.remove();
+
+    list.forEach(function (f) {
+      var key = rowKey(f);
+      seen.add(key);
+      var entry = map.get(key);
+      if (!entry) {
+        entry = buildRow(f);
+        entry.row.dataset.key = key;
+        map.set(key, entry);
+        wrap.appendChild(entry.row);
+      } else {
+        entry.timeField.set(f.time || '--:--', false);
+        entry.flightField.set(f.flightNo || '', false);
+        entry.iataEl.textContent = f.airlineCode || '';
+        entry.airlineEl.textContent = f.airline || '';
+        entry.cityEl.textContent = f.city || '';
+        entry.statusText.textContent = f.status || 'Scheduled';
+        var c = statusColor(f.status);
+        entry.statusDot.style.background = c; entry.statusDot.style.boxShadow = '0 0 0 3px ' + c + '2b';
+        entry.statusInner.style.color = c;
+      }
+    });
+    // Remove rows for flights no longer present
+    map.forEach(function (entry, key) {
+      if (!seen.has(key)) { entry.row.remove(); map.delete(key); }
+    });
+    // Reorder DOM only if the sorted order actually changed — appendChild()
+    // always detaches+reinserts, which resets the row's hover/transition
+    // state and reads as a visible flicker even when nothing really moved.
+    var targetOrder = list.map(rowKey);
+    var currentOrder = Array.prototype.map.call(wrap.children, function (el) { return el.dataset.key; });
+    var sameOrder = targetOrder.length === currentOrder.length && targetOrder.every(function (k, i) { return k === currentOrder[i]; });
+    if (!sameOrder) {
+      targetOrder.forEach(function (key) {
+        var entry = map.get(key);
+        if (entry) wrap.appendChild(entry.row);
+      });
+    }
+  }
+
+  function render() {
+    renderSection('departure', 'eidl-dep-rows', rendered.dep);
+    renderSection('arrival', 'eidl-arr-rows', rendered.arr);
+  }
+
+  function applyData(data) {
+    if (data && Array.isArray(data.flights)) {
+      FLIGHTS = data.flights;
+      render();
+    }
+    var dot = document.getElementById('eidl-live-dot');
+    var label = document.getElementById('eidl-live-label');
+    var updatedEl = document.getElementById('eidl-updated');
+    var isLive = !!(data && data.live);
+    if (dot) dot.classList.toggle('is-stale', !isLive);
+    if (label) label.textContent = isLive ? 'Live' : 'Last known';
+    if (updatedEl && data && data.updated) {
+      var t = new Date(data.updated).toLocaleTimeString('en-IE', { timeZone: 'Europe/Dublin', hour12: false, hour: '2-digit', minute: '2-digit' });
+      updatedEl.textContent = '· Updated ' + t;
+    }
+  }
+
+  function fetchFlights() {
+    fetch('/api/flights-today.json?_=' + Date.now())
+      .then(function (r) { return r.json(); })
+      .then(applyData)
+      .catch(function () {});
+  }
+  setInterval(fetchFlights, 15000);
+
+  // ---------- Clock ----------
+  function tick() {
+    var el = document.getElementById('eidl-clock-text');
+    var dateEl = document.getElementById('eidl-date');
+    if (!el) return;
+    var now = new Date();
+    var parts = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Dublin', hour12: false, hour: '2-digit', minute: '2-digit' }).formatToParts(now);
+    var map = {}; parts.forEach(function (p) { map[p.type] = p.value; });
+    el.textContent = map.hour + ':' + map.minute;
+    if (dateEl) {
+      var wd = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Dublin', weekday: 'short' }).format(now);
+      var day = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Dublin', day: 'numeric' }).format(now);
+      var mon = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Dublin', month: 'short' }).format(now);
+      dateEl.textContent = (wd + ' ' + day + ' ' + mon).toUpperCase() + ' · Local time';
+    }
+  }
+  tick(); setInterval(tick, 1000);
+
+  // ---------- Tabs ----------
+  var tabsEl = document.getElementById('eidl-tabs');
+  var depSection = document.getElementById('eidl-dep-section');
+  var arrSection = document.getElementById('eidl-arr-section');
+  if (tabsEl) {
+    tabsEl.querySelectorAll('button').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        tabsEl.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-selected', b === btn ? 'true' : 'false'); });
+        var view = btn.getAttribute('data-view');
+        depSection.hidden = view === 'arr';
+        arrSection.hidden = view === 'dep';
+      });
+    });
+  }
+
+  render();
+  fetchFlights();
+
+  // ---------- Icon position/size editor — authoring only (?edit) ----------
+  if (new URLSearchParams(location.search).has('edit')) {
+    var icons = [...document.querySelectorAll('.eidl-section-ic')];
+    if (icons.length) {
+      var panel = document.createElement('div');
+      panel.style.cssText = 'position:fixed;left:14px;bottom:14px;z-index:9999;background:#fff;border:1px solid #1a4a6e;border-radius:10px;padding:12px 14px;box-shadow:0 4px 16px rgba(0,0,0,.18);font:600 11px/1.7 ui-monospace,monospace;color:#1a4a6e;max-width:340px';
+      panel.innerHTML = '<div style="margin-bottom:6px">Drag icons to move &middot; slider to resize</div><div>size <input type="range" min="14" max="56" step="1" value="24" id="eidl-ic-size" style="vertical-align:middle"> <span id="eidl-ic-size-read">24px</span></div><pre id="eidl-ic-read" style="margin:6px 0 0;white-space:pre-wrap"></pre>';
+      document.body.appendChild(panel);
+
+      var state = icons.map(function () { return { x: 0, y: 0 }; });
+      var sizeEl = document.getElementById('eidl-ic-size');
+      var sizeReadEl = document.getElementById('eidl-ic-size-read');
+      var readEl = document.getElementById('eidl-ic-read');
+
+      // Measures the actual rendered box (post-resize) against the row's
+      // text baseline, so you can see whether the space above the icon
+      // matches the space below it — not just trust flex centring blindly.
+      function report() {
+        var lines = icons.map(function (icon, i) {
+          var label = icon.closest('#eidl-dep-section') ? 'dep' : 'arr';
+          var iconRect = icon.getBoundingClientRect();
+          var headRect = icon.closest('.eidl-section-head').getBoundingClientRect();
+          var spaceAbove = Math.round(iconRect.top - headRect.top);
+          var spaceBelow = Math.round(headRect.bottom - iconRect.bottom);
+          return label + ':  translate(' + state[i].x + 'px, ' + state[i].y + 'px)  size ' + sizeEl.value + 'px' +
+            '\n      rendered height ' + Math.round(iconRect.height) + 'px  |  space above row ' + spaceAbove + 'px, below ' + spaceBelow + 'px';
+        });
+        readEl.textContent = lines.join('\n\n');
+      }
+
+      icons.forEach(function (icon, i) {
+        icon.style.cursor = 'move';
+        icon.style.position = 'relative';
+        icon.addEventListener('pointerdown', function (ev) {
+          ev.preventDefault();
+          var startX = ev.clientX, startY = ev.clientY;
+          var origX = state[i].x, origY = state[i].y;
+          function move(e) {
+            state[i].x = origX + (e.clientX - startX);
+            state[i].y = origY + (e.clientY - startY);
+            icon.style.setProperty('transform', 'translate(' + state[i].x + 'px,' + state[i].y + 'px)', 'important');
+            report();
+          }
+          function up() { document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up); }
+          document.addEventListener('pointermove', move);
+          document.addEventListener('pointerup', up);
+        });
+      });
+
+      sizeEl.addEventListener('input', function () {
+        sizeReadEl.textContent = sizeEl.value + 'px';
+        icons.forEach(function (icon) {
+          icon.style.setProperty('width', sizeEl.value + 'px', 'important');
+          icon.style.setProperty('height', sizeEl.value + 'px', 'important');
+        });
+        report();
+      });
+
+      report();
+    }
+  }
+})();
+</script>

@@ -33,6 +33,13 @@ const isHome = Astro.url.pathname === "/" || Astro.url.pathname === "/ga/";
 const siteName = t("site.name", locale);
 const siteDescription = description || t("site.description", locale);
 
+// JSON.stringify doesn't escape "</script>" — a CMS-editable field (e.g. a
+// news article's lead, embedded elsewhere via siteDescription) containing
+// that sequence could break out of the script tag. Escaping every "<" is
+// the standard safe fix and is a no-op for valid JSON (which never needs
+// a literal "<").
+const safeJsonLd = (obj: unknown) => JSON.stringify(obj).replace(/</g, "\\u003c");
+
 // JSON-LD: Airport schema on every page, plus a WebSite block on
 // the home page so Google can show CFN in its knowledge panel.
 // Geo and ICAO/IATA from the airport's published Aerodrome Manual.
@@ -136,12 +143,12 @@ const localeTag: Record<Locale, string> = {
     <meta name="twitter:image" content={ogImageUrl} />
 
     {/* Structured data for Google */}
-    <script type="application/ld+json" set:html={JSON.stringify(airportSchema)} />
+    <script type="application/ld+json" set:html={safeJsonLd(airportSchema)} />
     {
       isHome && (
         <script
           type="application/ld+json"
-          set:html={JSON.stringify({
+          set:html={safeJsonLd({
             "@context": "https://schema.org",
             "@type": "WebSite",
             url: Astro.site?.href ?? "https://donegal-airport.vercel.app/",

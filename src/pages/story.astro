@@ -242,29 +242,29 @@ const airlines: Airline[] = [
         loading="eager"
         decoding="async"
       />
-      {/* Gradient — bottom-heavy so headline stays readable */}
-      <div class="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/45 to-ink/10"></div>
     </div>
 
     {/* Text — light tokens via cfn-hero-content */}
     <div class="cfn-hero-content relative z-10 mx-auto w-full max-w-7xl px-6 pb-16 pt-40 sm:pb-24">
       <p
         data-animate="fade-up"
-        class="font-mono text-[0.72rem] uppercase tracking-[0.32em] text-ink"
+        class="font-mono text-[0.72rem] font-bold uppercase tracking-[0.32em] text-white"
+        style="text-shadow: 0 2px 10px rgba(0,0,0,0.55), 0 1px 30px rgba(0,0,0,0.4);"
       >
         CFN · Carrickfinn · Donegal
       </p>
       <h1
         data-split
         data-split-delay="0.1"
-        class="mt-8 max-w-5xl font-display text-[clamp(2.75rem,7vw,7.5rem)] font-light leading-[0.95] text-ink"
+        class="mt-8 max-w-5xl font-display text-[clamp(2.75rem,7vw,7.5rem)] font-light leading-[0.95] text-white"
       >
         Forty years on the beach.
       </h1>
       <p
         data-animate="fade-up"
         data-animate-delay="0.35"
-        class="mt-10 max-w-2xl text-base leading-relaxed text-mute sm:text-lg"
+        class="mt-10 max-w-2xl text-base font-medium leading-relaxed text-white sm:text-lg"
+        style="text-shadow: 0 2px 6px rgba(0,0,0,0.75), 0 1px 16px rgba(0,0,0,0.6);"
       >
         Six chapters · 1978 to 2025. The story of a runway built on a
         sandbar between the Atlantic and Errigal.
@@ -273,13 +273,14 @@ const airlines: Airline[] = [
       <div
         data-animate="fade-up"
         data-animate-delay="0.5"
-        class="mt-12 flex items-center gap-3 text-mute"
+        class="mt-12 flex items-center gap-3 text-white"
+        style="text-shadow: 0 2px 10px rgba(0,0,0,0.55), 0 1px 30px rgba(0,0,0,0.4);"
         aria-hidden="true"
       >
-        <span class="scroll-hint scroll-hint--light font-mono text-[0.65rem] uppercase tracking-[0.24em]">
+        <span class="scroll-hint font-mono text-[0.65rem] uppercase tracking-[0.24em]">
           Scroll
         </span>
-        <span class="scroll-hint scroll-hint--light text-base">↓</span>
+        <span class="scroll-hint text-base">↓</span>
       </div>
     </div>
   </section>
