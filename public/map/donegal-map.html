@@ -15,6 +15,7 @@
   .maplibregl-popup-tip{border-top-color:#fbf6ea!important;border-bottom-color:#fbf6ea!important;}
   .maplibregl-popup-close-button{font-size:18px!important;color:#7c8a7e!important;padding:2px 8px!important;}
   .maplibregl-ctrl-attrib{display:none!important;}
+  .maplibregl-marker{transition:opacity .25s ease;}
   .donrail::-webkit-scrollbar{width:7px;}
   .donrail::-webkit-scrollbar-thumb{background:rgba(203,182,126,.3);border-radius:4px;}
   @keyframes grainshift{0%{transform:translate(0,0)}25%{transform:translate(-2%,1%)}50%{transform:translate(1%,-2%)}75%{transform:translate(-1%,2%)}100%{transform:translate(0,0)}}
@@ -105,18 +106,18 @@ const PLACES = [
   { cat:'nature',  name:'Glenveagh National Park',sub:'Park & castle',              lng:-7.94518, lat:55.05655, desc:'Glacial valley, lake and a Victorian castle set among gardens.', photo:'/photos/map/glenveagh.jpg' },
   { cat:'nature',  name:'Slieve League',          sub:'Sea cliffs',                 lng:-8.6889,  lat:54.6383,  desc:'Sea cliffs nearly 600 m high — among the highest in Europe.', photo:'/photos/map/slieve-league.jpg' },
   { cat:'nature',  name:'Malin Head',             sub:'Ireland\'s northern tip',lng:-7.3736,  lat:55.3817,  desc:'The northernmost point of Ireland, on the Inishowen peninsula.', photo:'/photos/map/malin-head.jpg' },
-  { cat:'nature',  name:'Griánán of Aileach',sub:'Stone ringfort',       lng:-7.4283,  lat:55.0236,  desc:'A stone ring at 250 m with 360° views over the loughs.' },
-  { cat:'nature',  name:'Ards Forest Park',       sub:'Coastal forest',             lng:-7.90209, lat:55.15435, desc:'480 ha of woodland, dunes and beaches on Sheephaven Bay.' },
-  { cat:'nature',  name:'Doe Castle',             sub:'15th-c. castle',             lng:-7.86861, lat:55.13787, desc:'A medieval tower house by the water near Creeslough.' },
+  { cat:'nature',  name:'Griánán of Aileach',sub:'Stone ringfort',       lng:-7.4283,  lat:55.0236,  desc:'A stone ring at 250 m with 360° views over the loughs.', photo:'/photos/map/grianan-of-aileach.jpg' },
+  { cat:'nature',  name:'Ards Forest Park', sub:'Coastal forest',             lng:-7.90209, lat:55.15435, desc:'480 ha of woodland, dunes and beaches on Sheephaven Bay.', photo:'/photos/map/ards-forest-park.jpg' },
+  { cat:'nature',  name:'Doe Castle',             sub:'15th-c. castle',             lng:-7.86861, lat:55.13787, desc:'A medieval tower house by the water near Creeslough.', photo:'/photos/map/doe-castle.jpg' },
   { cat:'nature',  name:'Carrickfinn Beach',      sub:'Airport beach',              lng:-8.34978, lat:55.04081, desc:'Blue Flag white-sand beach right beside the runway.', photo:'/photos/map/carrickfinn-beach.jpg' },
-  { cat:'nature',  name:'Inishowen Peninsula',    sub:'Northern region',            lng:-7.2900,  lat:55.2500,  desc:'Ireland\'s northernmost peninsula; home to Malin Head.' },
+  { cat:'nature',  name:'Inishowen Peninsula',    sub:'Northern region',            lng:-7.2900,  lat:55.2500,  desc:'Ireland\'s northernmost peninsula; home to Malin Head.', photo:'/photos/map/inishowen-peninsula.jpg' },
   { cat:'towns',   name:'Donegal Town',           sub:'Castle & bay',               lng:-8.1100,  lat:54.6542,  desc:'Heart of the south, with a castle and quayside.', photo:'/photos/map/donegal-town.jpg' },
-  { cat:'towns',   name:'Letterkenny',            sub:'Main town',                  lng:-7.7344,  lat:54.9558,  desc:'Donegal\'s largest town and main service hub.' },
+  { cat:'towns',   name:'Letterkenny',            sub:'Main town',                  lng:-7.7344,  lat:54.9558,  desc:'Donegal\'s largest town and main service hub.', photo:'/photos/map/letterkenny.jpg' },
   { cat:'towns',   name:'Bundoran',               sub:'Surf & beach',               lng:-8.2811,  lat:54.4783,  desc:'Ireland\'s surf capital, with a Blue Flag beach on the Wild Atlantic Way.', photo:'/photos/map/bundoran.jpg' },
   { cat:'towns',   name:'Killybegs',              sub:'Fishing port',               lng:-8.4500,  lat:54.6333,  desc:'Ireland\'s largest fishing port.', photo:'/photos/map/killybegs.jpg' },
-  { cat:'towns',   name:'Glencolmcille',          sub:'Folk Village',               lng:-8.74134, lat:54.70806, desc:'Open-air folk museum and dramatic southwest coast.' },
+  { cat:'towns',   name:'Glencolmcille',          sub:'Folk Village',               lng:-8.74134, lat:54.70806, desc:'Open-air folk museum and dramatic southwest coast.', photo:'/photos/map/glencolmcille.jpg' },
   { cat:'towns',   name:'Ardara',                 sub:'Heritage town',              lng:-8.4100,  lat:54.7700,  desc:'Famous for tweed and woollen craft.', photo:'/photos/map/ardara.jpg' },
-  { cat:'towns',   name:'Ballyshannon',           sub:'Mouth of the Erne',          lng:-8.1897,  lat:54.5028,  desc:'One of the oldest towns in Ireland.' },
+  { cat:'towns',   name:'Ballyshannon',           sub:'Mouth of the Erne',          lng:-8.1897,  lat:54.5028,  desc:'One of the oldest towns in Ireland.', photo:'/photos/map/ballyshannon.jpg' },
   { cat:'islands', name:'Arranmore',              sub:'Árainn Mhór',      lng:-8.52591, lat:54.98914, desc:'Donegal\'s largest inhabited island, a Gaeltacht community.', photo:'/photos/map/arranmore.jpg' },
   { cat:'islands', name:'Tory Island',            sub:'Toraigh',                    lng:-8.2333,  lat:55.2667,  desc:'Remote island with its own king and a community of artists.', photo:'/photos/map/tory-island.jpg' },
   { cat:'islands', name:'Gola Island',            sub:'Oileán Ghabhla',        lng:-8.36369, lat:55.09094, desc:'Cliffs and beaches; popular with rock climbers.', photo:'/photos/map/gola-island.jpg' },
@@ -549,6 +550,18 @@ function setupPoints() {
     map.on('moveend',    onInteractEnd);
     map.on('zoomend',    onInteractEnd);
     map.on('pitchend',   onInteractEnd);
+
+    // At very high pitch (near maxPitch), distant points project above the
+    // horizon into the sky instead of being clipped — fade markers/popup
+    // out before that happens rather than let them float in the sky.
+    const PITCH_FADE_START = 64, PITCH_FADE_END = 76;
+    function updateMarkerFade() {
+      const t = Math.max(0, Math.min(1, (map.getPitch() - PITCH_FADE_START) / (PITCH_FADE_END - PITCH_FADE_START)));
+      const op = 1 - t;
+      map.getContainer().querySelectorAll('.maplibregl-marker').forEach(el => { el.style.opacity = op; });
+      if(popup && t > 0.5) { popup.remove(); popup = null; }
+    }
+    map.on('pitch', updateMarkerFade);
   }
   recluster();
 }
@@ -775,11 +788,6 @@ function initMap() {
       if(e.data && e.data.type === 'don-replay-intro') replayIntro();
       if(e.data && e.data.type === 'don-waw-pause') pauseWAWAnim();
       if(e.data && e.data.type === 'don-waw-resume') resumeWAWAnim();
-      if(e.data && e.data.type === 'don-wheel-zoom' && map) {
-        const delta = e.data.deltaY * (e.data.deltaMode === 1 ? 20 : 1);
-        const z = Math.max(map.getMinZoom(), Math.min(map.getMaxZoom(), map.getZoom() - delta * 0.003));
-        map.jumpTo({ zoom: z });
-      }
     });
 
     // Pause WAW when the browser tab is hidden
@@ -792,6 +800,18 @@ function initMap() {
     setTimeout(startIntro, 10000);
   });
 }
+
+// A browser never chains an unscrolled wheel gesture from an iframe out to
+// its parent page on its own. So: wheel over the places list scrolls it
+// natively (it's a normal overflow:auto element, no JS needed); wheel
+// anywhere else in the iframe (open map area, margins) is forwarded to the
+// parent so the page keeps scrolling through instead of feeling "stuck".
+document.addEventListener('wheel', e => {
+  if(e.ctrlKey) return; // let the canvas's own ctrl+scroll zoom handler run
+  if(e.target && e.target.closest && e.target.closest('.donrail')) return;
+  e.preventDefault();
+  window.parent.postMessage({ type:'don-scroll-through', deltaY:e.deltaY, deltaMode:e.deltaMode }, '*');
+}, { passive:false });
 
 // ---- Boot ----------------------------------------------------------------
 

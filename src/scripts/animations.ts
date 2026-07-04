@@ -223,15 +223,15 @@ function applyHeaderMode(): void {
    The only job here is toggling .is-scrolled so the frosted-glass
    background appears once the user has scrolled past the hero edge. */
 function setupHeaderReveal(): void {
-  const header = document.querySelector<HTMLElement>("[data-header]");
-  if (!header) return;
-
   let ticking = false;
 
   const apply = (): void => {
-    // Re-queried on every call (not captured once) — after a client-side
-    // nav to a page without a hero-scroll section, a stale reference to a
-    // detached element from a previous page must not leak in here.
+    // Both re-queried on every call (not captured once) — after a
+    // client-side nav, stale references to elements detached from a
+    // previous page must not leak in here (the header itself included,
+    // since View Transitions can swap it for a new node).
+    const header = document.querySelector<HTMLElement>("[data-header]");
+    if (!header) return;
     const heroSection = document.querySelector<HTMLElement>("[data-hero-scroll]");
     const threshold = heroSection
       ? Math.max(

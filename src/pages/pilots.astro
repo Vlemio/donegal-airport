@@ -171,7 +171,7 @@ const droneZones = [
   <nav class="sticky top-[var(--header-h)] z-30 border-y border-line bg-[color-mix(in_srgb,var(--color-surface-lo)_94%,transparent)] shadow-[0_1px_3px_rgba(24,29,22,0.08)] backdrop-blur">
     <div class="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-6">
       {nav.map((n) => (
-        <a href={`#${n.id}`} data-nav-link={n.id} class="shrink-0 border-b-2 border-transparent py-5 pr-7 font-mono text-[0.82rem] font-bold uppercase tracking-[0.14em] text-ink/70 transition-colors hover:text-atlantic">{n.label}</a>
+        <a href={`#${n.id}`} data-nav-link={n.id} class="shrink-0 border-b-2 border-transparent px-4 py-5 text-center font-mono text-[0.82rem] font-bold uppercase tracking-[0.14em] text-ink/70 transition-colors hover:text-atlantic">{n.label}</a>
       ))}
     </div>
   </nav>

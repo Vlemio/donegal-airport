@@ -251,6 +251,7 @@ const islands = [
     drive: "35 min from CFN",
     text: "Donegal's largest inhabited island. 500 residents, blue-flag beaches, sea cliffs and a pub that opens when the fishermen get back.",
     src: "/photos/discover-island-arranmore.jpg", srcPos: "36% 28%",
+    credit: "", creditUrl: "",
   },
   {
     name: "Tory Island",
@@ -259,6 +260,7 @@ const islands = [
     drive: "55 min from CFN",
     text: "Nine miles offshore. A world of its own — an elected king, a school of naïve painters, and a way of life untouched by the mainland.",
     src: "/photos/discover-island-tory.jpg", srcPos: "49% 41%",
+    credit: "", creditUrl: "",
   },
   {
     name: "Gola Island",
@@ -267,6 +269,7 @@ const islands = [
     drive: "40 min from CFN",
     text: "Uninhabited since 1967. White beaches, abandoned stone cottages, complete silence. Day trips run in summer from Bunbeg harbour.",
     src: "/photos/discover-island-gola.jpg", srcPos: "35% 0%",
+    credit: "", creditUrl: "",
   },
   {
     name: "Owey Island",
@@ -275,6 +278,7 @@ const islands = [
     drive: "40 min from CFN",
     text: "No road. No permanent residents. A small summer population returns each year to keep the old cottages alive. Arranged crossings only.",
     src: "", srcPos: "50% 50%",
+    credit: "", creditUrl: "",
   },
   // ── Additional islands ─────────────────────────────────────────────────────
   {
@@ -283,7 +287,8 @@ const islands = [
     ferry: "Magheraroarty · 20 min crossing",
     drive: "50 min from CFN",
     text: "A small Gaeltacht community off the northwest coast. White beaches, dramatic cliffs, and one of Donegal's most important seabird colonies.",
-    src: "", srcPos: "50% 50%",
+    src: "/photos/discover-island-bofin.jpg", srcPos: "50% 50%",
+    credit: "Alan Reid", creditUrl: "https://www.geograph.ie/photo/5015145",
   },
   {
     name: "Inishfree",
@@ -292,6 +297,7 @@ const islands = [
     drive: "35 min from CFN",
     text: "Island of heather, sheltered in the bay between Dungloe and Burtonport. Once home to farmers and fishermen; now visited for its peace.",
     src: "", srcPos: "50% 50%",
+    credit: "", creditUrl: "",
   },
   {
     name: "Inishirrer",
@@ -299,7 +305,8 @@ const islands = [
     ferry: "Gweedore coast · short crossing",
     drive: "45 min from CFN",
     text: "The Eastern Island — long and narrow, off the Gweedore coast. Its islanders were famed throughout Donegal for seamanship and rowing.",
-    src: "", srcPos: "50% 50%",
+    src: "/photos/discover-island-irrer.jpg", srcPos: "50% 50%",
+    credit: "Joseph Mischyshyn", creditUrl: "https://www.geograph.ie/photo/1173028",
   },
   {
     name: "Inishkerragh",
@@ -308,6 +315,7 @@ const islands = [
     drive: "40 min from CFN",
     text: "Sheep Island — a tiny flat islet in Boylagh Bay, just 650 m long. One of the most sheltered of the Rosses archipelago.",
     src: "", srcPos: "50% 50%",
+    credit: "", creditUrl: "",
   },
   {
     name: "Inishtrahull",
@@ -316,6 +324,7 @@ const islands = [
     drive: "90 min from CFN",
     text: "Ireland's most northerly island. Uninhabited since 1929. An automated lighthouse marks the point where the Atlantic meets the Irish Sea.",
     src: "/photos/discover-island-inishtrahull.jpg", srcPos: "71% 52%",
+    credit: "", creditUrl: "",
   },
   {
     name: "Island Roy",
@@ -323,7 +332,8 @@ const islands = [
     ferry: "Downings · short crossing",
     drive: "60 min from CFN",
     text: "A quiet islet in the sheltered waters of Mulroy Bay, near Downings. Calm tidal channels, birdlife, and some of the most still water in Donegal.",
-    src: "", srcPos: "50% 50%",
+    src: "/photos/discover-island-roy.jpg", srcPos: "50% 50%",
+    credit: "Rossographer", creditUrl: "https://www.geograph.ie/photo/5731190",
   },
 ] as const;
 ---
@@ -817,6 +827,16 @@ const islands = [
                   <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono text-[0.6rem] text-white backdrop-blur-sm">
                     {isl.srcPos}
                   </div>
+                  {isl.credit && (
+                    <a
+                      href={isl.creditUrl}
+                      target="_blank"
+                      rel="noopener"
+                      class="absolute bottom-2 right-2 z-10 font-mono text-[0.5rem] uppercase tracking-[0.15em] text-white/40 transition-colors hover:text-white/80"
+                    >
+                      Photo: {isl.credit}
+                    </a>
+                  )}
                 </figure>
                 <div class="mt-4">
                   <p class="font-mono text-[0.65rem] uppercase tracking-[0.2em] text-mute">
@@ -1234,23 +1254,19 @@ const islands = [
       }, { threshold: 0 });
       wawVis.observe(frame);
 
-      // While the page is scrolling, disable pointer-events on the iframe so wheel
-      // events reach the parent directly (no postMessage latency = smooth scroll).
-      // Ctrl+scroll is forwarded manually so map zoom still works from outside the iframe.
-      let _scrollTimer = 0;
-      window.addEventListener('scroll', () => {
-        frame.style.pointerEvents = 'none';
-        clearTimeout(_scrollTimer);
-        _scrollTimer = window.setTimeout(() => { frame.style.pointerEvents = ''; }, 180);
-      }, { passive: true });
-
-      window.addEventListener('wheel', (e) => {
-        if (!e.ctrlKey) return;
-        const r = frame.getBoundingClientRect();
-        if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
-        e.preventDefault();
-        frame.contentWindow?.postMessage({ type: 'don-wheel-zoom', deltaY: e.deltaY, deltaMode: e.deltaMode }, '*');
-      }, { passive: false });
+      // The iframe keeps normal pointer-events at all times (no more toggling
+      // it off during page scroll — that trick raced with the places list's own
+      // scrolling and never reliably won). Ctrl+scroll-to-zoom and the places
+      // list's own scroll are both handled natively inside the iframe now.
+      // The only thing the parent still needs to do: when the cursor is over
+      // the iframe but not over anything scrollable in there (e.g. empty map
+      // area), the iframe forwards the wheel delta here so the page keeps
+      // scrolling through instead of getting stuck.
+      window.addEventListener('message', (e) => {
+        if (e.data?.type !== 'don-scroll-through') return;
+        const delta = e.data.deltaY * (e.data.deltaMode === 1 ? 20 : 1);
+        window.scrollBy({ top: delta, left: 0, behavior: 'auto' });
+      });
 
       // Replay intro animation every time "Explore destinations →" is clicked
       const exploreLink = document.querySelector<HTMLAnchorElement>('a[href="#destinations"]');
