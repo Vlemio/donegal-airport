@@ -20,7 +20,10 @@ const all = sorted.map((n) => ({
 }));
 
 const featured = all[0];
-const totalPages = Math.ceil(all.length / 3);
+// Sidebar shows the next 4 (matches the featured photo's height); everything
+// else after that goes into the 3-column grid below.
+const sidebarItems = all.slice(1, 5);
+const gridItems = all.slice(5);
 ---
 
 <BaseLayout title="News · Donegal Airport" description="Latest news and updates from Donegal Airport CFN/EIDL.">
@@ -30,6 +33,8 @@ const totalPages = Math.ceil(all.length / 3);
     {/* ===== HERO: featured card + sidebar ===== */}
     <section class="np-top">
       <div class="np-inner">
+
+        <a href="/#news" class="np-back">← Home</a>
 
         <a href={`/news/${featured.slug}`} class="np-feat">
           <img src={featured.image} alt={featured.title} class="np-feat__img" loading="eager" />
@@ -43,7 +48,7 @@ const totalPages = Math.ceil(all.length / 3);
         <aside class="np-side">
           <p class="np-side__label">Latest news</p>
           <ul class="np-side__list">
-            {all.map((item) => (
+            {sidebarItems.map((item) => (
               <li>
                 <a href={`/news/${item.slug}`} class="np-sb-row">
                   <img src={item.image} alt={item.title} class="np-sb-row__thumb" loading="lazy" />
@@ -69,14 +74,10 @@ const totalPages = Math.ceil(all.length / 3);
             <p class="np-grid-eyebrow">From the airport</p>
             <h2 class="np-grid-hed">All stories.</h2>
           </div>
-          <div class="ns-nav">
-            <button class="ns-btn" id="npg-prev" aria-label="Previous">←</button>
-            <button class="ns-btn" id="npg-next" aria-label="Next">→</button>
-          </div>
         </div>
 
-        <div class="np-grid" id="npg-strip">
-          {all.map((item) => (
+        <div class="np-grid">
+          {gridItems.map((item) => (
             <a href={`/news/${item.slug}`} class="nc">
               <div class="nc__media">
                 <span class="nc__flag">{item.kind}</span>
@@ -88,20 +89,6 @@ const totalPages = Math.ceil(all.length / 3);
             </a>
           ))}
         </div>
-
-        {totalPages > 1 && (
-          <nav class="np-pg" aria-label="Pagination">
-            <a href="#" class="np-pg__arr">←</a>
-            <div class="np-pg__dots">
-              {Array.from({ length: totalPages }, (_, i) => (
-                <button class={`np-pg__dot${i === 0 ? " np-pg__dot--act" : ""}`} aria-current={i === 0 ? "page" : undefined}>
-                  {i + 1}
-                </button>
-              ))}
-            </div>
-            <a href="#" class="np-pg__arr">→</a>
-          </nav>
-        )}
 
       </div>
     </section>
@@ -119,15 +106,39 @@ const totalPages = Math.ceil(all.length / 3);
     }
 
     /* ---- Hero section ---- */
-    .np-top { padding: 4rem 0 0; }
+    /* Header is fixed + transparent-until-scrolled, so content must clear
+       its full height itself rather than overlap it. */
+    .np-top { padding: calc(var(--header-h) + 2rem) 0 0; }
     .np-top .np-inner {
       display: grid;
       grid-template-columns: 1fr 34%;
       gap: 2.4rem;
-      align-items: start;
+      align-items: stretch;
     }
+    .np-back {
+      display: inline-flex;
+      width: fit-content;
+      margin-bottom: 1.6rem;
+      align-items: center;
+      gap: 0.6rem;
+      border-radius: 999px;
+      background: var(--color-ink, #181d16);
+      padding: 0.6rem 1.1rem;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: #fff;
+      text-decoration: none;
+      transition: opacity 0.2s;
+      grid-column: 1 / -1;
+    }
+    .np-back:hover { opacity: 0.8; }
 
-    /* Featured card */
+    /* Featured card — height matches the sidebar's natural height (4
+       items + label) rather than a fixed ratio, so the two columns
+       always line up exactly. */
     .np-feat {
       display: block;
       position: relative;
@@ -135,9 +146,12 @@ const totalPages = Math.ceil(all.length / 3);
       overflow: hidden;
       text-decoration: none;
       color: #fff;
-      aspect-ratio: 16/10;
+      height: 100%;
+      min-height: 22rem;
     }
     .np-feat__img {
+      position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
@@ -247,10 +261,11 @@ const totalPages = Math.ceil(all.length / 3);
     }
     .np-grid-eyebrow {
       font-family: var(--font-mono);
-      font-size: 0.72rem;
+      font-size: 0.95rem;
+      font-weight: 700;
       letter-spacing: 0.22em;
       text-transform: uppercase;
-      color: var(--color-mute, #56605a);
+      color: var(--color-atlantic, #1a4a6e);
       margin-bottom: 0.5rem;
     }
     .np-grid-hed {
@@ -261,39 +276,10 @@ const totalPages = Math.ceil(all.length / 3);
       letter-spacing: -0.025em;
     }
     .np-grid {
-      display: flex;
-      gap: 1.8rem;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      -ms-overflow-style: none;
-      scrollbar-width: none;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.8rem 1.8rem;
     }
-    .np-grid::-webkit-scrollbar { display: none; }
-    .np-grid .nc {
-      flex: 0 0 calc(33.333% - 1.2rem);
-      min-width: 240px;
-      scroll-snap-align: start;
-    }
-
-    /* ---- nav arrows (shared on both pages) ---- */
-    .ns-nav { display: flex; gap: 0.5rem; }
-    .ns-btn {
-      width: 2.4rem;
-      height: 2.4rem;
-      border-radius: 50%;
-      border: 1px solid var(--color-line, rgba(24,29,22,0.11));
-      background: transparent;
-      font-size: 1rem;
-      line-height: 1;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s, border-color 0.2s, color 0.2s;
-      color: var(--color-ink, #181d16);
-    }
-    .ns-btn:hover { background: var(--color-ink, #181d16); color: var(--color-surface, #f3f2ee); border-color: var(--color-ink, #181d16); }
-    .ns-btn:disabled { opacity: 0.3; cursor: default; pointer-events: none; }
 
     /* ---- nc card (duplicated from homepage global styles) ---- */
     .nc {
@@ -374,81 +360,20 @@ const totalPages = Math.ceil(all.length / 3);
     .nc:hover .nc__foot { color: var(--color-atlantic, #1a4a6e); }
     .nc:hover .nc__foot .ar { transform: translateX(5px); }
 
-    /* ---- Pagination ---- */
-    .np-pg {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 1.2rem;
-      margin-top: 3.5rem;
-      padding-top: 2rem;
-      border-top: 1px solid var(--color-line, rgba(24,29,22,0.11));
-    }
-    .np-pg__arr {
-      font-family: var(--font-mono);
-      font-size: 1rem;
-      text-decoration: none;
-      color: var(--color-ink, #181d16);
-      width: 2.4rem;
-      height: 2.4rem;
-      border-radius: 50%;
-      border: 1px solid var(--color-line, rgba(24,29,22,0.11));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s, border-color 0.2s, color 0.2s;
-    }
-    .np-pg__arr:hover { background: var(--color-ink, #181d16); color: var(--color-surface, #f3f2ee); border-color: var(--color-ink, #181d16); }
-    .np-pg__dots { display: flex; gap: 0.4rem; }
-    .np-pg__dot {
-      width: 2rem;
-      height: 2rem;
-      border-radius: 50%;
-      border: 1px solid var(--color-line, rgba(24,29,22,0.11));
-      background: transparent;
-      font-family: var(--font-mono);
-      font-size: 0.72rem;
-      cursor: pointer;
-      color: var(--color-mute, #56605a);
-      transition: background 0.2s, color 0.2s;
-    }
-    .np-pg__dot--act {
-      background: var(--color-ink, #181d16);
-      color: var(--color-surface, #f3f2ee);
-      border-color: var(--color-ink, #181d16);
-    }
-
     /* ---- Responsive ---- */
     @media (max-width: 960px) {
       .np-top .np-inner { grid-template-columns: 1fr; }
       .np-feat { aspect-ratio: 4/3; }
       .np-side { padding-top: 1rem; }
-      .np-grid .nc { flex: 0 0 calc(78% - 0.9rem); }
+      .np-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 560px) {
+      .np-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 640px) {
       .np-inner { padding-left: 1.25rem; padding-right: 1.25rem; }
     }
   </style>
 
-  <script is:inline>
-    (function () {
-      var strip = document.getElementById('npg-strip');
-      var prev = document.getElementById('npg-prev');
-      var next = document.getElementById('npg-next');
-      if (!strip || !prev || !next) return;
-      function cw() {
-        var c = strip.querySelector('.nc');
-        return c ? c.getBoundingClientRect().width + 29 : 300;
-      }
-      function upd() {
-        prev.disabled = strip.scrollLeft <= 4;
-        next.disabled = strip.scrollLeft + strip.clientWidth >= strip.scrollWidth - 4;
-      }
-      prev.addEventListener('click', function () { strip.scrollBy({ left: -cw(), behavior: 'smooth' }); });
-      next.addEventListener('click', function () { strip.scrollBy({ left: cw(), behavior: 'smooth' }); });
-      strip.addEventListener('scroll', upd, { passive: true });
-      upd();
-    })();
-  </script>
 
 </BaseLayout>

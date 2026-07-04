@@ -29,12 +29,15 @@ const paragraphs = body.split(/\n\n+/).filter(Boolean);
 ---
 
 <BaseLayout title={`${title} · Donegal Airport`} description={lead}>
-  <!-- Back link — fixed top-left -->
+  <!-- Back link — fixed top-left. Label/href are set on load based on
+       where the visitor came from (see script below): the home page's
+       news teaser vs. the /news "all stories" index. -->
   <a
     href="/#news"
-    class="fixed left-6 top-6 z-50 hidden items-center gap-2 rounded bg-black/40 px-3 py-1.5 font-mono text-xs uppercase tracking-[0.2em] text-white backdrop-blur-sm transition-colors hover:bg-black/60 lg:flex"
+    data-back-link
+    class="fixed left-6 top-[calc(var(--header-h)+1rem)] z-40 hidden items-center gap-2 rounded bg-black/40 px-3 py-1.5 font-mono text-xs uppercase tracking-[0.2em] text-white backdrop-blur-sm transition-colors hover:bg-black/60 lg:flex"
   >
-    <span>←</span> All news
+    <span>←</span> <span data-back-label>Home</span>
   </a>
 
   <!-- Hero: photo + title overlaid -->
@@ -51,13 +54,6 @@ const paragraphs = body.split(/\n\n+/).filter(Boolean);
       draggable="false"
     />
 
-    <!-- Drag overlay (invisible, captures mouse) -->
-    <div
-      id="pos-overlay"
-      class="absolute inset-0 cursor-grab active:cursor-grabbing"
-      title="Drag to reposition photo"
-    ></div>
-
     <!-- Gradient: only bottom third darkened for legibility -->
     <div
       class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent"
@@ -68,11 +64,12 @@ const paragraphs = body.split(/\n\n+/).filter(Boolean);
       <!-- mobile back -->
       <a
         href="/#news"
+        data-back-link
         class="pointer-events-auto mb-6 flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-white/60 transition-colors hover:text-white lg:hidden"
       >
-        ← All news
+        ← <span data-back-label>Home</span>
       </a>
-      <p class="mb-4 font-mono text-xs uppercase tracking-[0.22em] text-white/60">
+      <p class="mb-4 font-mono text-xs font-bold uppercase tracking-[0.22em] text-white [text-shadow:0_1px_6px_rgba(0,0,0,0.65)]">
         {kind} &nbsp;·&nbsp; {dateFormatted}
       </p>
       <h1 class="font-display text-4xl leading-[1.05] text-white sm:text-5xl lg:text-[3.5rem] xl:text-[4rem] max-w-3xl">
@@ -80,13 +77,6 @@ const paragraphs = body.split(/\n\n+/).filter(Boolean);
       </h1>
     </div>
 
-    <!-- Position readout -->
-    <div
-      id="pos-readout"
-      class="pointer-events-none absolute bottom-3 right-3 rounded bg-black/60 px-3 py-1.5 font-mono text-xs text-white backdrop-blur-sm select-none"
-    >
-      {objPos}
-    </div>
   </section>
 
   <!-- Content -->
@@ -112,49 +102,47 @@ const paragraphs = body.split(/\n\n+/).filter(Boolean);
     <div class="mt-20 border-t border-line pt-10">
       <a
         href="/#news"
+        data-back-link
         class="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.22em] text-atlantic transition-colors hover:text-ink"
       >
-        ← Back to all news
+        ← Back to <span data-back-label>Home</span>
       </a>
     </div>
   </article>
 </BaseLayout>
 
 <script>
-  const img = document.getElementById("hero-img") as HTMLImageElement | null;
-  const overlay = document.getElementById("pos-overlay");
-  const readout = document.getElementById("pos-readout");
-  if (!img || !overlay || !readout) throw new Error("missing elements");
+  // Back link: send the visitor back to wherever they actually came from —
+  // the "all stories" index (/news) or the home page's news teaser (/#news).
+  // Defaults to Home when the referrer is unknown (direct link, new tab, etc).
+  // Registered on astro:page-load (not a bare top-level call) because View
+  // Transitions re-navigating between two [slug] pages reuses this same
+  // compiled script — a bare IIFE would only ever run once, on whichever
+  // [slug] page happened to load first, and never update again after that.
+  document.addEventListener("astro:page-load", () => {
+    // View Transitions navigate via fetch, so document.referrer is only
+    // reliable for a real first page load — sessionStorage (set by
+    // BaseLayout's astro:before-preparation listener) tracks same-site
+    // client-side transitions correctly.
+    let fromPath: string | null = sessionStorage.getItem("nav-from");
+    if (fromPath === null) {
+      try {
+        const ref = document.referrer ? new URL(document.referrer) : null;
+        fromPath = ref && ref.origin === location.origin ? ref.pathname : "";
+      } catch { fromPath = ""; }
+    }
+    const fromAllNews = (fromPath ?? "").replace(/\/+$/, "") === "/news";
 
-  // Parse initial position from the rendered style
-  const initial = img.style.objectPosition || "50% 50%";
-  const [ix, iy] = initial.split(" ").map((v) => parseFloat(v));
-  let posX = isNaN(ix) ? 50 : ix;
-  let posY = isNaN(iy) ? 50 : iy;
+    const href = fromAllNews ? "/news" : "/#news";
 
-  let dragging = false;
-  let startX = 0, startY = 0;
-
-  function clamp(v: number) { return Math.max(0, Math.min(100, v)); }
-
-  overlay.addEventListener("mousedown", (e) => {
-    dragging = true;
-    startX = e.clientX;
-    startY = e.clientY;
-    e.preventDefault();
+    document.querySelectorAll<HTMLAnchorElement>("[data-back-link]").forEach((a) => {
+      a.href = href;
+    });
+    // Standalone "← X" labels get Title Case; the "Back to X" footer
+    // sentence reads better lower-case.
+    document.querySelectorAll<HTMLElement>("[data-back-label]").forEach((el) => {
+      const midSentence = el.closest("[data-back-link]")?.textContent?.toLowerCase().includes("back to");
+      el.textContent = fromAllNews ? (midSentence ? "all news" : "All news") : "Home";
+    });
   });
-
-  window.addEventListener("mousemove", (e) => {
-    if (!dragging) return;
-    const rect = overlay.getBoundingClientRect();
-    posX = clamp(posX - (e.clientX - startX) / rect.width * 100);
-    posY = clamp(posY - (e.clientY - startY) / rect.height * 100);
-    startX = e.clientX;
-    startY = e.clientY;
-    const val = `${Math.round(posX)}% ${Math.round(posY)}%`;
-    img.style.objectPosition = val;
-    readout.textContent = val;
-  });
-
-  window.addEventListener("mouseup", () => { dragging = false; });
 </script>

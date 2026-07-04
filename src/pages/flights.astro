@@ -75,21 +75,21 @@ const flightsToday = FALLBACK_FLIGHTS.flights;
     <div class="mx-auto max-w-7xl px-6 py-16">
       <div data-animate="fade-up" class="border-t border-line pt-10">
         <p class="font-mono text-base font-bold uppercase tracking-[0.3em] text-atlantic">Book a flight</p>
-        <h2 class="mt-2 font-display text-[clamp(1.6rem,3vw,2.2rem)] leading-snug text-ink">Dublin, daily. Glasgow, weekends.</h2>
+        <h2 class="mt-2 font-display text-[clamp(1.6rem,3vw,2.2rem)] leading-snug text-ink">Dublin, daily. Glasgow, on selected week days.</h2>
 
         <div class="mt-8 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2">
           <div class="flex flex-col justify-between gap-5 bg-surface p-7">
             <div>
-              <p class="font-mono text-[0.68rem] font-bold uppercase tracking-[0.16em] text-sand">Aer Lingus Regional</p>
-              <p class="mt-2 font-display text-xl leading-tight text-ink">Donegal &rarr; Dublin</p>
+              <p class="font-mono text-[0.8rem] font-bold uppercase tracking-[0.16em] text-sand">Aer Lingus Regional</p>
+              <p class="mt-2 font-display text-xl leading-tight text-ink">Donegal &harr; Dublin</p>
               <p class="mt-2 text-sm text-mute">Daily.</p>
             </div>
             <a href="https://www.aerlingus.com" target="_blank" rel="noopener" class="inline-flex w-fit items-center gap-2 rounded-full bg-atlantic px-6 py-3 font-mono text-[0.7rem] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-ink">Book Dublin &rarr;</a>
           </div>
           <div class="flex flex-col justify-between gap-5 bg-surface p-7">
             <div>
-              <p class="font-mono text-[0.68rem] font-bold uppercase tracking-[0.16em] text-sand">Loganair</p>
-              <p class="mt-2 font-display text-xl leading-tight text-ink">Donegal &rarr; Glasgow</p>
+              <p class="font-mono text-[0.8rem] font-bold uppercase tracking-[0.16em] text-sand">Loganair</p>
+              <p class="mt-2 font-display text-xl leading-tight text-ink">Donegal &harr; Glasgow</p>
               <p class="mt-2 text-sm text-mute">Summer: Wed, Sat, Sun. Winter: Wed, Sun.</p>
             </div>
             <a href="https://www.loganair.co.uk" target="_blank" rel="noopener" class="inline-flex w-fit items-center gap-2 rounded-full bg-atlantic px-6 py-3 font-mono text-[0.7rem] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-ink">Book Glasgow &rarr;</a>
@@ -209,6 +209,19 @@ const flightsToday = FALLBACK_FLIGHTS.flights;
 
 <script is:inline define:vars={{ boardFlights: flightsToday }}>
 (function () {
+  // Registered on astro:page-load (not a bare top-level call) — otherwise
+  // this whole board only ever renders on the very first hard load, and
+  // reaching /flights via a client-side nav shows an empty board until you
+  // reload the page by hand.
+  var flightsTimer = null;
+  var clockTimer = null;
+  document.addEventListener('astro:page-load', init);
+
+  function init() {
+  if (!document.getElementById('eidl-dep-rows') && !document.getElementById('eidl-arr-rows')) return;
+  if (flightsTimer) clearInterval(flightsTimer);
+  if (clockTimer) clearInterval(clockTimer);
+
   var ACCENT = '#E0A94D';
   // Exact match to the FIDS kiosk board's own palette (donegal-fids/public/board.css)
   // so a status reads the same colour on both displays.
@@ -451,7 +464,7 @@ const flightsToday = FALLBACK_FLIGHTS.flights;
       .then(applyData)
       .catch(function () {});
   }
-  setInterval(fetchFlights, 15000);
+  flightsTimer = setInterval(fetchFlights, 15000);
 
   // ---------- Clock ----------
   function tick() {
@@ -469,7 +482,7 @@ const flightsToday = FALLBACK_FLIGHTS.flights;
       dateEl.textContent = (wd + ' ' + day + ' ' + mon).toUpperCase() + ' · Local time';
     }
   }
-  tick(); setInterval(tick, 1000);
+  tick(); clockTimer = setInterval(tick, 1000);
 
   // ---------- Tabs ----------
   var tabsEl = document.getElementById('eidl-tabs');
@@ -549,6 +562,7 @@ const flightsToday = FALLBACK_FLIGHTS.flights;
 
       report();
     }
+  }
   }
 })();
 </script>

@@ -112,7 +112,7 @@ const busToAirport = [
     { dep: "19:50", arr: "20:45" },
   ] },
   { place: "Crolly", route: "992", pairs: [
-    { dep: "14:50", arr: "15:05" },
+    { dep: "14:50", arr: "15:05", ms: true, demand: true },
   ] },
   { place: "Dungloe", route: "966", pairs: [
     { dep: "08:50", arr: "09:25", ms: true },
@@ -132,7 +132,7 @@ const busFromAirport = [
     { dep: "22:05", arr: "23:00" },
   ] },
   { place: "Crolly", route: "992", pairs: [
-    { dep: "13:55", arr: "14:10" },
+    { dep: "13:55", arr: "14:10", ms: true, demand: true },
   ] },
   { place: "Dungloe", route: "966", pairs: [
     { dep: "07:15", arr: "07:50", ms: true },
@@ -218,7 +218,7 @@ const busColumns = [
         <p
           data-animate="fade-up"
           data-animate-delay="0.08"
-          class="mt-5 max-w-xl text-base leading-relaxed text-white [text-shadow:0_1px_12px_rgba(0,0,0,.7)]"
+          class="mt-5 max-w-xl text-[1.05rem] font-medium leading-relaxed text-white [text-shadow:0_1px_14px_rgba(0,0,0,.75)]"
         >
           The car park is directly in front of the terminal — a one-minute walk
           from the car park to check-in. Pay by machine (cash or card) or
@@ -231,40 +231,51 @@ const busColumns = [
           so everything stays inside the section. */}
       <div>
         {/* Figures */}
+        {/* The card backdrops (bg-black/30) stay visible from the start —
+            only the content inside each one fades/slides in. Animating the
+            whole card's opacity would fade the translucent backdrop too,
+            which visibly shifts the text's apparent colour as the photo
+            behind it bleeds through mid-transition. */}
         <div
           id="parking-figures"
           class="grid gap-px overflow-hidden rounded-xl bg-white/15 sm:grid-cols-3"
         >
           <div class="bg-black/30 p-8 backdrop-blur-sm">
-            <p class="font-display text-[3.2rem] leading-none text-white">2 h</p>
-            <p class="mt-3 font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">Free</p>
-            <p class="mt-2 text-sm leading-relaxed text-white/75">
-              First two hours free — drop off, pick up, or sit in for a coffee.
-            </p>
+            <div data-animate="fade-up">
+              <p class="font-display text-[3.2rem] leading-none text-white">2 h</p>
+              <p class="mt-3 font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">Free</p>
+              <p class="mt-2 text-sm leading-relaxed text-white/75">
+                First two hours free — drop off, pick up, or sit in for a coffee.
+              </p>
+            </div>
           </div>
           <div class="flex flex-col bg-black/30 p-8 backdrop-blur-sm">
-            <p class="font-display text-[3.2rem] leading-none text-white">Long Stay</p>
-            <p class="mt-3 font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">From €7 / day</p>
-            <p class="mt-2 text-sm leading-relaxed text-white/75">
-              €45 for 7–10 days · €60 for two weeks, then €4/day.
-            </p>
-            <button
-              type="button"
-              data-tariff-toggle
-              aria-expanded="false"
-              aria-controls="tariff-panel"
-              class="mt-4 inline-flex w-fit items-center gap-1.5 font-mono text-[0.7rem] font-bold uppercase tracking-[0.18em] text-white underline decoration-white/40 underline-offset-4 transition-opacity hover:opacity-70"
-            >
-              <span data-tariff-label>Show full tariff</span>
-              <span data-tariff-arrow>↓</span>
-            </button>
+            <div data-animate="fade-up" data-animate-delay="0.08">
+              <p class="font-display text-[3.2rem] leading-none text-white">Long Stay</p>
+              <p class="mt-3 font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">From €7 / day</p>
+              <p class="mt-2 text-sm leading-relaxed text-white/75">
+                €45 for 7–10 days · €60 for two weeks, then €4/day.
+              </p>
+              <button
+                type="button"
+                data-tariff-toggle
+                aria-expanded="false"
+                aria-controls="tariff-panel"
+                class="mt-4 inline-flex w-fit items-center gap-1.5 font-mono text-[0.7rem] font-bold uppercase tracking-[0.18em] text-white underline decoration-white/40 underline-offset-4 transition-opacity hover:opacity-70"
+              >
+                <span data-tariff-label>Show full tariff</span>
+                <span data-tariff-arrow>↓</span>
+              </button>
+            </div>
           </div>
           <div class="bg-black/30 p-8 backdrop-blur-sm">
-            <p class="font-display text-[3.2rem] leading-none text-white">EV</p>
-            <p class="mt-3 font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">4 × 22 kW chargers</p>
-            <p class="mt-2 text-sm leading-relaxed text-white/75">
-              EVBox charge points in the car park. Access via the EVBox app.
-            </p>
+            <div data-animate="fade-up" data-animate-delay="0.16">
+              <p class="font-display text-[3.2rem] leading-none text-white">EV</p>
+              <p class="mt-3 font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">4 × 22 kW chargers</p>
+              <p class="mt-2 text-sm leading-relaxed text-white/75">
+                EVBox charge points in the car park. Access via the EVBox app.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -362,7 +373,7 @@ const busColumns = [
           <dl data-animate="fade-up" data-animate-delay="0.15" class="mt-12 divide-y divide-line border-y border-line">
             <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-4">
               <dt class="font-mono text-[0.72rem] font-bold uppercase tracking-[0.16em] text-atlantic">Cabin bag · Aer Lingus Regional</dt>
-              <dd class="text-sm text-ink"><span class="font-medium">10 kg</span> · pre-book online · €35 at airport</dd>
+              <dd class="basis-full text-sm text-ink">Included in the hold by default — <span class="font-medium">10 kg</span> in the cabin instead costs extra: pre-book online, or <span class="font-medium">€35</span> at the airport</dd>
             </div>
             <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-4">
               <dt class="font-mono text-[0.72rem] font-bold uppercase tracking-[0.16em] text-atlantic">Online check-in opens</dt>
@@ -592,14 +603,12 @@ const busColumns = [
                   <div>
                     <p class="flex items-baseline gap-1.5">
                       <span class="text-base font-semibold text-ink">{leg.place}</span>
-                      {leg.route === "992" && (
-                        <span class="font-mono text-[0.6rem] font-bold uppercase tracking-[0.1em] text-sand">992</span>
-                      )}
+                      <span class="font-mono text-[0.6rem] font-bold uppercase tracking-[0.1em] text-sand">{leg.route}</span>
                     </p>
                     <div class="mt-2 flex flex-col gap-1.5 font-mono text-base tabular-nums text-ink">
                       {leg.pairs.map((p) => (
                         <span class="whitespace-nowrap">
-                          {p.dep} <span class="text-mute">→</span> {p.arr}{p.ms && <span class="text-sand">*</span>}
+                          {p.dep} <span class="text-mute">→</span> {p.arr}{(p as any).demand ? <span class="text-sand">&sup1;</span> : p.ms && <span class="text-sand">*</span>}
                         </span>
                       ))}
                     </div>
@@ -609,10 +618,14 @@ const busColumns = [
             ))}
           </div>
 
-          {/* Note — centred in the band between the timetable and the route info */}
-          <p class="my-6 text-sm leading-relaxed text-mute">
-Bus stop: Front of the Terminal. <span class="text-sand">*</span> Mon–Sat only; all other trips run daily, including Sundays &amp; public holidays. Always confirm on the live timetable.
-          </p>
+          {/* Note — each line its own row, centred in the band between the
+              timetable and the route info */}
+          <div class="my-6 space-y-1.5 text-sm leading-relaxed text-mute">
+            <p>Bus stop: Front of the Terminal.</p>
+            <p><span class="text-sand">*</span> Mon–Sat only; all other trips run daily, including Sundays &amp; public holidays.</p>
+            <p><span class="text-sand">&sup1;</span> Route 992's only connection each way (Mon–Sat) — confirm directly with Local Link before relying on it.</p>
+            <p>Always confirm on the live timetable.</p>
+          </div>
 
           {/* Route info (left) + links (right), vertically centred */}
           <div class="flex flex-col gap-4 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
@@ -879,20 +892,6 @@ Bus stop: Front of the Terminal. <span class="text-sand">*</span> Mon–Sat only
     window.addEventListener("resize", () => { if (open) panel.style.maxHeight = panel.scrollHeight + "px"; });
   }
 
-  function initParkingReveal() {
-    const fig = document.getElementById("parking-figures");
-    if (!fig) return;
-    // Fade the whole block up as one (opacity + y), so the container box is never
-    // shown empty "filling up" — it enters like every other fade-up on the page.
-    gsap.from(fig, {
-      opacity: 0,
-      y: 40,
-      ease: "power3.out",
-      duration: 0.9,
-      scrollTrigger: { trigger: fig, start: "top 80%" },
-    });
-  }
-
   // ── Café: each cup arcs in from the top-right, spins to the centre (still at
   //    the centre) with loose beans dropping in from top & bottom, then slips off
   //    bottom-right as the next one arrives. Scroll-driven; desktop-only. ───────
@@ -1039,7 +1038,6 @@ Bus stop: Front of the Terminal. <span class="text-sand">*</span> Mon–Sat only
   document.addEventListener("astro:page-load", () => {
     initCarHireDrive();
     initTariffPanel();
-    initParkingReveal();
     initCafeCoffee();
   });
 </script>

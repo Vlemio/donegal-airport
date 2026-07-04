@@ -35,7 +35,18 @@ const heroDepartures = flightsToday
       f.status,
     tone: statusKey(f.status) === "delayed" ? "warn" : "ok",
   }));
-const nextArrival = flightsToday.find((f) => f.type === "arrival" && f.status !== "Landed") ?? null;
+const heroArrivals = flightsToday
+  .filter((f) => f.type === "arrival" && f.status !== "Landed")
+  .slice(0, HERO_MAX)
+  .map((f) => ({
+    time: f.time,
+    dest: f.city,
+    flight: `${f.flightNo} · ${f.airline}`,
+    status:
+      statusKey(f.status) === "delayed" && f.estTime ? `→ ${f.estTime}` :
+      f.status,
+    tone: statusKey(f.status) === "delayed" ? "warn" : "ok",
+  }));
 
 // Hero weather (static placeholder — wire to Met Éireann or METAR post-firma)
 const heroWeather = { tempC: 12, condition: "Scattered cloud", windDir: "SW", windKt: 14, visKm: 10 };
@@ -110,14 +121,6 @@ const allNews = _newsSorted.map(_mapNews);
 ---
 
 <BaseLayout title={title} description={description}>
-  {/* Mark this page so the header starts transparent over the hero video
-      and fades in with its glass background once the user scrolls past it. */}
-  <script>
-    document.documentElement.setAttribute('data-cinematic-hero', '');
-    document.addEventListener('astro:before-swap', () => {
-      document.documentElement.removeAttribute('data-cinematic-hero');
-    });
-  </script>
 
   {/* ---------- HERO — "Live Ops" (Distribution A) ----------
       Two layers:
@@ -306,24 +309,30 @@ const allNews = _newsSorted.map(_mapNews);
             )}
           </ul>
 
-          {/* Next arrival — id="hero-next-arr" kept in sync by board JS */}
+          {/* Next arrivals — id="hero-arrs" kept in sync by board JS. Same
+              row layout/cap as departures above. */}
           <div
             class="mt-[18px] flex items-center justify-between pt-[16px] font-mono text-[12.5px] uppercase tracking-[0.16em]"
             style="border-top: 1px solid var(--hi-line); color: var(--hi)"
           >
             <span>Next arrivals · Teachtaí</span>
           </div>
-          <div class="mt-[6px]" id="hero-next-arr">
-            {nextArrival ? (
-              <p class="py-2 font-mono text-[12.5px] uppercase tracking-[0.1em]" style="color: var(--hi-soft)">
-                {nextArrival.time} {nextArrival.city} · <span style="color: var(--hi)">{nextArrival.status}</span>
-              </p>
+          <ul class="mt-[6px]" id="hero-arrs">
+            {heroArrivals.length ? (
+              heroArrivals.map((arr) => (
+                <li class="ops-board-row">
+                  <span class="b-time">{arr.time}</span>
+                  <span class="b-dest">{arr.dest}</span>
+                  <span class={`b-status ${arr.tone}`}>{arr.status}</span>
+                  <span class="b-flight">{arr.flight}</span>
+                </li>
+              ))
             ) : (
-              <p class="py-2 font-mono text-[12.5px] uppercase tracking-[0.1em]" style="color: var(--hi-soft)">
+              <li class="py-2 font-mono text-[12.5px] uppercase tracking-[0.1em]" style="color: var(--hi-soft)">
                 No more arrivals today
-              </p>
+              </li>
             )}
-          </div>
+          </ul>
 
           {/* Footer: full-board CTA on its own row so it never collides
               with the arrival line above it */}
@@ -384,7 +393,17 @@ const allNews = _newsSorted.map(_mapNews);
         Coordinates: Carrickfinn Airport (CFN/EIDL) 55.0441°N, 8.3411°W.
         Refreshes every 10 min. Falls back silently to static values on error. */}
     <script is:inline>
+      // Registered on astro:page-load (not a bare top-level call) — otherwise
+      // this only ever fetches once, on the very first hard load, and
+      // returning to the home page via a client-side nav shows the static
+      // placeholder weather forever instead of live data.
       (function () {
+        let wxTimer = null;
+        document.addEventListener('astro:page-load', init);
+
+        function init() {
+        if (!document.getElementById('wx-temp')) return;
+        if (wxTimer) clearInterval(wxTimer);
         // WMO weather code → short description (matches coast guard mapping)
         const WMO = {
           0:'Clear sky', 1:'Mainly clear', 2:'Partly cloudy', 3:'Overcast',
@@ -438,7 +457,8 @@ const allNews = _newsSorted.map(_mapNews);
         }
 
         fetchWx();
-        setInterval(fetchWx, 10 * 60 * 1000); // refresh every 10 min
+        wxTimer = setInterval(fetchWx, 10 * 60 * 1000); // refresh every 10 min
+        }
       })();
     </script>
   </section>
@@ -485,8 +505,7 @@ const allNews = _newsSorted.map(_mapNews);
         </p>
         <div
           data-reveal-after="hero-lead"
-          class="mt-8 max-w-xl text-[1.05rem] leading-relaxed"
-          style="color: var(--hi)"
+          class="mt-8 max-w-xl text-[1.1rem] font-semibold leading-relaxed text-white [text-shadow:0_1px_14px_rgba(0,0,0,0.6)]"
         >
           <p>
             Carrickfinn sits on a sandbar between the Atlantic and Mount
@@ -497,8 +516,8 @@ const allNews = _newsSorted.map(_mapNews);
           <p class="mt-5">
             <a
               href="/story"
-              class="border-b pb-0.5 transition-colors hover:text-sand"
-              style="border-color: var(--hi-line); color: var(--hi)"
+              class="border-b pb-0.5 font-semibold text-white/90 underline decoration-transparent underline-offset-4 transition-all duration-200 hover:text-white hover:decoration-white/80"
+              style="border-color: var(--hi-line)"
             >
               The full story — Malinair to today →
             </a>
@@ -558,7 +577,7 @@ const allNews = _newsSorted.map(_mapNews);
             >
             </div>
             <div class="cfn-hero-content relative z-10 p-10">
-              <p class="font-mono text-[0.85rem] font-bold uppercase tracking-[0.3em] text-sand">
+              <p class="font-mono text-[1rem] font-bold uppercase tracking-[0.3em] text-sand [text-shadow:0_1px_10px_rgba(0,0,0,0.5)]">
                 {d.country}
               </p>
               <h3
@@ -636,7 +655,7 @@ const allNews = _newsSorted.map(_mapNews);
               >
               </div>
               <div class="cfn-hero-content absolute inset-x-0 bottom-0 p-6">
-                <p class="font-mono text-[0.8rem] font-bold uppercase tracking-[0.28em] text-sand">
+                <p class="font-mono text-[0.92rem] font-bold uppercase tracking-[0.28em] text-sand [text-shadow:0_1px_10px_rgba(0,0,0,0.5)]">
                   {d.country}
                 </p>
                 <h3
@@ -946,7 +965,12 @@ const allNews = _newsSorted.map(_mapNews);
   </style>
 
   <script is:inline>
-    (function () {
+    // Both registered on astro:page-load (not bare top-level calls) —
+    // otherwise they only ever run on the very first hard load: the reveal
+    // observer never re-attaches (cards can get stuck invisible) and the
+    // carousel arrows never get their click handlers on a page reached by
+    // a client-side nav rather than a full reload.
+    document.addEventListener('astro:page-load', function () {
       document.documentElement.classList.add('js-ready');
       var deck = document.querySelector('.news-deck');
       if (!deck) return;
@@ -962,10 +986,10 @@ const allNews = _newsSorted.map(_mapNews);
         });
       }, { threshold: 0.12 });
       io.observe(deck);
-    })();
+    });
 
     // News deck carousel arrows
-    (function () {
+    document.addEventListener('astro:page-load', function () {
       var d = document.querySelector('.news-deck');
       var prev = document.getElementById('nc-prev');
       var next = document.getElementById('nc-next');
@@ -979,7 +1003,7 @@ const allNews = _newsSorted.map(_mapNews);
       next.addEventListener('click', function () { d.scrollBy({ left: cw(), behavior: 'smooth' }); });
       d.addEventListener('scroll', upd, { passive: true });
       upd();
-    })();
+    });
   </script>
 
   {/* ---------- INQUIRY CTA — Wild Atlantic Way closer ---------- */}
@@ -1031,6 +1055,18 @@ const allNews = _newsSorted.map(_mapNews);
 
 <script is:inline define:vars={{ boardFlights: flightsToday }}>
 (function () {
+  // Registered on astro:page-load (not a bare top-level call) — otherwise
+  // this only ever runs on the very first hard load of the home page, and
+  // a client-side nav away and back shows the static "No more
+  // departures/arrivals today" SSR fallback forever, never polling for
+  // real data again.
+  var pollTimer = null;
+  document.addEventListener('astro:page-load', init);
+
+  function init() {
+  if (!document.getElementById('hero-deps') && !document.getElementById('hero-arrs')) return;
+  if (pollTimer) clearInterval(pollTimer);
+
   // FIDS sends human-readable status strings (e.g. "On Approach"); this key
   // matches the .b-status tone classes below.
   function statusKey(s) { return String(s || '').toLowerCase().replace(/[^a-z]/g, ''); }
@@ -1070,24 +1106,32 @@ const allNews = _newsSorted.map(_mapNews);
       });
     }
 
-    // Next arrival
-    var arrEl = document.getElementById('hero-next-arr');
-    if (arrEl) {
-      var arr = FLIGHTS.find(function (f) { return f.type === 'arrival' && f.status !== 'Landed'; });
-      arrEl.innerHTML = '';
-      var p = document.createElement('p');
-      p.className = 'py-2 font-mono text-[12.5px] uppercase tracking-[0.1em]';
-      p.style.color = 'var(--hi-soft)';
-      if (arr) {
-        p.appendChild(document.createTextNode(arr.time + ' ' + arr.city + ' · '));
-        var statusSpan = document.createElement('span');
-        statusSpan.style.color = 'var(--hi)';
-        statusSpan.textContent = arr.status;
-        p.appendChild(statusSpan);
-      } else {
-        p.textContent = 'No more arrivals today';
+    // Arrivals list — upcoming only (not landed), capped at 4. Same row
+    // layout as departures above.
+    var arrUl = document.getElementById('hero-arrs');
+    if (arrUl) {
+      var arrs = FLIGHTS.filter(function (f) { return f.type === 'arrival' && f.status !== 'Landed'; }).slice(0, 4);
+      arrUl.innerHTML = '';
+      if (!arrs.length) {
+        var emptyArr = document.createElement('li');
+        emptyArr.className = 'py-2 font-mono text-[11px] uppercase tracking-[0.1em]';
+        emptyArr.style.color = 'var(--hi-soft)';
+        emptyArr.textContent = 'No more arrivals today';
+        arrUl.appendChild(emptyArr);
       }
-      arrEl.appendChild(p);
+      arrs.forEach(function (f) {
+        var key = statusKey(f.status);
+        var lbl = key === 'delayed' && f.estTime ? '→ ' + f.estTime : f.status;
+        var tone = key === 'delayed' ? 'warn' : 'ok';
+        var li = document.createElement('li');
+        li.className = 'ops-board-row';
+        var timeSpan = document.createElement('span'); timeSpan.className = 'b-time'; timeSpan.textContent = f.time;
+        var destSpan = document.createElement('span'); destSpan.className = 'b-dest'; destSpan.textContent = f.city;
+        var statusSpan = document.createElement('span'); statusSpan.className = 'b-status ' + tone; statusSpan.textContent = lbl;
+        var flightSpan = document.createElement('span'); flightSpan.className = 'b-flight'; flightSpan.textContent = f.flightNo + ' · ' + (f.airline || '');
+        li.appendChild(timeSpan); li.appendChild(destSpan); li.appendChild(statusSpan); li.appendChild(flightSpan);
+        arrUl.appendChild(li);
+      });
     }
   }
 
@@ -1107,10 +1151,11 @@ const allNews = _newsSorted.map(_mapNews);
       })
       .catch(function () {});
   }
-  setInterval(fetchFlights, 60000);
+  pollTimer = setInterval(fetchFlights, 60000);
 
   updateHero();
   fetchFlights();
+  }
 })();
 </script>
 

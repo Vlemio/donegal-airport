@@ -15,6 +15,9 @@ export default config({
       label: 'News',
       slugField: 'title',
       path: 'src/content/news/*',
+      // Shown as sortable columns in the News list — click a column header
+      // to sort by Date or by Title (name).
+      columns: ['title', 'date', 'kind'],
       schema: {
         title: fields.slug({ name: { label: 'Title' } }),
         date: fields.date({
@@ -35,7 +38,7 @@ export default config({
         }),
         imagePosition: fields.text({
           label: 'Image position',
-          description: 'CSS object-position — drag the image on the article page and paste the value shown (e.g. 30% 70%). Default: 50% 50%.',
+          description: 'How the photo is framed (e.g. "30% 70%"). Use the picker at /tools/image-position — paste the photo\'s path, pick "News hero", drag to frame it, then copy the value here. Default: 50% 50%.',
           defaultValue: '50% 50%',
           validation: { isRequired: false },
         }),

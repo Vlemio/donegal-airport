@@ -48,10 +48,11 @@ const switchToLabel = t("languageToggle.switchTo", locale);
       href={prefix || "/"}
       class="relative z-50 flex items-baseline gap-3 leading-none"
     >
-      <span class="font-display text-xl font-normal tracking-tight text-ink">
+      <span data-brand-name class="font-display text-xl font-normal tracking-tight text-ink">
         {t("site.name", locale)}
       </span>
       <span
+        data-brand-code
         class="hidden font-mono text-[0.6rem] uppercase tracking-[0.28em] text-mute sm:inline"
       >
         CFN · EIDL

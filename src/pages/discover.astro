@@ -418,7 +418,7 @@ const islands = [
                   decoding="async"
                 />
               )}
-              <div data-drag-overlay class="absolute inset-0 cursor-grab active:cursor-grabbing"></div>
+              <div data-drag-overlay class="pointer-events-none absolute inset-0"></div>
               <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono text-[0.6rem] text-white backdrop-blur-sm">
                 {h.srcPos}
               </div>
@@ -500,7 +500,7 @@ const islands = [
               <p class="pointer-events-none absolute bottom-4 left-5 right-4 font-display text-[clamp(1.2rem,2.5vw,1.7rem)] font-normal leading-tight text-[#f0eee6] opacity-0 transition-opacity duration-500 group-hover:opacity-100">
                 {d.tagline}
               </p>
-              <div data-drag-overlay class="absolute inset-0 cursor-grab active:cursor-grabbing"></div>
+              <div data-drag-overlay class="pointer-events-none absolute inset-0"></div>
               <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono text-[0.6rem] text-white backdrop-blur-sm">
                 {d.srcPos}
               </div>
@@ -582,7 +582,7 @@ const islands = [
               <p class="pointer-events-none absolute bottom-4 left-5 right-4 font-display text-[clamp(1.1rem,2.2vw,1.55rem)] font-normal leading-tight text-[#f0eee6] opacity-0 transition-opacity duration-500 group-hover:opacity-100">
                 {a.tagline}
               </p>
-              <div data-drag-overlay class="absolute inset-0 cursor-grab active:cursor-grabbing"></div>
+              <div data-drag-overlay class="pointer-events-none absolute inset-0"></div>
               <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono text-[0.6rem] text-white backdrop-blur-sm"></div>
             </figure>
 
@@ -877,11 +877,19 @@ const islands = [
      guaranteeing the image always fills the container in X and Y regardless of
      the photo's natural aspect ratio. */
   function initPhotoDrag() {
+    // Dev-only: reposition/zoom these hardcoded photos and read back the
+    // object-position (and zoom) values to hardcode here. Never live for
+    // ordinary visitors — the invisible overlay would otherwise swallow
+    // scroll-wheel input over every photo on the page.
+    if (!new URLSearchParams(location.search).has("edit")) return;
+
     document.querySelectorAll<HTMLElement>("[data-drag-fig]").forEach((fig) => {
       const img     = fig.querySelector<HTMLImageElement>("[data-drag-img]");
       const overlay = fig.querySelector<HTMLElement>("[data-drag-overlay]");
       const readout = fig.querySelector<HTMLElement>("[data-drag-readout]");
       if (!img || !overlay) return;
+      overlay.classList.remove("pointer-events-none");
+      overlay.classList.add("cursor-grab");
 
       const initial = img.style.objectPosition || "50% 50%";
       const [ix, iy] = initial.split(" ").map((v) => parseFloat(v));

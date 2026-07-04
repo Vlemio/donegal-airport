@@ -1,0 +1,277 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+export const prerender = true;
+---
+
+<BaseLayout title="Image position tool" description="Internal tool — not part of the public site." noindex>
+  <section class="mx-auto max-w-3xl px-6 py-16">
+    <p class="font-mono text-xs uppercase tracking-[0.2em] text-mute">Internal tool</p>
+    <h1 class="mt-2 font-display text-3xl">Image position picker</h1>
+    <p class="mt-3 max-w-xl text-ink/70">
+      Drop the photo below (from your computer), or paste its path if it's already
+      on the site (e.g. <code class="font-mono text-[0.85em]">/photos/news-dublin-route.jpg</code>).
+      Pick the shape closest to where it'll be used, then drag to frame it and scroll
+      to zoom in/out. Copy the resulting value into Keystatic's <strong>Image position</strong> field.
+    </p>
+    <p class="mt-2 max-w-xl text-[0.8rem] text-[#9c3d54]">
+      Heads up: the news article hero doesn't support zoom yet — it only crops
+      by position, at the photo's natural size. The zoom slider here is just
+      to help you judge the crop; the copied value won't include it. Tell
+      Claude if you want real zoom added to the site.
+    </p>
+    <p class="mt-2 max-w-xl text-[0.8rem] text-mute">
+      Note: the news article hero isn't a fixed shape — it's always 68% of the
+      browser window's height, so it looks quite different on a phone (tall
+      and narrow) than on a desktop (short and wide). Check both. The shaded
+      band at the top is where the site's menu bar sits on top of the photo —
+      avoid putting faces or important detail directly under it.
+    </p>
+
+    <div class="mt-8 flex flex-wrap items-end gap-4">
+      <label class="flex-1 min-w-[240px]">
+        <span class="mb-1 block font-mono text-[0.7rem] uppercase tracking-[0.14em] text-mute">Image path or URL</span>
+        <input
+          id="src-input"
+          type="text"
+          placeholder="/photos/your-photo.jpg"
+          class="w-full rounded border border-line bg-white px-3 py-2 font-mono text-sm"
+        />
+      </label>
+
+      <label>
+        <span class="mb-1 block font-mono text-[0.7rem] uppercase tracking-[0.14em] text-mute">Shape</span>
+        <select id="ratio-select" class="rounded border border-line bg-white px-3 py-2 font-mono text-sm">
+          <option value="1280/544" data-header-frac="0.1397">News hero — desktop (1280×800)</option>
+          <option value="390/574" data-header-frac="0.1324">News hero — mobile (390×844)</option>
+          <option value="4/3">News grid card — 4:3</option>
+          <option value="3/4">Discover figure — 3:4</option>
+          <option value="4/5">Discover card — 4:5</option>
+        </select>
+      </label>
+    </div>
+
+    <div
+      id="preview-fig"
+      class="relative mt-6 w-full overflow-hidden rounded-lg border-2 border-dashed border-line bg-surface-lo transition-colors"
+      style="aspect-ratio: 1280/544;"
+    >
+      <img
+        id="preview-img"
+        alt=""
+        class="absolute inset-0 hidden h-full w-full cursor-grab object-cover active:cursor-grabbing"
+        style="object-position: 50% 50%;"
+        draggable="false"
+      />
+      <div
+        id="header-band"
+        class="pointer-events-none absolute inset-x-0 top-0 z-10 border-b border-dashed border-white/50 bg-ink/35"
+        style="height: 13.97%;"
+      >
+        <span class="absolute inset-x-2 top-1 font-mono text-[0.6rem] uppercase tracking-[0.1em] text-white/80">Menu bar sits here</span>
+      </div>
+      <label id="preview-empty" for="file-input" class="absolute inset-0 flex cursor-pointer flex-col items-center justify-center gap-1 font-mono text-xs text-mute">
+        <span>Drop a photo here, or click to browse</span>
+        <span class="text-[0.65rem] text-mute/70">(or paste its path above)</span>
+      </label>
+      <input id="file-input" type="file" accept="image/*" class="hidden" />
+      <p id="preview-error" class="absolute inset-0 hidden flex-col items-center justify-center gap-1 px-6 text-center font-mono text-xs text-[#9c3d54]">
+        <span>Couldn't load that path — it needs to start with <code class="font-mono">/photos/</code> and match a photo already on the site.</span>
+        <span class="text-[0.65rem] text-[#9c3d54]/70">Easiest fix: just drop the photo file here instead.</span>
+      </p>
+      <div id="readout" class="pointer-events-none absolute bottom-3 right-3 hidden rounded bg-black/60 px-3 py-1.5 font-mono text-xs text-white">
+        50% 50%
+      </div>
+    </div>
+
+    <div class="mt-4 flex items-center gap-3">
+      <button
+        id="copy-btn"
+        type="button"
+        class="rounded-full bg-atlantic px-5 py-2 font-mono text-xs uppercase tracking-[0.14em] text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+        disabled
+      >
+        Copy value
+      </button>
+      <span id="copy-confirm" class="font-mono text-xs text-mute opacity-0 transition-opacity">Copied ✓</span>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const srcInput = document.getElementById("src-input") as HTMLInputElement;
+  const ratioSelect = document.getElementById("ratio-select") as HTMLSelectElement;
+  const fig = document.getElementById("preview-fig") as HTMLElement;
+  const img = document.getElementById("preview-img") as HTMLImageElement;
+  const empty = document.getElementById("preview-empty") as HTMLElement;
+  const errorMsg = document.getElementById("preview-error") as HTMLElement;
+  const fileInput = document.getElementById("file-input") as HTMLInputElement;
+  const readout = document.getElementById("readout") as HTMLElement;
+  const copyBtn = document.getElementById("copy-btn") as HTMLButtonElement;
+  const copyConfirm = document.getElementById("copy-confirm") as HTMLElement;
+
+  let posX = 50;
+  let posY = 50;
+  let zoom = 1;
+  let tx = 0; // translate X in element-coords (pre-scale), used only when zoom > 1
+  let ty = 0;
+  let dragging = false;
+  let startX = 0;
+  let startY = 0;
+  let objectUrl: string | null = null;
+
+  const clamp = (v: number) => Math.max(0, Math.min(100, v));
+  const currentValue = () => `${Math.round(posX)}% ${Math.round(posY)}%`;
+
+  // Zoom is a framing aid only — the site doesn't support it yet, so it's
+  // never part of the copied value (see the notice above the preview).
+  function clampTranslate() {
+    const mx = (fig.offsetWidth * (zoom - 1)) / (2 * zoom);
+    const my = (fig.offsetHeight * (zoom - 1)) / (2 * zoom);
+    tx = Math.max(-mx, Math.min(mx, tx));
+    ty = Math.max(-my, Math.min(my, ty));
+  }
+
+  function applyPosition() {
+    const val = currentValue();
+    img.style.objectPosition = val;
+    img.style.transform = zoom > 1 ? `scale(${zoom}) translate(${tx}px, ${ty}px)` : "";
+    readout.textContent = zoom > 1 ? `×${zoom.toFixed(1)}  ${val}` : val;
+  }
+
+  fig.addEventListener("wheel", (e) => {
+    if (img.classList.contains("hidden")) return;
+    e.preventDefault();
+    zoom = Math.max(1, Math.min(4, zoom - e.deltaY * 0.002));
+    if (zoom === 1) { tx = 0; ty = 0; }
+    clampTranslate();
+    applyPosition();
+  }, { passive: false });
+
+  const headerBand = document.getElementById("header-band") as HTMLElement;
+
+  function applyShape() {
+    fig.style.aspectRatio = ratioSelect.value;
+    const opt = ratioSelect.selectedOptions[0];
+    const frac = opt?.dataset.headerFrac;
+    if (frac) {
+      headerBand.style.display = "block";
+      headerBand.style.height = `${Number(frac) * 100}%`;
+    } else {
+      headerBand.style.display = "none";
+    }
+  }
+
+  ratioSelect.addEventListener("change", applyShape);
+  applyShape();
+
+  function showImage(src: string) {
+    posX = 50;
+    posY = 50;
+    zoom = 1;
+    tx = 0;
+    ty = 0;
+    errorMsg.classList.add("hidden");
+    errorMsg.classList.remove("flex");
+    img.src = src;
+    img.classList.remove("hidden");
+    empty.classList.add("hidden");
+    readout.classList.remove("hidden");
+    copyBtn.disabled = false;
+    applyPosition();
+  }
+
+  img.addEventListener("error", () => {
+    if (!img.src) return;
+    img.classList.add("hidden");
+    empty.classList.add("hidden");
+    readout.classList.add("hidden");
+    copyBtn.disabled = true;
+    errorMsg.classList.remove("hidden");
+    errorMsg.classList.add("flex");
+  });
+
+  function showFile(file: File) {
+    if (objectUrl) URL.revokeObjectURL(objectUrl);
+    objectUrl = URL.createObjectURL(file);
+    srcInput.value = "";
+    showImage(objectUrl);
+  }
+
+  srcInput.addEventListener("input", () => {
+    const src = srcInput.value.trim();
+    if (!src) {
+      img.classList.add("hidden");
+      empty.classList.remove("hidden");
+      errorMsg.classList.add("hidden");
+      errorMsg.classList.remove("flex");
+      readout.classList.add("hidden");
+      copyBtn.disabled = true;
+      return;
+    }
+    showImage(src);
+  });
+
+  fileInput.addEventListener("change", () => {
+    const file = fileInput.files?.[0];
+    if (file) showFile(file);
+  });
+
+  // Drag-and-drop a photo straight from the desktop/Finder/Explorer.
+  // Without preventDefault on dragover+drop, the browser's default is to
+  // navigate away and open the dropped file as its own page.
+  ["dragenter", "dragover"].forEach((evt) => {
+    fig.addEventListener(evt, (e) => {
+      e.preventDefault();
+      fig.classList.add("border-atlantic");
+    });
+  });
+  ["dragleave", "drop"].forEach((evt) => {
+    fig.addEventListener(evt, (e) => {
+      e.preventDefault();
+      fig.classList.remove("border-atlantic");
+    });
+  });
+  fig.addEventListener("drop", (e: DragEvent) => {
+    const file = e.dataTransfer?.files?.[0];
+    if (file && file.type.startsWith("image/")) showFile(file);
+  });
+  // Also swallow drops anywhere else on the page so a near-miss doesn't
+  // navigate the whole tab away to the dropped file.
+  window.addEventListener("dragover", (e) => e.preventDefault());
+  window.addEventListener("drop", (e) => e.preventDefault());
+
+  img.addEventListener("mousedown", (e) => {
+    dragging = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    e.preventDefault();
+  });
+
+  window.addEventListener("mousemove", (e) => {
+    if (!dragging) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    startX = e.clientX;
+    startY = e.clientY;
+    if (zoom > 1) {
+      tx -= dx / zoom;
+      ty -= dy / zoom;
+      clampTranslate();
+    } else {
+      const rect = fig.getBoundingClientRect();
+      posX = clamp(posX - (dx / rect.width) * 100);
+      posY = clamp(posY - (dy / rect.height) * 100);
+    }
+    applyPosition();
+  });
+
+  window.addEventListener("mouseup", () => {
+    dragging = false;
+  });
+
+  copyBtn.addEventListener("click", async () => {
+    await navigator.clipboard.writeText(currentValue());
+    copyConfirm.style.opacity = "1";
+    setTimeout(() => { copyConfirm.style.opacity = "0"; }, 1500);
+  });
+</script>

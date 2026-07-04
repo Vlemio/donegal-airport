@@ -13,6 +13,9 @@ interface Props {
   pageTheme?: string;
   /** Path (relative to /public) of the Open Graph image. */
   ogImage?: string;
+  /** Force noindex regardless of the sitewide pitch-preview flag below —
+      for internal tool pages that must never appear in search results. */
+  noindex?: boolean;
 }
 
 const {
@@ -20,6 +23,7 @@ const {
   description = "",
   pageTheme = "",
   ogImage = "/og-default.png",
+  noindex = false,
 } = Astro.props;
 
 const locale: Locale = getLocale(Astro.url.pathname);
@@ -29,6 +33,14 @@ const altLocale: Locale = locale === "en" ? "ga" : "en";
 const canonical = new URL(Astro.url.pathname, Astro.site).href;
 const ogImageUrl = new URL(ogImage, Astro.site).href;
 const isHome = Astro.url.pathname === "/" || Astro.url.pathname === "/ga/";
+
+// Header transparency — computed server-side so it's correct from the very
+// first paint on a hard load/reload, not just after client JS runs (see
+// SOLID_HEADER_PATHS in animations.ts, which keeps this in sync for
+// client-side View Transitions navigations).
+const SOLID_HEADER_PATHS = ["/flights", "/plan", "/contact", "/ga/flights", "/ga/plan", "/ga/contact"];
+const pathNoTrailingSlash = Astro.url.pathname.replace(/\/+$/, "") || "/";
+const transparentHeader = !SOLID_HEADER_PATHS.includes(pathNoTrailingSlash);
 
 const siteName = t("site.name", locale);
 const siteDescription = description || t("site.description", locale);
@@ -88,7 +100,7 @@ const localeTag: Record<Locale, string> = {
 ---
 
 <!doctype html>
-<html lang={locale === "ga" ? "ga" : "en"} class={pageTheme}>
+<html lang={locale === "ga" ? "ga" : "en"} class={pageTheme} data-transparent-header={transparentHeader ? "" : undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -125,6 +137,9 @@ const localeTag: Record<Locale, string> = {
         `Disallow: /` in public/robots.txt. Remove this tag AND
         update robots.txt the day we move to the real domain. */}
     <meta name="robots" content="noindex, nofollow" />
+    {/* Permanent (survives the pitch-preview flag above being removed) —
+        for pages like internal tools that must never be indexed. */}
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
 
     {/* Open Graph — used by WhatsApp, Facebook, LinkedIn, iMessage */}
     <meta property="og:type" content="website" />
@@ -174,6 +189,22 @@ const localeTag: Record<Locale, string> = {
     <Footer locale={locale} />
     <script>
       import "../scripts/animations.ts";
+    </script>
+    <script>
+      // View Transitions (ClientRouter) navigate via fetch + DOM swap, so
+      // document.referrer never updates after the first real page load —
+      // it stays frozen on whatever page the browser session actually
+      // started from. Pages that need "where did the visitor just come
+      // from" (e.g. news/[slug].astro's back link) read sessionStorage's
+      // "nav-from" instead, which this tracks purely by page-load order
+      // (not by which link was clicked/hovered — Astro's prefetch fires
+      // before-preparation for hovered links too, not just the one
+      // actually navigated to, which made that approach unreliable).
+      document.addEventListener("astro:page-load", () => {
+        const prev = sessionStorage.getItem("current-page");
+        if (prev !== null) sessionStorage.setItem("nav-from", prev);
+        sessionStorage.setItem("current-page", location.pathname);
+      });
     </script>
     <DevEditBar />
   </body>

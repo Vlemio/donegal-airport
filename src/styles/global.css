@@ -190,10 +190,12 @@
   background-color: color-mix(in srgb, var(--color-surface) 96%, transparent);
   box-shadow: 0 2px 28px rgba(24, 29, 22, 0.07);
 }
-/* Cinematic hero pages (homepage): header starts fully transparent
-   and fades in with glass background once the user scrolls.
-   CSS variable overrides make nav links light-coloured over the video. */
-:root[data-cinematic-hero] [data-header]:not(.is-scrolled) {
+/* Transparent-header pages (every page except /flights, /plan, /contact —
+   see SOLID_HEADER_PATHS in animations.ts): header starts fully transparent
+   over the hero photo/video and fades in with glass background once the
+   user scrolls past it. CSS variable overrides make nav links
+   light-coloured over the photo. */
+:root[data-transparent-header] [data-header]:not(.is-scrolled) {
   background-color: transparent;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
@@ -206,6 +208,29 @@
      on the video. Override to sand-gold so it's always readable.          */
   --color-atlantic:        #c49a50;
   --color-atlantic-bright: #d4ab65;
+}
+/* The nav links' inactive state uses text-ink/70 — brighten + add a shadow
+   so it reads clearly over a busy photo instead of just a dim white. The
+   active page's link keeps its own (text-atlantic → sand-gold) colour. */
+:root[data-transparent-header] [data-header]:not(.is-scrolled) nav a:not(.text-atlantic) {
+  color: rgba(255, 255, 255, 0.94);
+  font-weight: 600;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+}
+/* Same brightness/shadow treatment for the logo, "CFN · EIDL", and the
+   Gaeilge language-switch link. */
+:root[data-transparent-header] [data-header]:not(.is-scrolled) [data-brand-name] {
+  color: #ffffff;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+}
+:root[data-transparent-header] [data-header]:not(.is-scrolled) [data-brand-code] {
+  color: rgba(255, 255, 255, 0.94);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+}
+:root[data-transparent-header] [data-header]:not(.is-scrolled) [data-lang-toggle] {
+  color: rgba(255, 255, 255, 0.94);
+  font-weight: 600;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
 }
 
 /* Scroll hint at the bottom of the hero */

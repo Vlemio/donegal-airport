@@ -44,7 +44,7 @@ export default defineConfig({
     // the site is on the vercel.app preview domain, robots.txt also
     // blocks crawlers — see public/robots.txt.
     sitemap({
-      filter: (page) => !page.endsWith('/404'),
+      filter: (page) => !page.endsWith('/404') && !page.includes('/tools/'),
     }),
 
     // React — required by Keystatic admin UI (its panel is a React app).

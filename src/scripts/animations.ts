@@ -204,6 +204,20 @@ function setupKenBurns(): void {
   });
 }
 
+/* ---------- Header transparency mode ----------
+   Explicit per-page rule (not scroll-based, not left over from whichever
+   page you last visited): these paths always get the solid frosted header;
+   every other page gets the transparent-over-hero-photo treatment. Recomputed
+   fresh from location.pathname on every astro:page-load — no captured
+   state, so it can't go stale after a client-side navigation. */
+const SOLID_HEADER_PATHS = ["/flights", "/plan", "/contact", "/ga/flights", "/ga/plan", "/ga/contact"];
+
+function applyHeaderMode(): void {
+  const path = window.location.pathname.replace(/\/+$/, "") || "/";
+  const solid = SOLID_HEADER_PATHS.includes(path);
+  document.documentElement.toggleAttribute("data-transparent-header", !solid);
+}
+
 /* ---------- Header scrolled-state ----------
    The header is always visible (no slide-in/out — CSS doesn't hide it).
    The only job here is toggling .is-scrolled so the frosted-glass
@@ -212,14 +226,13 @@ function setupHeaderReveal(): void {
   const header = document.querySelector<HTMLElement>("[data-header]");
   if (!header) return;
 
-  // On cinematic-hero pages (homepage) the header must stay transparent
-  // for the full hero scrub-video section (h-[300vh]).  Only reveal the
-  // glass background once the user has scrolled past that section and is
-  // reading real page content.  On every other page fall back to 60 px.
-  const heroSection = document.querySelector<HTMLElement>("[data-hero-scroll]");
   let ticking = false;
 
   const apply = (): void => {
+    // Re-queried on every call (not captured once) — after a client-side
+    // nav to a page without a hero-scroll section, a stale reference to a
+    // detached element from a previous page must not leak in here.
+    const heroSection = document.querySelector<HTMLElement>("[data-hero-scroll]");
     const threshold = heroSection
       ? Math.max(
           60,
@@ -803,6 +816,12 @@ function destroy(): void {
 }
 
 // Registered once.
+// The browser's own scroll-restoration on a hard reload can re-apply the
+// old scroll offset *after* our own scrollTo(0,0) below runs, which makes
+// ScrollTrigger think a below-the-fold reveal's trigger point was already
+// passed — it snaps straight to the end state instead of animating. Taking
+// manual control avoids that race entirely.
+if ("scrollRestoration" in history) history.scrollRestoration = "manual";
 watchNav();
 setupHeaderReveal();
 // Custom pointer circle disabled per request — native cursor only.
@@ -810,6 +829,7 @@ setupHeaderReveal();
 
 // First load and every View Transitions navigation.
 document.addEventListener("astro:page-load", () => {
+  applyHeaderMode();
   window.scrollTo(0, 0);
   initSmoothScroll();
   lenis?.scrollTo(0, { immediate: true, force: true });

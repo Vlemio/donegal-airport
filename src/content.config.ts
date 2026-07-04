@@ -8,6 +8,7 @@ const news = defineCollection({
     date: z.coerce.date(),
     kind: z.string(),
     image: z.string().optional(),
+    imagePosition: z.string().optional(),
     lead: z.string(),
     body: z.string(),
   }),
