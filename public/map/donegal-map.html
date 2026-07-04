@@ -110,21 +110,21 @@ const PLACES = [
   { cat:'nature',  name:'Doe Castle',             sub:'15th-c. castle',             lng:-7.86861, lat:55.13787, desc:'A medieval tower house by the water near Creeslough.' },
   { cat:'nature',  name:'Carrickfinn Beach',      sub:'Airport beach',              lng:-8.34978, lat:55.04081, desc:'Blue Flag white-sand beach right beside the runway.', photo:'/photos/map/carrickfinn-beach.jpg' },
   { cat:'nature',  name:'Inishowen Peninsula',    sub:'Northern region',            lng:-7.2900,  lat:55.2500,  desc:'Ireland\'s northernmost peninsula; home to Malin Head.' },
-  { cat:'towns',   name:'Donegal Town',           sub:'Castle & bay',               lng:-8.1100,  lat:54.6542,  desc:'Heart of the south, with a castle and quayside.' },
+  { cat:'towns',   name:'Donegal Town',           sub:'Castle & bay',               lng:-8.1100,  lat:54.6542,  desc:'Heart of the south, with a castle and quayside.', photo:'/photos/map/donegal-town.jpg' },
   { cat:'towns',   name:'Letterkenny',            sub:'Main town',                  lng:-7.7344,  lat:54.9558,  desc:'Donegal\'s largest town and main service hub.' },
   { cat:'towns',   name:'Bundoran',               sub:'Surf & beach',               lng:-8.2811,  lat:54.4783,  desc:'Ireland\'s surf capital, with a Blue Flag beach on the Wild Atlantic Way.', photo:'/photos/map/bundoran.jpg' },
   { cat:'towns',   name:'Killybegs',              sub:'Fishing port',               lng:-8.4500,  lat:54.6333,  desc:'Ireland\'s largest fishing port.', photo:'/photos/map/killybegs.jpg' },
   { cat:'towns',   name:'Glencolmcille',          sub:'Folk Village',               lng:-8.74134, lat:54.70806, desc:'Open-air folk museum and dramatic southwest coast.' },
   { cat:'towns',   name:'Ardara',                 sub:'Heritage town',              lng:-8.4100,  lat:54.7700,  desc:'Famous for tweed and woollen craft.', photo:'/photos/map/ardara.jpg' },
   { cat:'towns',   name:'Ballyshannon',           sub:'Mouth of the Erne',          lng:-8.1897,  lat:54.5028,  desc:'One of the oldest towns in Ireland.' },
-  { cat:'islands', name:'Arranmore',              sub:'Árainn Mhór',      lng:-8.52591, lat:54.98914, desc:'Donegal\'s largest inhabited island, a Gaeltacht community.' },
-  { cat:'islands', name:'Tory Island',            sub:'Toraigh',                    lng:-8.2333,  lat:55.2667,  desc:'Remote island with its own king and a community of artists.' },
-  { cat:'islands', name:'Gola Island',            sub:'Oileán Ghabhla',        lng:-8.36369, lat:55.09094, desc:'Cliffs and beaches; popular with rock climbers.' },
+  { cat:'islands', name:'Arranmore',              sub:'Árainn Mhór',      lng:-8.52591, lat:54.98914, desc:'Donegal\'s largest inhabited island, a Gaeltacht community.', photo:'/photos/map/arranmore.jpg' },
+  { cat:'islands', name:'Tory Island',            sub:'Toraigh',                    lng:-8.2333,  lat:55.2667,  desc:'Remote island with its own king and a community of artists.', photo:'/photos/map/tory-island.jpg' },
+  { cat:'islands', name:'Gola Island',            sub:'Oileán Ghabhla',        lng:-8.36369, lat:55.09094, desc:'Cliffs and beaches; popular with rock climbers.', photo:'/photos/map/gola-island.jpg' },
   { cat:'islands', name:'Inishbofin',             sub:'Inis Bó Finne',         lng:-8.16954, lat:55.17661, desc:'Small Gaeltacht island off Magheraroarty.' },
   { cat:'islands', name:'Inishfree',              sub:'Inis Fraoigh',               lng:-8.4411,  lat:54.94479, desc:'Islet off The Rosses coast.' },
   { cat:'islands', name:'Inishirrer',             sub:'Inis Oirthir',               lng:-8.3357,  lat:55.12433, desc:'Beside Gola, with crystal-clear water.' },
   { cat:'islands', name:'Inishkerragh',           sub:'Inis Caorach',               lng:-8.49415, lat:54.96017, desc:'Uninhabited islet of The Rosses archipelago.' },
-  { cat:'islands', name:'Inishtrahull',           sub:'Northernmost isle',          lng:-7.2333,  lat:55.4333,  desc:'Ireland\'s most northerly island, off Malin Head.' },
+  { cat:'islands', name:'Inishtrahull',           sub:'Northernmost isle',          lng:-7.2333,  lat:55.4333,  desc:'Ireland\'s most northerly island, off Malin Head.', photo:'/photos/map/inishtrahull.jpg' },
   { cat:'islands', name:'Island Roy',             sub:'Oileán Ruaidh',         lng:-7.79068, lat:55.1922,  desc:'Islet in Mulroy Bay, near Downings.' },
   { cat:'golf',    name:'Rosapenna Golf Resort',  sub:'Downings',                   lng:-7.82604, lat:55.18671, photo:'https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_05.png' },
   { cat:'golf',    name:'Ballyliffin Golf Club',  sub:'Ballyliffin (Inishowen)',    lng:-7.3708,  lat:55.30551, photo:'https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_08.png' },
@@ -373,7 +373,7 @@ function flyToPlace(name) {
   pauseWAWAnim();
   map.easeTo({ center:[p.lng,p.lat], zoom:10.4, pitch:62, bearing:-14, duration:1100 });
   map.once('moveend', resumeWAWAnim);
-  setTimeout(() => openPopup([p.lng,p.lat], { name:p.name, sub:p.sub, cat:p.cat, desc:p.desc||'' }), 780);
+  setTimeout(() => openPopup([p.lng,p.lat], { name:p.name, sub:p.sub, cat:p.cat, desc:p.desc||'', photo:p.photo, photoPos:p.photoPos }), 780);
 }
 
 function hoverPlace(name, on) {
@@ -476,7 +476,7 @@ function addPointMarker(p) {
   } else {
     el.addEventListener('click', ev => {
       ev.stopPropagation();
-      openPopup([p.lng, p.lat], { name:p.name, sub:p.sub, cat:p.cat, desc:p.desc||'' });
+      openPopup([p.lng, p.lat], { name:p.name, sub:p.sub, cat:p.cat, desc:p.desc||'', photo:p.photo, photoPos:p.photoPos });
     });
   }
   elByName[p.name] = { el: el.firstElementChild || el };

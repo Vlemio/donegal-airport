@@ -26,9 +26,9 @@ const highlights = [
     label: "Gaeltacht",
     text: "Donegal is Ireland's largest Irish-speaking county. The airport sits at its heart. The dialect here — Úlaidh — is the oldest form of Irish still spoken daily.",
     link: "#destinations",
-    src: "",
-    srcPos: "50% 50%",
-    caption: "Gweedore village · Gaeltacht heartland",
+    src: "/photos/discover-gaeltacht.jpg",
+    srcPos: "26% 48%",
+    caption: "Bunbeg Pier. Gweedore village",
   },
 ] as const;
 
@@ -39,7 +39,7 @@ const destinations = [
     drive: "CFN sits on the route",
     tagline: "Ireland's great coastal road. 2,500 km of cliff, cove and open sky. Donegal holds the wildest stretch.",
     src: "/photos/discover-wild-atlantic.jpg",
-    srcPos: "47% 32%",
+    srcPos: "49% 0%",
     caption: "Wild Atlantic Way · north Donegal",
   },
   {
@@ -83,9 +83,9 @@ const destinations = [
     title: "Donegal Town",
     drive: "60 min from CFN",
     tagline: "A medieval castle, a diamond square, the best tweed on the island. Small enough to walk end-to-end before dinner.",
-    src: "",
+    src: "/photos/discover-donegal-town.jpg",
     srcPos: "50% 50%",
-    caption: "Donegal Castle · River Eske",
+    caption: "Donegal Town",
   },
 ] as const;
 
@@ -250,7 +250,7 @@ const islands = [
     ferry: "Burtonport · 15 min crossing",
     drive: "35 min from CFN",
     text: "Donegal's largest inhabited island. 500 residents, blue-flag beaches, sea cliffs and a pub that opens when the fishermen get back.",
-    src: "", srcPos: "50% 50%",
+    src: "/photos/discover-island-arranmore.jpg", srcPos: "36% 28%",
   },
   {
     name: "Tory Island",
@@ -258,7 +258,7 @@ const islands = [
     ferry: "Magheroarty · 45 min crossing",
     drive: "55 min from CFN",
     text: "Nine miles offshore. A world of its own — an elected king, a school of naïve painters, and a way of life untouched by the mainland.",
-    src: "", srcPos: "50% 50%",
+    src: "/photos/discover-island-tory.jpg", srcPos: "49% 41%",
   },
   {
     name: "Gola Island",
@@ -266,7 +266,7 @@ const islands = [
     ferry: "Bunbeg · 10 min crossing",
     drive: "40 min from CFN",
     text: "Uninhabited since 1967. White beaches, abandoned stone cottages, complete silence. Day trips run in summer from Bunbeg harbour.",
-    src: "", srcPos: "50% 50%",
+    src: "/photos/discover-island-gola.jpg", srcPos: "35% 0%",
   },
   {
     name: "Owey Island",
@@ -315,7 +315,7 @@ const islands = [
     ferry: "Malin Head · arranged crossing",
     drive: "90 min from CFN",
     text: "Ireland's most northerly island. Uninhabited since 1929. An automated lighthouse marks the point where the Atlantic meets the Irish Sea.",
-    src: "", srcPos: "50% 50%",
+    src: "/photos/discover-island-inishtrahull.jpg", srcPos: "71% 52%",
   },
   {
     name: "Island Roy",
@@ -685,7 +685,7 @@ const islands = [
               Ten courses. One county.
             </h3>
           </div>
-          <span id="golf-counter" class="font-mono text-[0.62rem] text-mute tabular-nums shrink-0">1 / {golfClubs.length}</span>
+          <span id="golf-counter" class="font-mono text-[0.62rem] text-mute tabular-nums shrink-0">3 / {golfClubs.length}</span>
         </div>
 
         {/* Carousel with side arrows */}
@@ -772,7 +772,7 @@ const islands = [
           </h2>
         </div>
         <span id="isl-counter" class="font-mono text-[0.62rem] text-mute tabular-nums shrink-0">
-          1 / {islands.length}
+          4 / {islands.length}
         </span>
       </div>
 
@@ -788,9 +788,10 @@ const islands = [
           <ul id="isl-track" class="flex" style="gap:1.5rem;transition:transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94);">
             {islands.map((isl) => (
               <li data-isl-card data-tilt class="flex-none group">
-                <figure class="relative aspect-[3/4] w-full overflow-hidden bg-surface-lo">
+                <figure data-drag-fig class="relative aspect-[3/4] w-full overflow-hidden bg-surface-lo">
                   {isl.src && (
                     <img
+                      data-drag-img
                       src={isl.src}
                       alt={isl.name}
                       class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
@@ -811,6 +812,10 @@ const islands = [
                       {isl.name}
                     </h3>
                     <p class="font-display text-[0.9rem] italic text-white/55">{isl.irish}</p>
+                  </div>
+                  <div data-drag-overlay class="pointer-events-none absolute inset-0"></div>
+                  <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono text-[0.6rem] text-white backdrop-blur-sm">
+                    {isl.srcPos}
                   </div>
                 </figure>
                 <div class="mt-4">
@@ -987,7 +992,7 @@ const islands = [
       idx = Math.max(0, Math.min(maxIdx, i));
       const step = cards[0].offsetWidth + gap;
       track.style.transform = `translateX(-${idx * step}px)`;
-      if (counter) counter.textContent = `${idx + 1} / ${cards.length}`;
+      if (counter) counter.textContent = `${Math.min(idx + perView, cards.length)} / ${cards.length}`;
       prevBtn.disabled = idx === 0;
       nextBtn.disabled = idx >= maxIdx;
     };
@@ -1187,7 +1192,7 @@ const islands = [
       idx = Math.max(0, Math.min(maxIdx, i));
       const step = cards[0].offsetWidth + gap;
       track.style.transform = `translateX(-${idx * step}px)`;
-      if (counter) counter.textContent = `${idx + 1} / ${cards.length}`;
+      if (counter) counter.textContent = `${Math.min(idx + pv, cards.length)} / ${cards.length}`;
       prevBtn.disabled = idx === 0;
       nextBtn.disabled = idx >= maxIdx;
     };
