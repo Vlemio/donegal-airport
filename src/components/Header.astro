@@ -42,7 +42,23 @@ const switchToLabel = t("languageToggle.switchTo", locale);
   aria-label="Site navigation"
 >
   <div
-    class="mx-auto flex h-[var(--header-h)] max-w-7xl items-center justify-between px-6"
+    class:list={[
+      // justify-between is the base for both locales — needed at mobile
+      // widths so brand and the hamburger button stay pinned to opposite
+      // edges either way.
+      "mx-auto flex h-[var(--header-h)] items-center justify-between px-6",
+      // Gaeilge nav labels need more room than the English ones ever do —
+      // widen just this bar for "ga" rather than cramp the nav together.
+      // The page content below keeps the normal max-w-7xl either way.
+      //
+      // At lg+ (where the desktop nav shows), Gaeilge switches to a
+      // centered group with one consistent gap across brand → nav →
+      // lang-toggle. Plain justify-between here would've dumped all the
+      // extra width from the wider bar into just the two outer gaps,
+      // leaving brand and "GAEILGE/ENGLISH" looking far more separated
+      // from the nav links than the nav links are from each other.
+      locale === "ga" ? "max-w-[96rem] lg:justify-center lg:gap-6" : "max-w-7xl",
+    ]}
   >
     <a
       href={prefix || "/"}
@@ -59,13 +75,16 @@ const switchToLabel = t("languageToggle.switchTo", locale);
       </span>
     </a>
 
-    <nav class="hidden items-center gap-7 lg:flex">
+    {/* Gaeilge labels run noticeably longer ("Pleanáil do thuras", "Faigh
+        amach Dún na nGall") — the wider bar above gives this room to
+        breathe without touching English's sizing or spacing at all. */}
+    <nav class:list={["hidden items-center lg:flex", locale === "ga" ? "gap-6" : "gap-7"]}>
       {
         nav.map((item) => (
           <a
             href={item.href}
             class:list={[
-              "text-[0.78rem] uppercase tracking-[0.18em] transition-colors duration-200 hover:text-atlantic",
+              "whitespace-nowrap text-[0.78rem] uppercase tracking-[0.18em] transition-colors duration-200 hover:text-atlantic",
               isActive(item.href) ? "text-atlantic" : "text-ink/70",
             ]}
           >

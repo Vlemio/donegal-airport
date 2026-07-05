@@ -53,6 +53,31 @@ export default config({
           multiline: true,
           validation: { isRequired: true },
         }),
+        // Irish translations — required for every new article so the
+        // Gaeilge site is never left showing untranslated English news.
+        // (Existing articles saved before this was added will prompt for
+        // these the next time they're opened and saved.)
+        titleGa: fields.text({
+          label: 'Title (Gaeilge)',
+          description: 'Irish translation of the title above.',
+          validation: { isRequired: true },
+        }),
+        kindGa: fields.text({
+          label: 'Category (Gaeilge)',
+          description: 'Irish translation of the category above.',
+          validation: { isRequired: true },
+        }),
+        leadGa: fields.text({
+          label: 'Opening line (Gaeilge)',
+          description: 'Irish translation of the opening line above.',
+          validation: { isRequired: true },
+        }),
+        bodyGa: fields.text({
+          label: 'Body (Gaeilge)',
+          description: 'Irish translation of the full article text. Separate paragraphs with a blank line.',
+          multiline: true,
+          validation: { isRequired: true },
+        }),
       },
     }),
   },

@@ -1,0 +1,143 @@
+---
+import { getCollection, getEntry } from "astro:content";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+
+export async function getStaticPaths() {
+  const entries = await getCollection("news");
+  return entries.map((entry) => ({ params: { slug: entry.id } }));
+}
+
+const { slug } = Astro.params;
+const entry = await getEntry("news", slug as string);
+if (!entry) return Astro.redirect("/404");
+
+const { date, image, imagePosition } = entry.data;
+const data = entry.data as any;
+const title = data.titleGa || data.title;
+const kind = data.kindGa || data.kind;
+const lead = data.leadGa || data.lead;
+const body: string = data.bodyGa || data.body;
+
+const IRISH_MONTHS = [
+  "Eanáir", "Feabhra", "Márta", "Aibreán", "Bealtaine", "Meitheamh",
+  "Iúil", "Lúnasa", "Meán Fómhair", "Deireadh Fómhair", "Samhain", "Nollaig",
+];
+const dateFormatted = `${date.getDate()} ${IRISH_MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+
+const heroBg = image
+  ? (image.startsWith("/") ? image : `/photos/${image}`)
+  : "/photos/intro-airport.webp";
+
+const objPos = imagePosition ?? "50% 50%";
+
+const paragraphs = body.split(/\n\n+/).filter(Boolean);
+---
+
+<BaseLayout title={`${title} · Aerfort Dhún na nGall`} description={lead}>
+  <!-- Back link — fixed top-left. Label/href set on load based on where the
+       visitor came from (see script below): the home page's news teaser vs.
+       the /ga/news "all stories" index. -->
+  <a
+    href="/ga/#news"
+    data-back-link
+    class="fixed left-6 top-[calc(var(--header-h)+1rem)] z-40 hidden items-center gap-2 rounded bg-black/40 px-3 py-1.5 font-mono text-xs uppercase tracking-[0.2em] text-white backdrop-blur-sm transition-colors hover:bg-black/60 lg:flex"
+  >
+    <span>←</span> <span data-back-label>Baile</span>
+  </a>
+
+  <!-- Hero: photo + title overlaid -->
+  <section class="relative h-[68vh] min-h-[440px] overflow-hidden">
+    <img
+      id="hero-img"
+      src={heroBg}
+      alt=""
+      class="h-full w-full object-cover select-none"
+      style={`object-position: ${objPos}`}
+      loading="eager"
+      decoding="sync"
+      draggable="false"
+    />
+
+    <div
+      class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/65 via-black/10 to-transparent"
+    ></div>
+
+    <div class="pointer-events-none absolute bottom-0 left-0 right-0 px-6 pb-10 pt-32 lg:px-12">
+      <!-- mobile back -->
+      <a
+        href="/ga/#news"
+        data-back-link
+        class="pointer-events-auto mb-6 flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-white/60 transition-colors hover:text-white lg:hidden"
+      >
+        ← <span data-back-label>Baile</span>
+      </a>
+      <p class="mb-4 font-mono text-xs font-bold uppercase tracking-[0.22em] text-white [text-shadow:0_1px_6px_rgba(0,0,0,0.65)]">
+        {kind} &nbsp;·&nbsp; {dateFormatted}
+      </p>
+      <h1 class="font-display text-4xl leading-[1.05] text-white sm:text-5xl lg:text-[3.5rem] xl:text-[4rem] max-w-3xl">
+        {title}
+      </h1>
+    </div>
+
+  </section>
+
+  <!-- Content -->
+  <article class="mx-auto max-w-2xl px-6 py-16 lg:px-8">
+    <!-- Lead -->
+    <p class="mb-12 font-display text-2xl leading-snug text-ink sm:text-3xl">
+      {lead}
+    </p>
+
+    <!-- Divider -->
+    <div class="mb-12 h-px w-16 bg-atlantic"></div>
+
+    <!-- Body paragraphs -->
+    <div class="space-y-6">
+      {paragraphs.map((p) => (
+        <p class="font-body text-[1.05rem] leading-relaxed text-ink/80">
+          {p}
+        </p>
+      ))}
+    </div>
+
+    <!-- Footer nav -->
+    <div class="mt-20 border-t border-line pt-10">
+      <a
+        href="/ga/#news"
+        data-back-link
+        class="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.22em] text-atlantic transition-colors hover:text-ink"
+      >
+        ← Ar ais go dtí <span data-back-label>Baile</span>
+      </a>
+    </div>
+  </article>
+</BaseLayout>
+
+<script>
+  // Back link: send the visitor back to wherever they actually came from —
+  // the "all stories" index (/ga/news) or the home page's news teaser
+  // (/ga/#news). Defaults to Baile when the referrer is unknown.
+  // Registered on astro:page-load (not a bare top-level call) because View
+  // Transitions re-navigating between two [slug] pages reuses this same
+  // compiled script — a bare IIFE would only ever run once.
+  document.addEventListener("astro:page-load", () => {
+    let fromPath: string | null = sessionStorage.getItem("nav-from");
+    if (fromPath === null) {
+      try {
+        const ref = document.referrer ? new URL(document.referrer) : null;
+        fromPath = ref && ref.origin === location.origin ? ref.pathname : "";
+      } catch { fromPath = ""; }
+    }
+    const fromAllNews = (fromPath ?? "").replace(/\/+$/, "") === "/ga/news";
+
+    const href = fromAllNews ? "/ga/news" : "/ga/#news";
+
+    document.querySelectorAll<HTMLAnchorElement>("[data-back-link]").forEach((a) => {
+      a.href = href;
+    });
+    document.querySelectorAll<HTMLElement>("[data-back-label]").forEach((el) => {
+      const midSentence = el.closest("[data-back-link]")?.textContent?.toLowerCase().includes("ar ais");
+      el.textContent = fromAllNews ? (midSentence ? "gach nuacht" : "Gach nuacht") : "Baile";
+    });
+  });
+</script>

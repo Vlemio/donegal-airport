@@ -1,33 +1,1157 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import { t } from "../../i18n";
+import trim from "../../data/video-trim.json";
+import { getCollection } from "astro:content";
+import type { SyncedFlight } from "../../lib/flightsStore";
+export const prerender = true;
 
-const title = "Aerfort Dhún na nGall · Á dhearadh";
-const description = "Tá leagan Gaeilge den suíomh á chruthú againn faoi láthair.";
+const locale = "ga";
+const title = `${t("site.name", locale)} · ${t("site.tagline", locale)}`;
+const description = t("site.description", locale);
+
+// Flight data — single source of truth is the /api/flights-today.json
+// endpoint (src/pages/api/flights-today.json.ts), which the Donegal FIDS
+// pushes to. This page is statically prerendered, so it has no live data
+// at build time — start empty (never show made-up sample flights as if
+// real) and let the client poll fill in genuine data once it loads.
+const flightsToday: SyncedFlight[] = [];
+
+function statusKey(s: string) { return String(s || "").toLowerCase().replace(/[^a-z]/g, ""); }
+
+// Hero ops-panel — derived from flightsToday so both are always in sync.
+// Capped at the 4 nearest departures; the card shows a fallback line
+// (below) when there are none left today.
+const HERO_MAX = 4;
+const heroDepartures = flightsToday
+  .filter((f) => f.type === "departure" && f.status !== "Departed")
+  .slice(0, HERO_MAX)
+  .map((f) => ({
+    time: f.time,
+    dest: f.city,
+    flight: `${f.flightNo} · ${f.airline}`,
+    status:
+      statusKey(f.status) === "delayed" && f.estTime ? `→ ${f.estTime}` :
+      f.status,
+    tone: statusKey(f.status) === "delayed" ? "warn" : "ok",
+  }));
+const heroArrivals = flightsToday
+  .filter((f) => f.type === "arrival" && f.status !== "Landed")
+  .slice(0, HERO_MAX)
+  .map((f) => ({
+    time: f.time,
+    dest: f.city,
+    flight: `${f.flightNo} · ${f.airline}`,
+    status:
+      statusKey(f.status) === "delayed" && f.estTime ? `→ ${f.estTime}` :
+      f.status,
+    tone: statusKey(f.status) === "delayed" ? "warn" : "ok",
+  }));
+
+// Hero weather (static placeholder — wire to Met Éireann or METAR post-firma)
+const heroWeather = { tempC: 12, condition: "Néalta scaipthe", windDir: "SW", windKt: 14, visKm: 10 };
+
+// Destinations — horizontal-scroll panels. Each panel is one viewport
+// wide on desktop; on mobile they stack vertically.
+// City names use their Irish forms (Baile Átha Cliath / Glaschú), matching
+// the real Irish-language press material already reused in the news
+// articles — not the Footer's English-form convention.
+const destinations = [
+  {
+    code: "DUB",
+    city: "Baile Átha Cliath",
+    country: "Éire",
+    duration: "55 nóim.",
+    schedule: "Gach lá · 2× fillte",
+    carrier: "Aer Lingus Regional",
+    hero: "/photos/dest-dub.webp",
+    photoPos: "center center",
+    bookUrl: "https://www.aerlingus.com",
+  },
+  {
+    code: "GLA",
+    city: "Glaschú",
+    country: "Albain",
+    duration: "1 u 5 nóim.",
+    schedule: "Bliain ar fad",
+    carrier: "Loganair",
+    hero: "/photos/dest-gla.webp",
+    photoPos: "center 20%",
+    bookUrl: "https://www.loganair.co.uk",
+  },
+];
+
+// Awards — editorial blocks, not cards. Big year, big claim, no
+// bounded rectangles. Sourced from CFN press history (verify dates).
+const awards = [
+  {
+    year: "2024",
+    title: "An chéad aerfort ar oileán na hÉireann",
+    detail: "a bhain Leibhéal 4 'Claochlú' de Chreidiúnú Carbóin Aerfoirt amach.",
+    source: "ACA · Airports Council International",
+  },
+  {
+    year: "2018",
+    title: "An rúidbhealach is suaithinsí ar domhan",
+    detail: "Roghnaithe mar Uimhir a 1 ag painéal domhanda phíolótaí agus lucht taistil PrivateFly.",
+    source: "PrivateFly",
+  },
+  {
+    year: "2016",
+    title: "I measc na 10 dtuirlingt is áille ar domhan",
+    detail: "Gearrliosta domhanda PrivateFly — cur chuige trá Charraig Fhinn le Sliabh an Earagail sa radharc.",
+    source: "PrivateFly",
+  },
+];
+
+// News — read from src/content/news/ (managed via Keystatic CMS).
+// titleGa/kindGa are required going forward for new articles (see
+// keystatic.config.ts) but fall back to the English copy for any of the
+// existing articles that haven't been translated yet.
+const IRISH_MONTHS = [
+  "Eanáir", "Feabhra", "Márta", "Aibreán", "Bealtaine", "Meitheamh",
+  "Iúil", "Lúnasa", "Meán Fómhair", "Deireadh Fómhair", "Samhain", "Nollaig",
+];
+const newsEntries = await getCollection("news");
+const _newsSorted = newsEntries.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const _mapNews = (n: (typeof _newsSorted)[0]) => ({
+  slug: n.id,
+  date: `${n.data.date.getDate()} ${IRISH_MONTHS[n.data.date.getMonth()]} ${n.data.date.getFullYear()}`,
+  kind: n.data.kindGa || n.data.kind,
+  title: n.data.titleGa || n.data.title,
+  image: n.data.image
+    ? n.data.image.startsWith("/") ? n.data.image : `/photos/${n.data.image}`
+    : "/photos/intro-airport.webp",
+});
+const news = _newsSorted.slice(0, 7).map(_mapNews);
 ---
 
 <BaseLayout title={title} description={description}>
-  <section class="mx-auto flex min-h-[calc(100vh-var(--header-h))] max-w-3xl flex-col items-center justify-center px-6 py-32 text-center">
-    <p class="font-mono text-xs uppercase tracking-[0.3em] text-sand">
-      Gaeilge · Coming soon
-    </p>
-    <h1 class="mt-6 font-display text-5xl leading-[1.05] sm:text-6xl">
-      Fáilte. Á dhearadh.
-    </h1>
-    <p class="mt-6 max-w-xl text-base text-mute">
-      Tá leagan iomlán Gaeilge de shuíomh Aerfort Dhún na nGall á dhearadh
-      againn. Idir an dá linn, féach an leagan Béarla.
-    </p>
-    <p class="mt-2 max-w-xl text-base text-mute">
-      We're building the full Irish-language version of the Donegal Airport
-      site. In the meantime, browse the English version.
-    </p>
-    <div class="mt-10">
-      <a
-        href="/"
-        class="rounded-full bg-atlantic px-7 py-3 text-sm font-semibold uppercase tracking-[0.15em] text-atlantic-ink transition-colors hover:bg-atlantic-bright"
+
+  {/* ---------- HERO — "Live Ops" (Distribution A) ----------
+      Mirrors index.astro (EN) section-for-section — same classes, same
+      data-attributes, same scripts. Only the visible copy changes. */}
+  <section
+    data-scrub-trigger
+    data-hero-scroll
+    class="relative isolate h-[300vh] w-full"
+  >
+
+    {/* ── Layer 1: sticky background ─────────────────────────────── */}
+    <div class="sticky top-0 h-screen w-full overflow-hidden" aria-hidden="true">
+      <img
+        data-ken-burns
+        src="/video/frames/frame-0001.webp"
+        alt=""
+        class="absolute inset-0 h-full w-full object-cover object-[center_55%]"
+        loading="eager"
+        fetchpriority="high"
+        decoding="sync"
+      />
+      <canvas
+        data-scrub-canvas
+        data-frames="121"
+        data-fps="24"
+        data-frame-path="/video/frames/frame-"
+        data-scrub-start="top top"
+        data-scrub-end="bottom bottom"
+        data-video-start={String(trim.start)}
+        data-video-end={String(trim.end)}
+        class="absolute inset-0 hidden h-full w-full md:block"
+      ></canvas>
+      <div class="absolute inset-x-0 top-0 h-[220px] bg-gradient-to-b from-[rgba(18,22,29,0.60)] to-transparent" />
+      <div class="absolute inset-y-0 left-0 w-[65%] bg-gradient-to-r from-[rgba(18,22,29,0.52)] to-transparent" />
+      <div class="absolute inset-x-0 bottom-0 h-[160px] bg-gradient-to-t from-[rgba(18,22,29,0.45)] to-transparent" />
+    </div>
+
+    {/* ── Layer 2: hero content (scrolls with page) ──────────────── */}
+    <div
+      class="cfn-hero-content absolute left-0 top-0 z-10 flex h-screen w-full flex-col"
+      style="padding: calc(var(--header-h) + 3rem) 3.5rem 2.5rem"
+    >
+      <div class="flex flex-1 items-center justify-between gap-[60px]">
+
+        {/* ── Hero lead (left column) ── */}
+        <div class="flex min-w-0 flex-1 flex-col gap-7">
+          <p
+            data-animate="fade-up"
+            data-edit="hero-eyebrow"
+            class="font-mono text-[15px] uppercase tracking-[0.26em]"
+            style="color: var(--hi)"
+          >
+            Aerfort Dhún na nGall · Co. Dhún na nGall · CFN
+          </p>
+
+          <h1
+            data-split
+            data-split-delay="0.15"
+            data-edit="hero-h1"
+            class="hero-display md:whitespace-nowrap"
+          >
+            Aerfort<br />Dhún na nGall
+          </h1>
+
+          <p
+            data-animate="fade-up"
+            data-animate-delay="0.35"
+            data-edit="hero-lede"
+            class="max-w-[820px] text-[24px] leading-[1.45]"
+            style="color: var(--hi)"
+          >
+            Baile Átha Cliath gach lá. Glaschú ag an deireadh seachtaine — agus
+            roinnt laethanta samhraidh. Tá aerfort Dhún na nGall suite san áit
+            a dtosaíonn an tAigéan Atlantach.
+          </p>
+
+          <div
+            data-animate="fade-up"
+            data-animate-delay="0.5"
+            class="flex items-center gap-[34px]"
+          >
+            <a href="/ga/flights" class="hero-cta hero-cta--primary" data-edit="cta-primary">
+              Eitiltí an lae inniu <span class="arrow">→</span>
+            </a>
+            <a href="/ga/plan#parking" class="hero-cta" data-edit="cta-secondary">
+              Páirceáil agus conas teacht anseo <span class="arrow">→</span>
+            </a>
+          </div>
+        </div>
+
+        {/* ── Live Ops Panel (right column, desktop only) ── */}
+        <aside class="ops-panel hidden lg:flex lg:flex-col">
+
+          <div class="flex items-start justify-between">
+            <span
+              class="font-mono text-[14px] uppercase tracking-[0.18em]"
+              style="color: var(--hi-amber)"
+            >
+              Inniu
+            </span>
+            <div class="flex flex-col items-end gap-[3px]">
+              <span
+                id="ops-clock"
+                class="font-mono text-[13.5px] tracking-[0.08em]"
+                style="color: var(--hi)"
+              >
+                — — : — —
+              </span>
+              <span
+                id="ops-clock-utc"
+                class="font-mono text-[11.5px] tracking-[0.06em]"
+                style="color: var(--hi)"
+              >
+                — — : — — <span style="opacity:0.75">UTC</span>
+              </span>
+            </div>
+          </div>
+
+          <div
+            class="mt-[14px] pb-[18px]"
+            style="border-bottom: 1px solid var(--hi-line)"
+          >
+            <div class="flex items-baseline gap-[10px]">
+              <span id="wx-temp" class="ops-temp">{heroWeather.tempC}°C</span>
+              <span
+                id="wx-cond"
+                class="font-mono text-[17px] leading-none"
+                style="color: var(--hi)"
+              >{heroWeather.condition}</span>
+            </div>
+            <div
+              class="mt-[7px] flex items-baseline gap-[8px] font-mono text-[13px] tracking-[0.04em]"
+              style="color: var(--hi-soft)"
+            >
+              <span id="wx-wind">{heroWeather.windDir} {heroWeather.windKt} kt</span>
+              <span style="color: var(--hi-faint)">·</span>
+              <span id="wx-vis" class="text-[13px]">Léargas {heroWeather.visKm} km</span>
+            </div>
+          </div>
+
+          <div
+            class="mt-[18px] flex items-center justify-between font-mono text-[12.5px] uppercase tracking-[0.16em]"
+            style="color: var(--hi)"
+          >
+            <span>Imeachtaí atá le teacht</span>
+            <span
+              class="flex items-center gap-[7px] text-[11px] uppercase tracking-[0.12em]"
+              style="color: var(--hi-green)"
+            >
+              <span class="live-dot ops-badge"></span>Beo
+            </span>
+          </div>
+
+          <ul class="mt-[6px]" id="hero-deps">
+            {heroDepartures.length ? (
+              heroDepartures.map((dep) => (
+                <li class="ops-board-row">
+                  <span class="b-time">{dep.time}</span>
+                  <span class="b-dest">{dep.dest}</span>
+                  <span class={`b-status ${dep.tone}`}>{dep.status}</span>
+                  <span class="b-flight">{dep.flight}</span>
+                </li>
+              ))
+            ) : (
+              <li class="py-2 font-mono text-[12.5px] uppercase tracking-[0.1em]" style="color: var(--hi-soft)">
+                Níl aon imeacht eile inniu
+              </li>
+            )}
+          </ul>
+
+          <div
+            class="mt-[18px] flex items-center justify-between pt-[16px] font-mono text-[12.5px] uppercase tracking-[0.16em]"
+            style="border-top: 1px solid var(--hi-line); color: var(--hi)"
+          >
+            <span>Teachtaí atá le teacht</span>
+          </div>
+          <ul class="mt-[6px]" id="hero-arrs">
+            {heroArrivals.length ? (
+              heroArrivals.map((arr) => (
+                <li class="ops-board-row">
+                  <span class="b-time">{arr.time}</span>
+                  <span class="b-dest">{arr.dest}</span>
+                  <span class={`b-status ${arr.tone}`}>{arr.status}</span>
+                  <span class="b-flight">{arr.flight}</span>
+                </li>
+              ))
+            ) : (
+              <li class="py-2 font-mono text-[12.5px] uppercase tracking-[0.1em]" style="color: var(--hi-soft)">
+                Níl aon teacht eile inniu
+              </li>
+            )}
+          </ul>
+
+          <div class="mt-[10px] flex justify-end">
+            <a href="/ga/flights" class="ops-cta-link">
+              Painéal iomlán <span class="arrow">→</span>
+            </a>
+          </div>
+        </aside>
+      </div>
+
+      <div
+        class="flex items-center gap-[10px] font-mono text-[12px] uppercase tracking-[0.22em]"
+        style="color: var(--hi-faint)"
+        aria-hidden="true"
       >
-        English version
-      </a>
+        Scrollaigh síos <span class="hero-bob">↓</span>
+      </div>
+    </div>
+
+    {/* Live clock script — weekday/month names translated to Irish.
+        Browser Intl support for the "ga" locale is unreliable (tested:
+        this environment's ICU data silently falls back to the OS locale
+        instead of erroring, showing Spanish "jueves"/"ene" — not English,
+        not Irish). So: get the day/month via the always-reliable "en-IE"
+        locale and map those English short names to Irish through a fixed
+        lookup table instead of trusting Intl to localise them itself. */}
+    <script is:inline>
+      (function () {
+        const WEEKDAY_GA = { Sun:'Domh', Mon:'Luan', Tue:'Máirt', Wed:'Céad', Thu:'Déar', Fri:'Aoine', Sat:'Sath' };
+        const MONTH_GA = { Jan:'Ean', Feb:'Feabh', Mar:'Márta', Apr:'Aib', May:'Beal', Jun:'Meith', Jul:'Iúil', Aug:'Lún', Sep:'MFómh', Oct:'DFómh', Nov:'Samh', Dec:'Noll' };
+        let clockTimer = null;
+        function startClock() {
+          const el    = document.getElementById('ops-clock');
+          const utcEl = document.getElementById('ops-clock-utc');
+          if (!el) return;
+          if (clockTimer) clearInterval(clockTimer);
+          function tick() {
+            const d = new Date();
+            const parts = new Intl.DateTimeFormat('en-IE', {
+              timeZone: 'Europe/Dublin',
+              weekday: 'short', day: 'numeric', month: 'short',
+              hour: '2-digit', minute: '2-digit', hour12: false
+            }).formatToParts(d).reduce(function(acc, p) { acc[p.type] = p.value; return acc; }, {});
+            const wd = WEEKDAY_GA[parts.weekday] || parts.weekday;
+            const mo = MONTH_GA[parts.month] || parts.month;
+            el.textContent = wd + ' ' + parts.day + ' ' + mo + ' · ' + parts.hour + ':' + parts.minute;
+            if (utcEl) {
+              const uh = String(d.getUTCHours()).padStart(2,'0');
+              const um = String(d.getUTCMinutes()).padStart(2,'0');
+              utcEl.innerHTML = uh + ':' + um + ' <span>UTC</span>';
+            }
+          }
+          tick();
+          clockTimer = setInterval(tick, 60_000);
+        }
+        document.addEventListener('astro:page-load', startClock);
+      })();
+    </script>
+
+    {/* Live weather — same Open-Meteo source as EN, WMO code labels in
+        Irish. Compass letters (N/NE/E/SE/S/SW/W/NW) are kept as the
+        international meteorological convention rather than translated. */}
+    <script is:inline>
+      (function () {
+        let wxTimer = null;
+        document.addEventListener('astro:page-load', init);
+
+        function init() {
+        if (!document.getElementById('wx-temp')) return;
+        if (wxTimer) clearInterval(wxTimer);
+        const WMO = {
+          0:'Spéir ghlan', 1:'Den chuid is mó glan', 2:'Scamallach go páirteach', 3:'Ró-scamallach',
+          45:'Ceo', 48:'Ceo oighreata',
+          51:'Braonta éadroma', 53:'Braonta', 55:'Braonta troma',
+          61:'Báisteach éadrom', 63:'Báisteach', 65:'Báisteach throm',
+          71:'Sneachta éadrom', 73:'Sneachta', 75:'Sneachta trom',
+          77:'Gráinníní sneachta',
+          80:'Cithfholcadh báistí', 81:'Cithfholcadh trom', 82:'Cithfholcadh foréigneach',
+          85:'Cithfholcadh sneachta', 86:'Cithfholcadh sneachta trom',
+          95:'Stoirm thoirní', 96:'Stoirm agus clocha sneachta', 99:'Stoirm agus clocha sneachta troma',
+        };
+        const DIRS = ['N','NE','E','SE','S','SW','W','NW'];
+        const compassDir = (deg) => DIRS[Math.round(deg / 45) % 8];
+
+        const URL =
+          'https://api.open-meteo.com/v1/forecast' +
+          '?latitude=55.0441&longitude=-8.3411' +
+          '&current=temperature_2m,weather_code,' +
+          'wind_speed_10m,wind_direction_10m,visibility' +
+          '&timezone=Europe%2FDublin';
+
+        function apply(data) {
+          const c = data.current;
+          const tempEl = document.getElementById('wx-temp');
+          const condEl = document.getElementById('wx-cond');
+          const windEl = document.getElementById('wx-wind');
+          const visEl  = document.getElementById('wx-vis');
+          if (!tempEl) return;
+
+          tempEl.textContent = Math.round(c.temperature_2m) + '°C';
+          condEl.textContent = WMO[c.weather_code] ?? 'Athraitheach';
+
+          const kt  = Math.round(c.wind_speed_10m / 1.852);
+          windEl.textContent = compassDir(c.wind_direction_10m) + ' ' + kt + ' kt';
+
+          const visMetre = c.visibility ?? 10000;
+          visEl.textContent = 'Léargas ' +
+            (visMetre >= 10000 ? '10 km' : (visMetre / 1000).toFixed(1) + ' km');
+        }
+
+        function fetchWx() {
+          fetch(URL)
+            .then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); })
+            .then(apply)
+            .catch(() => { /* keep static fallback silently */ });
+        }
+
+        fetchWx();
+        wxTimer = setInterval(fetchWx, 10 * 60 * 1000);
+        }
+      })();
+    </script>
+  </section>
+
+  {/* ---------- EDITORIAL INTRO ---------- */}
+  <section class="relative isolate overflow-hidden">
+    <div class="absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
+      <img
+        data-ken-burns
+        data-ken-burns-duration="26"
+        src="/photos/intro-sunrise.webp"
+        alt=""
+        class="h-full w-full object-cover"
+        loading="lazy"
+        decoding="async"
+      />
+      <div class="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-[rgba(18,22,29,0.35)] to-transparent"></div>
+    </div>
+
+    <div class="cfn-hero-content mx-auto max-w-7xl px-6 py-32 lg:py-48">
+      <div class="max-w-3xl">
+        <p
+          data-animate="fade-up"
+          class="font-mono text-[1.05rem] uppercase tracking-[0.2em]"
+          style="color: var(--hi-amber)"
+        >
+          Carraig Fhinn · Co. Dhún na nGall
+        </p>
+        <p
+          data-split
+          data-split-link="hero-lead"
+          class="mt-8 max-w-3xl font-display text-[clamp(2.1rem,4.2vw,3.8rem)] font-normal leading-[1.02]"
+          style="color: var(--hi)"
+        >
+          Is sinne an t-aerfort idirnáisiúnta is lú sa tír, agus an ceann leis
+          an radharc is fearr.
+        </p>
+        <div
+          data-reveal-after="hero-lead"
+          class="mt-8 max-w-xl text-[1.1rem] font-semibold leading-relaxed text-white [text-shadow:0_1px_14px_rgba(0,0,0,0.6)]"
+        >
+          <p>
+            Tá Carraig Fhinn suite ar ghainmhloch idir an tAigéan Atlantach
+            agus Sliabh an Earagail. Ritheann an rúidbhealach díreach cois
+            trá, leis an bhfarraige ar an dá thaobh. Tugadh ceann de na cur
+            chuige is áille ar domhan air — agus is fós é an bealach is
+            tapúla isteach nó amach as an gcontae.
+          </p>
+          <p class="mt-5">
+            <a
+              href="/ga/story"
+              class="border-b pb-0.5 font-semibold text-white/90 underline decoration-transparent underline-offset-4 transition-all duration-200 hover:text-white hover:decoration-white/80"
+              style="border-color: var(--hi-line)"
+            >
+              An scéal iomlán — ó Malinair go dtí inniu →
+            </a>
+          </p>
+        </div>
+      </div>
     </div>
   </section>
+
+  {/* ---------- DESTINATIONS — sticky horizontal scroll ---------- */}
+  <section
+    data-horizontal
+    class="h-wrapper relative hidden lg:block"
+    style={`height: ${100 + destinations.length * 100}vh;`}
+  >
+    <div class="h-pin">
+      <div class="h-track">
+        <div
+          class="flex h-[80vh] w-[32rem] shrink-0 flex-col justify-between px-2 py-12"
+        >
+          <p class="font-mono text-[1.5rem] font-semibold uppercase tracking-[0.22em] text-atlantic">
+            Bealaí
+          </p>
+          <div>
+            <h2
+              data-split
+              data-split-link="routes-head"
+              class="font-display text-[clamp(3.2rem,6vw,7rem)] font-normal leading-[0.94]"
+            >
+              Dhá eitilt,<br />dhá chathair.
+            </h2>
+            <p data-reveal-after="routes-head" class="mt-4 max-w-sm text-lg leading-relaxed text-ink">
+              Baile Átha Cliath faoi dhó sa lá, gach lá. Ceanglaíonn Loganair
+              le Glaschú ar laethanta áirithe. Léarscáil bhealaigh ghearr —
+              agus is suíochán fuinneoige gach suíochán.
+            </p>
+          </div>
+        </div>
+
+        {destinations.map((d) => (
+          <article
+            data-photo
+            class="relative flex h-[80vh] w-[44rem] shrink-0 flex-col justify-end overflow-hidden"
+          >
+            <img
+              src={d.hero}
+              alt={d.city}
+              class="absolute inset-0 h-full w-full object-cover"
+              style={`object-position: ${d.photoPos}`}
+              loading="lazy"
+            />
+            <div
+              class="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/30 to-transparent"
+              aria-hidden="true"
+            >
+            </div>
+            <div class="cfn-hero-content relative z-10 p-10">
+              <p class="font-mono text-[1rem] font-bold uppercase tracking-[0.3em] text-sand [text-shadow:0_1px_10px_rgba(0,0,0,0.5)]">
+                {d.country}
+              </p>
+              <h3
+                class="mt-3 font-display text-[clamp(2.5rem,5vw,5rem)] font-bold leading-[0.95] text-ink"
+                style="text-shadow: 0 2px 18px rgba(0,0,0,0.55), 0 1px 4px rgba(0,0,0,0.5)"
+              >
+                {d.city}
+              </h3>
+              <dl
+                class="mt-8 grid grid-cols-3 gap-6 font-mono text-[0.78rem] uppercase tracking-[0.18em] text-mute"
+                style="text-shadow: 0 1px 10px rgba(0,0,0,0.5)"
+              >
+                <div>
+                  <dt class="font-bold text-sand">Fad</dt>
+                  <dd class="mt-1 text-ink">{d.duration}</dd>
+                </div>
+                <div>
+                  <dt class="font-bold text-sand">Sceideal</dt>
+                  <dd class="mt-1 text-ink">{d.schedule}</dd>
+                </div>
+                <div>
+                  <dt class="font-bold text-sand">Aerlíne</dt>
+                  <dd class="mt-1 text-ink">{d.carrier}</dd>
+                </div>
+              </dl>
+              <a
+                href={d.bookUrl}
+                target="_blank"
+                rel="noopener"
+                class="mt-7 inline-flex w-fit items-center gap-2 rounded-full bg-atlantic px-6 py-3 font-mono text-[0.7rem] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-ink"
+              >
+                Cuir {d.city} in áirithe →
+              </a>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {/* Mobile fallback for destinations */}
+  <section class="border-t border-line lg:hidden">
+    <div class="mx-auto max-w-3xl px-6 py-20">
+      <p
+        data-animate="fade-up"
+        class="font-mono text-[1.5rem] font-semibold uppercase tracking-[0.22em] text-atlantic"
+      >
+        Bealaí
+      </p>
+      <h2
+        data-animate="fade-up"
+        data-animate-delay="0.1"
+        class="mt-3 font-display text-4xl leading-[1.02]"
+      >
+        Dhá eitilt, dhá chathair.
+      </h2>
+      <div class="mt-10 space-y-12">
+        {destinations.map((d, i) => (
+          <article
+            data-animate="fade-up"
+            data-animate-delay={`${0.05 + i * 0.08}`}
+            class="relative overflow-hidden"
+          >
+            <div class="relative aspect-[4/5] w-full overflow-hidden">
+              <img
+                src={d.hero}
+                alt={d.city}
+                class="absolute inset-0 h-full w-full object-cover"
+                style={`object-position: ${d.photoPos}`}
+                loading="lazy"
+              />
+              <div
+                class="absolute inset-0 bg-gradient-to-t from-ink/85 to-transparent"
+                aria-hidden="true"
+              >
+              </div>
+              <div class="cfn-hero-content absolute inset-x-0 bottom-0 p-6">
+                <p class="font-mono text-[0.92rem] font-bold uppercase tracking-[0.28em] text-sand [text-shadow:0_1px_10px_rgba(0,0,0,0.5)]">
+                  {d.country}
+                </p>
+                <h3
+                  class="mt-2 font-display text-4xl font-bold leading-[0.95] text-ink"
+                  style="text-shadow: 0 2px 16px rgba(0,0,0,0.55), 0 1px 4px rgba(0,0,0,0.5)"
+                >
+                  {d.city}
+                </h3>
+                <a
+                  href={d.bookUrl}
+                  target="_blank"
+                  rel="noopener"
+                  class="mt-4 inline-flex w-fit items-center gap-2 rounded-full bg-atlantic px-5 py-2.5 font-mono text-[0.65rem] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-ink"
+                >
+                  Cuir {d.city} in áirithe →
+                </a>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  {/* ---------- AWARDS ---------- */}
+  <section class="relative isolate overflow-hidden">
+    <div class="absolute inset-0 -z-10" aria-hidden="true">
+      <img
+        src="/photos/intro-airport.webp"
+        alt=""
+        class="h-full w-full object-cover object-[center_35%]"
+        loading="lazy"
+        decoding="async"
+      />
+      <div class="absolute inset-0 bg-[var(--color-surface)]/45"></div>
+    </div>
+
+    <div class="mx-auto max-w-7xl px-6 py-28">
+      <p
+        data-animate="fade-up"
+        class="font-mono text-[1.5rem] font-semibold uppercase tracking-[0.22em] text-[#0f3550]"
+      >
+        Aitheantas
+      </p>
+      {/* data-split (per-character reveal) dropped for this heading only:
+          its shared implementation (animations.ts) collapses whitespace —
+          including &nbsp; — into fresh breakable spaces between per-word
+          spans, which defeats keeping "fhada dhámhachtainí." on one line.
+          data-split-link stays so the awards list below still times its
+          reveal off this heading. */}
+      <h2
+        data-animate="fade-up"
+        data-split-link="awards-head"
+        class="mt-3 max-w-4xl font-display text-[clamp(3rem,5.5vw,6rem)] font-normal leading-[0.98] text-[#0f3550]"
+      >
+        Aerfort beag le seilf fhada&nbsp;dhámhachtainí.
+      </h2>
+
+      <ul class="mt-16 divide-y divide-ink/10">
+        {awards.map((award, i) => (
+          <li
+            data-reveal-after="awards-head"
+            data-reveal-delay={`${i * 0.06}`}
+            class="relative grid items-center gap-6 py-10 md:grid-cols-[13rem_1fr_auto] md:gap-12"
+          >
+            <p class="font-display text-[4rem] leading-none text-[#0f3550] md:text-[5.5rem]">
+              {award.year}
+            </p>
+            <div>
+              <h3 class="font-display text-2xl leading-tight text-ink md:text-3xl">
+                {award.title}
+              </h3>
+              <p class="mt-2 text-base leading-relaxed text-ink">
+                {award.detail}
+              </p>
+            </div>
+            <p
+              class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.18em] text-[#0f3550] md:text-right"
+            >
+              {award.source}
+            </p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  {/* ---------- NEWS — Card deck ----------
+      Section chrome is Irish; individual article titles/dates/kind stay in
+      English (real press-release content — see the note in the frontmatter
+      above). */}
+  <section id="news" class="news-sec border-t border-line">
+    <div class="news-sec__inner">
+      <div class="news-sec__head">
+        <div>
+          <p class="font-mono text-[1.5rem] font-semibold uppercase tracking-[0.22em] text-atlantic">
+            Nuacht
+          </p>
+          <h2 class="news-sec__title">Ón aerfort.</h2>
+        </div>
+        <a href="/ga/news" class="all-news-lnk">
+          Gach nuacht <span class="ar">→</span>
+        </a>
+      </div>
+
+      <div class="nc-carousel">
+        <button class="nc-arr" id="nc-prev" aria-label="Roimhe seo">←</button>
+        <div class="news-deck">
+          {news.map((item) => (
+            <a href={`/ga/news/${item.slug}`} class="nc reveal">
+              <div class="nc__media">
+                <span class="nc__flag">{item.kind}</span>
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  class="nc__img"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </div>
+              <p class="nc__date">{item.date}</p>
+              <h3 class="nc__title">{item.title}</h3>
+              <div class="nc__foot">
+                <span>Léigh</span><span class="ar">→</span>
+              </div>
+            </a>
+          ))}
+        </div>
+        <button class="nc-arr" id="nc-next" aria-label="Ar aghaidh">→</button>
+      </div>
+    </div>
+  </section>
+
+  <style is:global>
+    .news-sec {
+      background-color: var(--color-surface, #f3f2ee);
+    }
+    .news-sec__inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 5rem 2.5rem 5.5rem;
+    }
+    .news-sec__head {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: end;
+      gap: 2rem;
+      margin-bottom: 3.2rem;
+    }
+    .news-sec__title {
+      font-family: var(--font-display);
+      font-weight: 300;
+      font-size: clamp(2.6rem, 5.2vw, 4.6rem);
+      line-height: 0.96;
+      letter-spacing: -0.025em;
+      margin-top: 1.1rem;
+    }
+    .all-news-lnk {
+      align-self: end;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-ink, #181d16);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px solid currentColor;
+      white-space: nowrap;
+      transition: gap 0.25s;
+    }
+    .all-news-lnk .ar { transition: transform 0.25s; }
+    .all-news-lnk:hover { gap: 1.1rem; }
+    .all-news-lnk:hover .ar { transform: translateX(4px); }
+
+    .nc-carousel {
+      display: flex;
+      align-items: center;
+    }
+    .nc-arr {
+      flex: none;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      border: 1px solid var(--color-line, rgba(24,29,22,0.11));
+      background: transparent;
+      font-size: 1rem;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
+      color: var(--color-ink, #181d16);
+    }
+    .nc-arr:hover { background: var(--color-ink, #181d16); color: var(--color-surface, #f3f2ee); border-color: var(--color-ink, #181d16); }
+    .nc-arr:disabled { opacity: 0.3; cursor: default; pointer-events: none; }
+    #nc-prev { margin-right: 1.1rem; }
+    #nc-next { margin-left: 1.1rem; }
+    .news-deck {
+      flex: 1;
+      display: flex;
+      gap: 1.8rem;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+    }
+    .news-deck::-webkit-scrollbar { display: none; }
+    .nc {
+      flex: 0 0 calc((100% - 3.6rem) / 3);
+      min-width: 220px;
+      scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
+      text-decoration: none;
+      color: inherit;
+    }
+    .nc__media {
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px;
+    }
+    .nc__img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.5s cubic-bezier(.2,.7,.2,1);
+    }
+    .nc:hover .nc__img { transform: scale(1.04); }
+    .nc__flag {
+      position: absolute;
+      top: 0.85rem;
+      left: 0.85rem;
+      z-index: 3;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.95);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.65);
+    }
+    .nc__flag::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #c4733a;
+      flex: none;
+    }
+    .nc__date {
+      margin: 1.3rem 0 0.7rem;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      color: var(--color-mute, #56605a);
+    }
+    .nc__title {
+      font-family: var(--font-display);
+      font-weight: 400;
+      font-size: 1.5rem;
+      line-height: 1.12;
+      letter-spacing: -0.015em;
+      text-wrap: pretty;
+      transition: color 0.25s;
+    }
+    .nc:hover .nc__title { color: var(--color-atlantic, #1a4a6e); }
+    .nc__foot {
+      margin-top: auto;
+      padding-top: 1.1rem;
+      border-top: 1px solid var(--color-line, rgba(24,29,22,0.11));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--color-mute, #56605a);
+      transition: color 0.25s;
+    }
+    .nc__foot .ar { transition: transform 0.25s; }
+    .nc:hover .nc__foot { color: var(--color-atlantic, #1a4a6e); }
+    .nc:hover .nc__foot .ar { transform: translateX(5px); }
+
+    .js-ready .nc.reveal {
+      opacity: 0;
+      transform: translateY(22px);
+      transition: opacity 0.7s cubic-bezier(.2,.7,.2,1), transform 0.7s cubic-bezier(.2,.7,.2,1);
+    }
+    .js-ready .nc.reveal.in {
+      opacity: 1;
+      transform: none;
+    }
+
+    @media (max-width: 900px) {
+      .nc { flex: 0 0 78%; }
+      .news-sec__head { grid-template-columns: 1fr; }
+      #nc-prev, #nc-next { display: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .nc.reveal { opacity: 1 !important; transform: none !important; }
+    }
+
+  </style>
+
+  <script is:inline>
+    document.addEventListener('astro:page-load', function () {
+      document.documentElement.classList.add('js-ready');
+      var deck = document.querySelector('.news-deck');
+      if (!deck) return;
+      var cards = Array.prototype.slice.call(deck.querySelectorAll('.nc.reveal'));
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) {
+            cards.forEach(function (card, i) {
+              setTimeout(function () { card.classList.add('in'); }, i * 90);
+            });
+            io.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      io.observe(deck);
+    });
+
+    document.addEventListener('astro:page-load', function () {
+      var d = document.querySelector('.news-deck');
+      var prev = document.getElementById('nc-prev');
+      var next = document.getElementById('nc-next');
+      if (!d || !prev || !next) return;
+      function cw() { var c = d.querySelector('.nc'); return c ? c.getBoundingClientRect().width + 29 : 300; }
+      function upd() {
+        prev.disabled = d.scrollLeft <= 4;
+        next.disabled = d.scrollLeft + d.clientWidth >= d.scrollWidth - 4;
+      }
+      prev.addEventListener('click', function () { d.scrollBy({ left: -cw(), behavior: 'smooth' }); });
+      next.addEventListener('click', function () { d.scrollBy({ left: cw(), behavior: 'smooth' }); });
+      d.addEventListener('scroll', upd, { passive: true });
+      upd();
+    });
+  </script>
+
+  {/* ---------- INQUIRY CTA — Wild Atlantic Way closer ---------- */}
+  <section class="relative isolate overflow-hidden border-t border-line">
+    <div class="absolute inset-0 -z-10" aria-hidden="true">
+      <img
+        src="/photos/errigal-winter.jpg"
+        alt=""
+        class="h-full w-full object-cover object-[center_60%]"
+        loading="lazy"
+        decoding="async"
+      />
+      <div class="absolute inset-0 bg-black/30"></div>
+    </div>
+    <div class="mx-auto max-w-7xl px-6 py-32 text-center">
+      <p
+        data-animate="fade-up"
+        class="font-mono text-[1.5rem] font-semibold uppercase tracking-[0.22em] text-white/70"
+      >
+        Pleanáil do chuairt
+      </p>
+      <h2
+        data-split
+        class="mt-4 font-display text-[clamp(2.5rem,6vw,6.5rem)] font-normal leading-[0.98] text-white"
+      >
+        Eitil isteach. Tá Bealach Fiáin an Atlantaigh ag fanacht ag an ngeata.
+      </h2>
+      <div
+        data-animate="fade-up"
+        data-animate-delay="0.35"
+        class="mt-12 flex flex-wrap justify-center gap-8"
+      >
+        <a
+          href="/ga/discover"
+          class="border-b border-white/60 pb-1 font-mono text-sm font-medium uppercase tracking-[0.22em] text-white transition-colors hover:border-sand hover:text-sand"
+        >
+          Faigh amach Dún na nGall →
+        </a>
+        <a
+          href="/ga/contact"
+          class="border-b border-white/60 pb-1 font-mono text-sm font-medium uppercase tracking-[0.22em] text-white transition-colors hover:border-sand hover:text-sand"
+        >
+          Labhair linn →
+        </a>
+      </div>
+    </div>
+  </section>
+
+<script is:inline define:vars={{ boardFlights: flightsToday }}>
+(function () {
+  var pollTimer = null;
+  document.addEventListener('astro:page-load', init);
+
+  function init() {
+  if (!document.getElementById('hero-deps') && !document.getElementById('hero-arrs')) return;
+  if (pollTimer) clearInterval(pollTimer);
+
+  function statusKey(s) { return String(s || '').toLowerCase().replace(/[^a-z]/g, ''); }
+
+  var FLIGHTS = boardFlights;
+
+  function updateHero() {
+    var ul = document.getElementById('hero-deps');
+    if (ul) {
+      var deps = FLIGHTS.filter(function (f) { return f.type === 'departure' && f.status !== 'Departed'; }).slice(0, 4);
+      ul.innerHTML = '';
+      if (!deps.length) {
+        var empty = document.createElement('li');
+        empty.className = 'py-2 font-mono text-[11px] uppercase tracking-[0.1em]';
+        empty.style.color = 'var(--hi-soft)';
+        empty.textContent = 'Níl aon imeacht eile inniu';
+        ul.appendChild(empty);
+      }
+      deps.forEach(function (f) {
+        var key = statusKey(f.status);
+        var lbl = key === 'delayed' && f.estTime ? '→ ' + f.estTime : f.status;
+        var tone = key === 'delayed' ? 'warn' : 'ok';
+        var li = document.createElement('li');
+        li.className = 'ops-board-row';
+        var timeSpan = document.createElement('span'); timeSpan.className = 'b-time'; timeSpan.textContent = f.time;
+        var destSpan = document.createElement('span'); destSpan.className = 'b-dest'; destSpan.textContent = f.city;
+        var statusSpan = document.createElement('span'); statusSpan.className = 'b-status ' + tone; statusSpan.textContent = lbl;
+        var flightSpan = document.createElement('span'); flightSpan.className = 'b-flight'; flightSpan.textContent = f.flightNo + ' · ' + (f.airline || '');
+        li.appendChild(timeSpan); li.appendChild(destSpan); li.appendChild(statusSpan); li.appendChild(flightSpan);
+        ul.appendChild(li);
+      });
+    }
+
+    var arrUl = document.getElementById('hero-arrs');
+    if (arrUl) {
+      var arrs = FLIGHTS.filter(function (f) { return f.type === 'arrival' && f.status !== 'Landed'; }).slice(0, 4);
+      arrUl.innerHTML = '';
+      if (!arrs.length) {
+        var emptyArr = document.createElement('li');
+        emptyArr.className = 'py-2 font-mono text-[11px] uppercase tracking-[0.1em]';
+        emptyArr.style.color = 'var(--hi-soft)';
+        emptyArr.textContent = 'Níl aon teacht eile inniu';
+        arrUl.appendChild(emptyArr);
+      }
+      arrs.forEach(function (f) {
+        var key = statusKey(f.status);
+        var lbl = key === 'delayed' && f.estTime ? '→ ' + f.estTime : f.status;
+        var tone = key === 'delayed' ? 'warn' : 'ok';
+        var li = document.createElement('li');
+        li.className = 'ops-board-row';
+        var timeSpan = document.createElement('span'); timeSpan.className = 'b-time'; timeSpan.textContent = f.time;
+        var destSpan = document.createElement('span'); destSpan.className = 'b-dest'; destSpan.textContent = f.city;
+        var statusSpan = document.createElement('span'); statusSpan.className = 'b-status ' + tone; statusSpan.textContent = lbl;
+        var flightSpan = document.createElement('span'); flightSpan.className = 'b-flight'; flightSpan.textContent = f.flightNo + ' · ' + (f.airline || '');
+        li.appendChild(timeSpan); li.appendChild(destSpan); li.appendChild(statusSpan); li.appendChild(flightSpan);
+        arrUl.appendChild(li);
+      });
+    }
+  }
+
+  function fetchFlights() {
+    fetch('/api/flights-today.json?_=' + Date.now())
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data && data.live === true && Array.isArray(data.flights)) {
+          FLIGHTS = data.flights;
+          updateHero();
+        }
+      })
+      .catch(function () {});
+  }
+  pollTimer = setInterval(fetchFlights, 60000);
+
+  updateHero();
+  fetchFlights();
+  }
+})();
+</script>
+
+<script is:inline>
+(function () {
+  function linkedReveal(headSel, bodySel) {
+    var head = document.querySelector('[data-split-link="' + headSel + '"]');
+    var bodies = document.querySelectorAll('[data-reveal-after="' + bodySel + '"]');
+    if (!head || !bodies.length) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    bodies.forEach(function (body) {
+      body.style.transition = 'none';
+      body.style.opacity = '0';
+      body.style.transform = 'translateY(24px)';
+      void body.offsetHeight;
+      body.style.transition = 'opacity .8s ease, transform .8s cubic-bezier(.22,.61,.36,1)';
+    });
+
+    var STAGGER = 0.018, DURATION = 0.9, DURATION_VISUAL_FRACTION = 0.45;
+    var chars = (head.textContent || '').replace(/\s+/g, '').length;
+    var splitDelay = parseFloat(head.dataset.splitDelay || '0');
+    var totalMs = (splitDelay + STAGGER * Math.max(0, chars - 1) + DURATION * DURATION_VISUAL_FRACTION) * 1000;
+
+    var fired = false;
+    var obs = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (fired || !entry.isIntersecting) return;
+        fired = true;
+        bodies.forEach(function (body) {
+          var extraMs = parseFloat(body.dataset.revealDelay || '0') * 1000;
+          setTimeout(function () {
+            body.style.opacity = '1';
+            body.style.transform = 'none';
+          }, totalMs + extraMs);
+        });
+        obs.disconnect();
+      });
+    }, { rootMargin: '0px 0px -15% 0px', threshold: 0.01 });
+    obs.observe(head);
+  }
+
+  document.addEventListener('astro:page-load', function () {
+    linkedReveal('hero-lead', 'hero-lead');
+    linkedReveal('routes-head', 'routes-head');
+    linkedReveal('awards-head', 'awards-head');
+  });
+})();
+</script>
+
 </BaseLayout>

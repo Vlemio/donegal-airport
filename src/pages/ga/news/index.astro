@@ -1,0 +1,380 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+export const prerender = true;
+
+const IRISH_MONTHS = [
+  "Eanáir", "Feabhra", "Márta", "Aibreán", "Bealtaine", "Meitheamh",
+  "Iúil", "Lúnasa", "Meán Fómhair", "Deireadh Fómhair", "Samhain", "Nollaig",
+];
+const irishDate = (d: Date) => `${d.getDate()} ${IRISH_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
+
+const entries = await getCollection("news");
+const sorted = entries.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const all = sorted.map((n) => ({
+  slug: n.id,
+  date: irishDate(n.data.date),
+  kind: (n.data as any).kindGa || n.data.kind,
+  title: (n.data as any).titleGa || n.data.title,
+  lead: (n.data as any).leadGa || (n.data as any).lead || "",
+  image: (n.data as any).image
+    ? String((n.data as any).image).startsWith("/")
+      ? String((n.data as any).image)
+      : `/photos/${(n.data as any).image}`
+    : "/photos/intro-airport.webp",
+}));
+
+const featured = all[0];
+// Sidebar shows the next 4 (matches the featured photo's height); everything
+// else after that goes into the 3-column grid below.
+const sidebarItems = all.slice(1, 5);
+const gridItems = all.slice(5);
+---
+
+<BaseLayout title="Nuacht · Aerfort Dhún na nGall" description="Nuacht agus nuashonruithe is déanaí ó Aerfort Dhún na nGall CFN/EIDL.">
+
+  <div class="np-outer">
+
+    {/* ===== HERO: featured card + sidebar ===== */}
+    <section class="np-top">
+      <div class="np-inner">
+
+        <a href="/ga/#news" class="np-back">← Baile</a>
+
+        <a href={`/ga/news/${featured.slug}`} class="np-feat">
+          <img src={featured.image} alt={featured.title} class="np-feat__img" loading="eager" />
+          <div class="np-feat__over">
+            <span class="np-feat__kind">{featured.kind}</span>
+            <h2 class="np-feat__title">{featured.title}</h2>
+            <p class="np-feat__date">{featured.date}</p>
+          </div>
+        </a>
+
+        <aside class="np-side">
+          <p class="np-side__label">Nuacht is déanaí</p>
+          <ul class="np-side__list">
+            {sidebarItems.map((item) => (
+              <li>
+                <a href={`/ga/news/${item.slug}`} class="np-sb-row">
+                  <img src={item.image} alt={item.title} class="np-sb-row__thumb" loading="lazy" />
+                  <div class="np-sb-row__body">
+                    <p class="np-sb-row__title">{item.title}</p>
+                    <p class="np-sb-row__meta">{item.date}</p>
+                  </div>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </aside>
+
+      </div>
+    </section>
+
+    {/* ===== ALL STORIES GRID ===== */}
+    <section class="np-grid-sec">
+      <div class="np-inner">
+
+        <div class="np-grid-hd">
+          <div>
+            <p class="np-grid-eyebrow">Ón aerfort</p>
+            <h2 class="np-grid-hed">Gach scéal.</h2>
+          </div>
+        </div>
+
+        <div class="np-grid">
+          {gridItems.map((item) => (
+            <a href={`/ga/news/${item.slug}`} class="nc">
+              <div class="nc__media">
+                <span class="nc__flag">{item.kind}</span>
+                <img src={item.image} alt={item.title} class="nc__img" loading="lazy" decoding="async" />
+              </div>
+              <p class="nc__date">{item.date}</p>
+              <h3 class="nc__title">{item.title}</h3>
+              <div class="nc__foot"><span>Léigh</span><span class="ar">→</span></div>
+            </a>
+          ))}
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+
+  <style is:global>
+    /* ---- Page shell ---- */
+    .np-outer { background-color: var(--color-surface, #f3f2ee); }
+    .np-inner {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding-left: 2.5rem;
+      padding-right: 2.5rem;
+    }
+
+    /* ---- Hero section ---- */
+    .np-top { padding: calc(var(--header-h) + 2rem) 0 0; }
+    .np-top .np-inner {
+      display: grid;
+      grid-template-columns: 1fr 34%;
+      gap: 2.4rem;
+      align-items: stretch;
+    }
+    .np-back {
+      display: inline-flex;
+      width: fit-content;
+      margin-bottom: 1.6rem;
+      align-items: center;
+      gap: 0.6rem;
+      border-radius: 999px;
+      background: var(--color-ink, #181d16);
+      padding: 0.6rem 1.1rem;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: #fff;
+      text-decoration: none;
+      transition: opacity 0.2s;
+      grid-column: 1 / -1;
+    }
+    .np-back:hover { opacity: 0.8; }
+
+    .np-feat {
+      display: block;
+      position: relative;
+      border-radius: 14px;
+      overflow: hidden;
+      text-decoration: none;
+      color: #fff;
+      height: 100%;
+      min-height: 22rem;
+    }
+    .np-feat__img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.6s cubic-bezier(.2,.7,.2,1);
+    }
+    .np-feat:hover .np-feat__img { transform: scale(1.03); }
+    .np-feat__over {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to top, rgba(10,20,30,0.82) 0%, rgba(10,20,30,0.35) 55%, transparent 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 2rem 2.2rem;
+    }
+    .np-feat__kind {
+      display: inline-block;
+      background: rgba(243,242,238,0.92);
+      backdrop-filter: blur(4px);
+      border-radius: 3px;
+      padding: 0.35rem 0.65rem;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--color-atlantic, #1a4a6e);
+      margin-bottom: 1rem;
+      align-self: flex-start;
+    }
+    .np-feat__title {
+      font-family: var(--font-display);
+      font-weight: 400;
+      font-size: clamp(1.5rem, 2.8vw, 2.4rem);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      text-wrap: pretty;
+      margin-bottom: 0.75rem;
+    }
+    .np-feat__date {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      color: rgba(255,255,255,0.65);
+    }
+
+    /* Sidebar */
+    .np-side { padding-top: 0.5rem; }
+    .np-side__label {
+      font-family: var(--font-display);
+      font-weight: 400;
+      font-size: 1.35rem;
+      letter-spacing: -0.01em;
+      color: var(--color-ink, #181d16);
+      margin-bottom: 1.4rem;
+    }
+    .np-side__list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0; }
+    .np-sb-row {
+      display: flex;
+      gap: 0.9rem;
+      align-items: flex-start;
+      text-decoration: none;
+      color: inherit;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--color-line, rgba(24,29,22,0.11));
+      transition: opacity 0.2s;
+    }
+    .np-sb-row:hover { opacity: 0.72; }
+    .np-sb-row__thumb {
+      width: 72px;
+      height: 72px;
+      object-fit: cover;
+      border-radius: 6px;
+      flex: none;
+    }
+    .np-sb-row__body { flex: 1; min-width: 0; }
+    .np-sb-row__title {
+      font-family: var(--font-display);
+      font-weight: 400;
+      font-size: 0.96rem;
+      line-height: 1.3;
+      letter-spacing: -0.01em;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+    }
+    .np-sb-row__meta {
+      margin-top: 0.45rem;
+      font-family: var(--font-mono);
+      font-size: 0.64rem;
+      letter-spacing: 0.06em;
+      color: var(--color-mute, #56605a);
+    }
+
+    /* ---- All stories grid section ---- */
+    .np-grid-sec {
+      padding: 4.5rem 0 6rem;
+    }
+    .np-grid-hd {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 2rem;
+      margin-bottom: 2.4rem;
+    }
+    .np-grid-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--color-atlantic, #1a4a6e);
+      margin-bottom: 0.5rem;
+    }
+    .np-grid-hed {
+      font-family: var(--font-display);
+      font-weight: 300;
+      font-size: clamp(2rem, 4vw, 3.4rem);
+      line-height: 0.96;
+      letter-spacing: -0.025em;
+    }
+    .np-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.8rem 1.8rem;
+    }
+
+    /* ---- nc card ---- */
+    .nc {
+      display: flex;
+      flex-direction: column;
+      text-decoration: none;
+      color: inherit;
+    }
+    .nc__media {
+      position: relative;
+      overflow: hidden;
+      border-radius: 8px;
+    }
+    .nc__img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.5s cubic-bezier(.2,.7,.2,1);
+    }
+    .nc:hover .nc__img { transform: scale(1.04); }
+    .nc__flag {
+      position: absolute;
+      top: 0.85rem;
+      left: 0.85rem;
+      z-index: 3;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.95);
+      text-shadow: 0 1px 4px rgba(0,0,0,0.65);
+    }
+    .nc__flag::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #c4733a;
+      flex: none;
+    }
+    .nc__date {
+      margin: 1.3rem 0 0.7rem;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.06em;
+      color: var(--color-mute, #56605a);
+    }
+    .nc__title {
+      font-family: var(--font-display);
+      font-weight: 400;
+      font-size: 1.5rem;
+      line-height: 1.12;
+      letter-spacing: -0.015em;
+      text-wrap: pretty;
+      transition: color 0.25s;
+    }
+    .nc:hover .nc__title { color: var(--color-atlantic, #1a4a6e); }
+    .nc__foot {
+      margin-top: 1.1rem;
+      padding-top: 1.1rem;
+      border-top: 1px solid var(--color-line, rgba(24,29,22,0.11));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--color-mute, #56605a);
+      transition: color 0.25s;
+    }
+    .nc__foot .ar { transition: transform 0.25s; }
+    .nc:hover .nc__foot { color: var(--color-atlantic, #1a4a6e); }
+    .nc:hover .nc__foot .ar { transform: translateX(5px); }
+
+    /* ---- Responsive ---- */
+    @media (max-width: 960px) {
+      .np-top .np-inner { grid-template-columns: 1fr; }
+      .np-feat { aspect-ratio: 4/3; }
+      .np-side { padding-top: 1rem; }
+      .np-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 560px) {
+      .np-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 640px) {
+      .np-inner { padding-left: 1.25rem; padding-right: 1.25rem; }
+    }
+  </style>
+
+
+</BaseLayout>

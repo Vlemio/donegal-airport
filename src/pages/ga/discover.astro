@@ -1,0 +1,1239 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const title = "Faigh amach Dún na nGall · Aerfort Dhún na nGall";
+const description =
+  "Ó CFN tá tú nóiméid ó Bhealach Fiáin an Atlantaigh, tránna brat gorm, Sliabh na hEaragaile agus croílár Ghaeltacht na hÉireann.";
+
+const highlights = [
+  {
+    label: "Cósta agus Aigéan",
+    text: "Tránna brat gorm, cairn mara, siúlóidí aille. Tá an cladach is drámatúla in Éirinn deich nóiméad ón éileamh bagáiste. Tosaíonn trá Charraig Fhinn ag tairseach an rúidbhealaigh.",
+    link: "#destinations",
+    src: "/photos/discover-carrickfinn.jpg",
+    srcPos: "90% 38%",
+    caption: "Trá Charraig Fhinn · CFN",
+  },
+  {
+    label: "Sliabh agus Loch",
+    text: "Tá an Earagail, Sliabh Liag agus Páirc Náisiúnta Ghleann Bheatha laistigh d'uair an chloig sa charr. Gan scuaine. Gan slua. Tá 16,000 heicteár de phortach agus coill dharach na páirce saor in aisce.",
+    link: "#destinations",
+    src: "/photos/discover-mountain-lough.jpg",
+    srcPos: "50% 70%",
+    caption: "An Earagail · Co. Dhún na nGall",
+  },
+  {
+    label: "Gaeltacht",
+    text: "Is é Dún na nGall an contae is mó sa tír ina labhraítear Gaeilge. Tá an t-aerfort suite ina chroílár. Is é an chanúint anseo — Ulaidh — an cineál Gaeilge is sine atá fós á labhairt go laethúil.",
+    link: "#destinations",
+    src: "/photos/discover-gaeltacht.jpg",
+    srcPos: "26% 48%",
+    caption: "Céibh an Bhun Bhig. Sráidbhaile Ghaoth Dobhair",
+  },
+] as const;
+
+const destinations = [
+  {
+    code: "01",
+    title: "Bealach Fiáin an Atlantaigh",
+    drive: "Tá CFN suite ar an mbealach",
+    tagline: "Bóthar cósta mór na hÉireann. 2,500 km d'aill, cuas agus spéir oscailte. Tá an chuid is fiáine ag Dún na nGall.",
+    src: "/photos/discover-wild-atlantic.jpg",
+    srcPos: "49% 0%",
+    caption: "Bealach Fiáin an Atlantaigh · tuaisceart Dhún na nGall",
+  },
+  {
+    code: "02",
+    title: "An Earagail",
+    drive: "22 nóim. ó CFN",
+    tagline: "Cón cáiliúil chuartzite Dhún na nGall, 751 m. Tógann conair an droim go dtí an mullach dhá uair an chloig. Tógann an radharc an chuid eile den lá.",
+    src: "/photos/discover-errigal.jpg",
+    srcPos: "60% 78%",
+    caption: "An Earagail · Co. Dhún na nGall",
+  },
+  {
+    code: "03",
+    title: "Gleann Bheatha",
+    drive: "45 nóim. ó CFN",
+    tagline: "Páirc náisiúnta is mó na hÉireann. Fianna rua, fabhcúin ghorma, caisleán Victeoiriach in aice le loch oighreach. Saor isteach.",
+    src: "/photos/discover-glenveagh.jpg",
+    srcPos: "48% 89%",
+    caption: "Gleann Bheatha · Co. Dhún na nGall",
+  },
+  {
+    code: "04",
+    title: "Sliabh Liag",
+    drive: "55 nóim. ó CFN",
+    tagline: "Trí huaire chomh hard le hAillte an Mhothair. Cuid bheag de na cuairteoirí. Buaileann an tAigéan Atlantach 600 m faoi bhun an mhullaigh.",
+    src: "/photos/discover-slieve-league.jpg",
+    srcPos: "24% 38%",
+    caption: "Sliabh Liag · Co. Dhún na nGall",
+  },
+  {
+    code: "05",
+    title: "Cionn Mhálanna",
+    drive: "75 nóim. ó CFN",
+    tagline: "An pointe is faide ó thuaidh in Éirinn. Deireadh Bhealach Fiáin an Atlantaigh. Díríonn na comharthaí anseo ó gach cearn den oileán.",
+    src: "/photos/discover-malin-head.jpg",
+    srcPos: "61% 48%",
+    caption: "Cionn Mhálanna · Co. Dhún na nGall",
+  },
+  {
+    code: "06",
+    title: "Baile Dhún na nGall",
+    drive: "60 nóim. ó CFN",
+    tagline: "Caisleán meánaoiseach, cearnóg dhiamaint, an bréidín is fearr ar an oileán. Beag go leor le siúl ó cheann go ceann roimh dhinnéar.",
+    src: "/photos/discover-donegal-town.jpg",
+    srcPos: "50% 50%",
+    caption: "Baile Dhún na nGall",
+  },
+] as const;
+
+
+type Provider = { name: string; website: string; phone: string; email: string };
+
+const activities: {
+  code: string;
+  label: string;
+  title: string;
+  tagline: string;
+  src: string;
+  srcPos: string;
+  providers: Provider[];
+  moreUrl: string;
+}[] = [
+  {
+    code: "01",
+    label: "Galf",
+    title: "Príomhchathair Galf Links na hÉireann",
+    tagline: "Deich gcúrsa craobhchomórtais laistigh d'uair an chloig de CFN — Rosapenna, Baile Uí Fhloinn agus Port Salann i measc na gcúrsaí links is fearr san Eoraip.",
+    src: "/photos/discover-golf.jpg",
+    srcPos: "50% 50%",
+    providers: [],
+    moreUrl: "",
+  },
+  {
+    code: "02",
+    label: "Spóirt Uisce",
+    title: "Eitleog, windsurf, céasla. Ag an bhfál.",
+    tagline: "Tá Carrickfinn Watersports suite ag fál imlíne an aerfoirt. Eitleog-surfáil, windsurfáil, clár céasla agus snámh uisce oscailte ar uisce Bhrat Gorm.",
+    src: "/photos/discover-watersports.jpg",
+    srcPos: "62% 39%",
+    providers: [
+      { name: "Carrickfinn Watersports", website: "https://www.carrickfinnwatersports.ie", phone: "+353 83 073 1517", email: "cfnwatersports@gmail.com" },
+    ],
+    moreUrl: "https://www.govisitdonegal.com/things-to-do/activities/water-activities",
+  },
+  {
+    code: "03",
+    label: "Cadhcáil Farraige",
+    title: "Céaslaigh an tAtlantach Fiáin",
+    tagline: "Cadhcáil farraige threoraithe feadh uaimheanna mara, cairn mara agus ceanntíortha nach féidir a bhaint amach ach ón uisce. Turais lae agus eachtraí ilaimseartha.",
+    src: "/photos/discover-kayaking.jpg",
+    srcPos: "50% 50%",
+    providers: [
+      { name: "Sea Kayaking Donegal", website: "https://www.seakayakingdonegal.com", phone: "", email: "seakayakingdonegal@gmail.com" },
+    ],
+    moreUrl: "",
+  },
+  {
+    code: "04",
+    label: "Seoltóireacht",
+    title: "Uisce oscailte, spéir mhór",
+    tagline: "Turais sheoltóireachta le captaen feadh Bhá Dhún na nGall agus an cósta thiar thuaidh. Seoltóireacht lae agus cairtfhostuithe níos faide ó chuanta áitiúla.",
+    src: "/photos/discover-sailing.jpg",
+    srcPos: "50% 50%",
+    providers: [
+      { name: "Selkie Sailing", website: "https://www.selkieseaadventures.com", phone: "+353 86 222 3328", email: "info@selkiesailing.com" },
+    ],
+    moreUrl: "",
+  },
+  {
+    code: "05",
+    label: "Siúlóid agus Céasla",
+    title: "Dhá bhealach le radharc a fháil ar an gcósta",
+    tagline: "Laethanta ilghníomhaíochta treoraithe ina gcomhcheanglaítear siúlóid cois cósta le cadhcáil farraige. Cósta fiáin Dhún na nGall, á iniúchadh ón talamh agus ón uisce ar an lá céanna.",
+    src: "/photos/discover-trek-paddle.jpg",
+    srcPos: "50% 50%",
+    providers: [
+      { name: "Trek and Paddle", website: "", phone: "+353 87 090 3163", email: "trekandpaddledonegal@gmail.com" },
+    ],
+    moreUrl: "",
+  },
+  {
+    code: "06",
+    label: "Eachtraíocht Amuigh Faoin Aer",
+    title: "Ó aghaidheanna aille go huisce oscailte",
+    tagline: "Dreapadóireacht carraige, boghdóireacht, bádóireacht chumhachta agus cadhcáil farraige. Cláir do gach aimsir agus gach cumas do ghrúpaí, teaghlaigh agus daoine aonair.",
+    src: "/photos/discover-adventure.jpg",
+    srcPos: "68% 100%",
+    providers: [
+      { name: "Gartan Outdoor Pursuits Centre", website: "https://www.gartan.com", phone: "+353 74 913 7032", email: "" },
+      { name: "Unique Ascent", website: "https://www.uniqueascent.ie", phone: "+353 87 758 4710", email: "" },
+    ],
+    moreUrl: "",
+  },
+  {
+    code: "07",
+    label: "Tumadóireacht",
+    title: "Longbhriseadh chósta an iarthuaiscirt",
+    tagline: "Uisce fuar, glan an Atlantaigh le hamharc-achar den scoth. Tumadh longbhriste, tumadh sceire agus tumadh cladaigh ó thosaitheoir go leibhéal teicniúil.",
+    src: "/photos/discover-diving.jpg",
+    srcPos: "48% 13%",
+    providers: [
+      { name: "Dive Arranmore", website: "https://www.divearranmore.com", phone: "+353 86 330 0516", email: "" },
+      { name: "Mevagh Dive Centre", website: "https://www.mevaghdiving.com", phone: "+353 74 914 4708", email: "" },
+    ],
+    moreUrl: "",
+  },
+  {
+    code: "08",
+    label: "Marcaíocht Toinne",
+    title: "Suaitheadh an Atlantaigh, bliain ar fad",
+    tagline: "Faigheann cósta oscailte Dhún na nGall suaitheadh comhsheasmhach Atlantaigh ó Mheán Fómhair go Bealtaine. Tá cíos clár agus ceachtanna nóiméid ón aerfort.",
+    src: "/photos/discover-surfing.jpg",
+    srcPos: "63% 15%",
+    providers: [],
+    moreUrl: "https://www.govisitdonegal.com/things-to-do/activities/surfing",
+  },
+  {
+    code: "09",
+    label: "Rothaíocht",
+    title: "Bóithre folmha, radharcra iontach",
+    tagline: "Castar bealach rothaíochta Bhealach Fiáin an Atlantaigh trí chuid de radharcra cósta is iontaí na hÉireann, le fíorbheagán tráchta.",
+    src: "/photos/discover-cycling.jpg",
+    srcPos: "50% 50%",
+    providers: [],
+    moreUrl: "https://www.govisitdonegal.com/things-to-do/activities/cycling",
+  },
+  {
+    code: "10",
+    label: "Iascaireacht Slaite",
+    title: "An gabháil is fearr riamh",
+    tagline: "Ritheann bradán agus breac mara in aibhneacha Dhún na nGall. Tairgeann an cósta Atlantach iascaireacht chladaigh agus báid chairtfhostaithe farraige doimhne atá lán-fheistithe.",
+    src: "/photos/discover-angling.jpg",
+    srcPos: "50% 50%",
+    providers: [],
+    moreUrl: "https://www.govisitdonegal.com/things-to-do/activities/angling",
+  },
+  {
+    code: "11",
+    label: "Siúlóid agus Fánaíocht",
+    title: "Cuir ort do bhuataisí. Dírigh áit ar bith.",
+    tagline: "Bealaí Marcáilte, Lúba Náisiúnta agus Conair Fhiántais Nephin Fhiáin. 50,000 km² de Dhún na nGall — agus fíorbheagán siúlóirí eile.",
+    src: "/photos/discover-hiking.jpg",
+    srcPos: "50% 50%",
+    providers: [],
+    moreUrl: "https://www.govisitdonegal.com/things-to-do/activities/walking",
+  },
+];
+
+
+const golfClubs = [
+  { name: "Rosapenna Golf Resort",     location: "Na Dúnaibh",    contact: "golf@rosapenna.ie",            phone: "+353 74 91 55000",  website: "https://www.rosapenna.ie",             photo: "https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_05.png" },
+  { name: "Ballyliffin Golf Club",     location: "Baile Uí Fhloinn", contact: "info@ballyliffingolfclub.com", phone: "+353 74 9376 119",  website: "https://www.ballyliffingolfclub.com",  photo: "https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_08.png" },
+  { name: "Portsalon Golf Club",       location: "Port Salann",   contact: "admin@portsalongolfclub.ie",   phone: "+353 74 9159459",   website: "https://www.portsalongolfclub.ie",     photo: "https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_07.png" },
+  { name: "Narin & Portnoo Golf Club", location: "Port Nua",     contact: "info@nandplinks.com",          phone: "+353 74 95 45107",  website: "https://www.narinandportnoo.com",      photo: "https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_02.png" },
+  { name: "Cruit Island Golf Club",    location: "Cionn Caslach", contact: "info@cruitislandgolfclub.com", phone: "+353 74 9543296",   website: "https://www.cruitislandgolfclub.com",  photo: "https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_01.png" },
+  { name: "Dunfanaghy Golf Club",      location: "Dún Fionnachaidh",  contact: "dunfanaghygolf@eircom.net",    phone: "+353 74 913 6335",  website: "https://www.dunfanaghygolfclub.com",   photo: "https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_04.png" },
+  { name: "Gweedore Golf Club",        location: "Gaoth Dobhair",    contact: "gweedoregc@gmail.com",         phone: "+353 74 9531140",   website: "https://www.gweedoregolfclub.com",     photo: "https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_03.png" },
+  { name: "Donegal Golf Club",         location: "Murbhach",     contact: "info@donegalgolfclub.ie",      phone: "+353 74 97 34054",  website: "https://www.donegalgolfclub.ie",       photo: "https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_06.png" },
+  { name: "Bundoran Golf Club",        location: "Bun Dobhráin",    contact: "info@bundorangolfclub.com",    phone: "+353 71 984 1302",  website: "https://www.bundorangolfclub.com",     photo: "https://donegalairport.ie/wp-content/uploads/2024/12/bundoran.jpeg" },
+  { name: "North West Golf Club",      location: "Bun Cranncha",    contact: "booking@northwestgolfclub.com",phone: "+353 74 936 1715",  website: "https://www.northwestgolfclub.com",    photo: "https://donegalairport.ie/wp-content/uploads/2024/12/buncrana.jpg" },
+] as const;
+
+const islands = [
+  {
+    name: "Arranmore",
+    irish: "An Oileán Mór",
+    ferry: "Ailt an Chorráin · trasnú 15 nóim.",
+    drive: "35 nóim. ó CFN",
+    text: "Oileán áitrithe is mó Dhún na nGall. 500 cónaitheoir, tránna brat gorm, aillte mara agus teach tábhairne a osclaíonn nuair a fhilleann na hiascairí.",
+    src: "/photos/discover-island-arranmore.jpg", srcPos: "36% 28%",
+    credit: "", creditUrl: "",
+  },
+  {
+    name: "Tory Island",
+    irish: "Toraigh",
+    ferry: "Machaire Rabhartaigh · trasnú 45 nóim.",
+    drive: "55 nóim. ó CFN",
+    text: "Naoi míle amach ón gcósta. Domhan ann féin — rí tofa, scoil péintéirí naive, agus dóigh mhaireachtála nár chuir an mórthír isteach uirthi.",
+    src: "/photos/discover-island-tory.jpg", srcPos: "49% 41%",
+    credit: "", creditUrl: "",
+  },
+  {
+    name: "Gola Island",
+    irish: "Oileán Ghabhla",
+    ferry: "An Bun Beag · trasnú 10 nóim.",
+    drive: "40 nóim. ó CFN",
+    text: "Neamháitrithe ó 1967. Tránna bána, teachíní cloiche tréigthe, ciúnas iomlán. Ritear turais lae sa samhradh ó chuan an Bhun Bhig.",
+    src: "/photos/discover-island-gola.jpg", srcPos: "35% 0%",
+    credit: "", creditUrl: "",
+  },
+  {
+    name: "Owey Island",
+    irish: "Uaigh",
+    ferry: "Oileán an Chruite · trasnú 10 nóim.",
+    drive: "40 nóim. ó CFN",
+    text: "Gan bhóthar. Gan chónaitheoirí buana. Filleann daonra beag samhraidh gach bliain le beocht a choinneáil sna seantithe. Trasnuithe socraithe amháin.",
+    src: "", srcPos: "50% 50%",
+    credit: "", creditUrl: "",
+  },
+  {
+    name: "Inishbofin",
+    irish: "Inis Bó Finne",
+    ferry: "Machaire Rabhartaigh · trasnú 20 nóim.",
+    drive: "50 nóim. ó CFN",
+    text: "Pobal beag Gaeltachta amach ó chósta an iarthuaiscirt. Tránna bána, aillte drámatúla, agus ceann de na coilíneachtaí éan mara is tábhachtaí i nDún na nGall.",
+    src: "/photos/discover-island-bofin.jpg", srcPos: "50% 50%",
+    credit: "Alan Reid", creditUrl: "https://www.geograph.ie/photo/5015145",
+  },
+  {
+    name: "Inishfree",
+    irish: "Inis Fraoigh",
+    ferry: "Ailt an Chorráin · trasnú 10 nóim.",
+    drive: "35 nóim. ó CFN",
+    text: "Oileán fraoigh, foscúil sa bhá idir an Clochán Liath agus Ailt an Chorráin. Áit chónaithe feirmeoirí agus iascairí tráth; á thabhairt cuairt air anois dá shíocháin.",
+    src: "", srcPos: "50% 50%",
+    credit: "", creditUrl: "",
+  },
+  {
+    name: "Inishirrer",
+    irish: "Inis Oirthir",
+    ferry: "Cósta Ghaoth Dobhair · trasnú gearr",
+    drive: "45 nóim. ó CFN",
+    text: "An tOileán Thoir — fada agus caol, amach ó chósta Ghaoth Dobhair. Bhí cáil ar a oileánaigh ar fud Dhún na nGall as maorlathas farraige agus rámhaíocht.",
+    src: "/photos/discover-island-irrer.jpg", srcPos: "50% 50%",
+    credit: "Joseph Mischyshyn", creditUrl: "https://www.geograph.ie/photo/1173028",
+  },
+  {
+    name: "Inishkerragh",
+    irish: "Inis Caorach",
+    ferry: "Ailt an Chorráin · trasnú gearr",
+    drive: "40 nóim. ó CFN",
+    text: "Oileán na gCaorach — oileánín beag cothrom i mBá Bhaoigheallach, gan ach 650 m ar fad. Ceann de na cinn is foscúla in oileánra na Rosann.",
+    src: "", srcPos: "50% 50%",
+    credit: "", creditUrl: "",
+  },
+  {
+    name: "Inishtrahull",
+    irish: "Inis Trá Thoill",
+    ferry: "Cionn Mhálanna · trasnú socraithe",
+    drive: "90 nóim. ó CFN",
+    text: "Oileán is faide ó thuaidh in Éirinn. Neamháitrithe ó 1929. Léiríonn teach solais uathoibrithe an pointe ina mbuaileann an tAigéan Atlantach le Muir Éireann.",
+    src: "/photos/discover-island-inishtrahull.jpg", srcPos: "71% 52%",
+    credit: "", creditUrl: "",
+  },
+  {
+    name: "Island Roy",
+    irish: "Oileán Ruaidh",
+    ferry: "Na Dúnaibh · trasnú gearr",
+    drive: "60 nóim. ó CFN",
+    text: "Oileánín ciúin in uiscí foscúla Chuan Mhaoil Ruaidh, in aice le Na Dúnaibh. Cainéil taoide chiúine, saol éan, agus cuid den uisce is ciúine i nDún na nGall.",
+    src: "/photos/discover-island-roy.jpg", srcPos: "50% 50%",
+    credit: "Rossographer", creditUrl: "https://www.geograph.ie/photo/5731190",
+  },
+] as const;
+---
+
+<BaseLayout title={title} description={description}>
+
+  {/* ─── HERO — mirrors discover.astro (EN) section-for-section ─────────── */}
+  <section class="relative h-[88vh] min-h-[540px] overflow-hidden border-b border-line">
+
+    <img
+      src="/photos/discover-hero.jpg"
+      alt="Luí na gréine ón Earagail, Dún na nGall"
+      class="absolute inset-0 h-full w-full object-cover object-[50%_42%]"
+      loading="eager"
+      decoding="sync"
+    />
+
+    <div class="pointer-events-none absolute inset-0 bg-ink/25" aria-hidden="true"></div>
+
+    <div class="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
+      <p
+        data-animate="fade-up"
+        class="font-mono text-[0.68rem] uppercase tracking-[0.34em] text-white"
+        style="text-shadow: 0 1px 10px rgba(0,0,0,0.8)"
+      >
+        Dún na nGall · Éire · Bealach Fiáin an Atlantaigh
+      </p>
+      <h1
+        data-split
+        data-split-delay="0.1"
+        class="mt-5 font-display text-[clamp(3.5rem,7vw,8rem)] font-normal leading-[0.9] text-white"
+      >
+        Tosaíonn an tAigéan<br />Atlantach anseo.
+      </h1>
+      <p
+        data-animate="fade-up"
+        data-animate-delay="0.25"
+        class="mt-6 max-w-lg text-[1rem] leading-relaxed text-white/80"
+        style="text-shadow: 0 1px 8px rgba(0,0,0,0.45)"
+      >
+        Tuirlingíonn an chuid is mó de dhaoine agus ansin taistealaíonn siad.
+        Anseo, tá tú tar éis teacht go dtí áit ar fiú a bheith ann cheana
+        féin. Eitil isteach i gcósta is fiáine na hÉireann.
+      </p>
+      <div
+        data-animate="fade-up"
+        data-animate-delay="0.4"
+        class="mt-8 flex flex-wrap justify-center gap-8"
+      >
+        <a
+          href="#destinations"
+          class="border-b border-white/50 pb-0.5 font-mono text-xs uppercase tracking-[0.22em] text-white transition-colors hover:border-sand hover:text-sand"
+        >
+          Iniúch cinn scríbe →
+        </a>
+        <a
+          href="/ga/flights"
+          class="border-b border-white/50 pb-0.5 font-mono text-xs uppercase tracking-[0.22em] text-white transition-colors hover:border-sand hover:text-sand"
+        >
+          Cuir eitilt in áirithe →
+        </a>
+      </div>
+    </div>
+
+    <figcaption class="absolute bottom-4 right-5 font-mono text-[0.55rem] uppercase tracking-[0.18em] text-white/35">
+      An Earagail · Co. Dhún na nGall
+    </figcaption>
+
+  </section>
+
+  {/* ─── THREE HIGHLIGHTS ────────────────────────────────────────────────── */}
+  <section class="border-b border-line">
+    <div class="mx-auto max-w-7xl px-6 py-20">
+      <ul class="grid gap-12 sm:grid-cols-3">
+        {highlights.map((h, i) => (
+          <li
+            data-animate="fade-up"
+            data-animate-delay={`${0.07 * i}`}
+            class="flex flex-col"
+          >
+            <figure data-drag-fig class="relative aspect-[3/4] w-full overflow-hidden bg-surface-lo">
+              {h.src && (
+                <img
+                  data-drag-img
+                  src={h.src}
+                  alt={h.label}
+                  class="absolute inset-0 h-full w-full object-cover"
+                  style={`object-position: ${h.srcPos}`}
+                  loading="lazy"
+                  decoding="async"
+                />
+              )}
+              <div data-drag-overlay class="pointer-events-none absolute inset-0"></div>
+              <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono text-[0.6rem] text-white backdrop-blur-sm">
+                {h.srcPos}
+              </div>
+              <figcaption class="pointer-events-none absolute bottom-3 left-4 font-mono text-[0.58rem] uppercase tracking-[0.2em] text-white" style="text-shadow:0 1px 6px rgba(0,0,0,0.85)">
+                {h.caption}
+              </figcaption>
+            </figure>
+
+            <div class="mt-6 flex flex-1 flex-col">
+              <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.22em] text-atlantic">
+                {h.label}
+              </p>
+              <p class="mt-3 text-[0.9rem] leading-relaxed text-mute">
+                {h.text}
+              </p>
+              <a
+                href={h.link}
+                class="mt-auto pt-5 inline-block border-b border-ink/40 pb-0.5 font-mono text-[0.66rem] uppercase tracking-[0.22em] text-ink transition-colors hover:border-sand hover:text-sand"
+              >
+                Iniúch →
+              </a>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  {/* ─── DESTINATIONS GRID ─────────────────────────────────────────────────── */}
+  <section class="border-b border-line bg-surface-lo/50">
+    <div class="mx-auto max-w-7xl px-6 py-20">
+
+      <div class="mb-14 flex items-end justify-between gap-6">
+        <div>
+          <p
+            data-animate="fade-up"
+            class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.26em] text-atlantic"
+          >
+            Ón teirminéal
+          </p>
+          <h2
+            data-split
+            class="mt-3 font-display text-[clamp(2rem,4.5vw,4.2rem)] font-normal leading-[0.97]"
+          >
+            Cá dtéann tú ar dtús?
+          </h2>
+        </div>
+      </div>
+
+      <ul class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        {destinations.map((d, i) => (
+          <li
+            data-animate="fade-up"
+            data-animate-delay={`${0.05 * i}`}
+            data-tilt
+            class="group"
+          >
+            <figure
+              data-drag-fig
+              class="relative aspect-[4/5] w-full overflow-hidden bg-surface-lo"
+            >
+              {d.src && (
+                <img
+                  data-drag-img
+                  src={d.src}
+                  alt={d.title}
+                  class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                  style={`object-position: ${d.srcPos}`}
+                  loading="lazy"
+                  decoding="async"
+                />
+              )}
+              <div
+                class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                aria-hidden="true"
+              ></div>
+              <p class="pointer-events-none absolute bottom-4 left-5 right-4 font-display text-[clamp(1.2rem,2.5vw,1.7rem)] font-normal leading-tight text-[#f0eee6] opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+                {d.tagline}
+              </p>
+              <div data-drag-overlay class="pointer-events-none absolute inset-0"></div>
+              <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono text-[0.6rem] text-white backdrop-blur-sm">
+                {d.srcPos}
+              </div>
+              <figcaption class="pointer-events-none absolute bottom-3 right-3 font-mono text-[0.52rem] uppercase tracking-[0.15em] text-white" style="text-shadow:0 1px 6px rgba(0,0,0,0.85)">
+                {d.caption}
+              </figcaption>
+            </figure>
+
+            <div class="mt-4 flex items-start justify-between gap-4">
+              <div>
+                <h3 class="font-display text-[1.5rem] font-bold leading-tight">
+                  {d.title}
+                </h3>
+                <p data-odometer class="mt-1 font-mono text-[0.65rem] uppercase tracking-[0.2em] text-mute">
+                  {d.drive}
+                </p>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  {/* ─── ACTIVITIES GRID ───────────────────────────────────────────────────── */}
+  <section id="activities" class="border-b border-line">
+    <div class="mx-auto max-w-7xl px-6 py-20">
+
+      <div class="mb-14 flex items-end justify-between gap-6">
+        <div>
+          <p
+            data-animate="fade-up"
+            class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.26em] text-atlantic"
+          >
+            Spórt agus gníomhaíochtaí
+          </p>
+          <h2
+            data-split
+            class="mt-3 font-display text-[clamp(2rem,4.5vw,4.2rem)] font-normal leading-[0.97]"
+          >
+            Gach bealach le do laethanta a líonadh.
+          </h2>
+        </div>
+      </div>
+
+      <ul class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        {activities.map((a, i) => (
+          <li
+            id={a.code === "01" ? "golf-card" : undefined}
+            data-animate="fade-up"
+            data-animate-delay={`${0.05 * i}`}
+            data-tilt
+            class={`group flex flex-col${a.code === "01" ? " cursor-pointer select-none" : ""}`}
+            role={a.code === "01" ? "button" : undefined}
+            aria-expanded={a.code === "01" ? "false" : undefined}
+            aria-controls={a.code === "01" ? "golf-panel" : undefined}
+          >
+            <figure
+              data-drag-fig
+              class="relative aspect-[4/5] w-full overflow-hidden bg-surface-lo"
+            >
+              {a.src && (
+                <img
+                  data-drag-img
+                  src={a.src}
+                  alt={a.label}
+                  class="absolute inset-0 h-full w-full object-cover"
+                  style={`object-position: ${a.srcPos}`}
+                  loading="lazy"
+                  decoding="async"
+                />
+              )}
+              <div
+                class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                aria-hidden="true"
+              ></div>
+              <p class="pointer-events-none absolute bottom-4 left-5 right-4 font-display text-[clamp(1.1rem,2.2vw,1.55rem)] font-normal leading-tight text-[#f0eee6] opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+                {a.tagline}
+              </p>
+              <div data-drag-overlay class="pointer-events-none absolute inset-0"></div>
+              <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono text-[0.6rem] text-white backdrop-blur-sm"></div>
+            </figure>
+
+            <div class="mt-4 flex flex-1 flex-col">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="font-mono text-[0.74rem] font-bold uppercase tracking-[0.22em] text-atlantic">
+                    {a.label}
+                  </p>
+                  <h3 class="mt-1 font-display text-[1.9rem] font-bold leading-tight">
+                    {a.title.split(/([fF])/).map((seg) =>
+                      seg.match(/[fF]/) ? <span class="f-fix">{seg}</span> : seg
+                    )}
+                  </h3>
+                </div>
+                {a.code === "01" && (
+                  <span id="golf-toggle-arrow" class="mt-2 shrink-0 font-mono text-[0.7rem] text-atlantic transition-transform duration-300 group-hover:translate-y-1">
+                    ↓
+                  </span>
+                )}
+              </div>
+
+              <div class="mt-auto border-t border-line pt-3 min-h-[4rem] space-y-2.5">
+                {a.code === "01" ? (
+                  <span class="block font-mono text-[0.72rem] tracking-[0.04em] text-ink/40">
+                    10 gcúrsa craobhchomórtais · tapáil chun iniúchadh
+                  </span>
+                ) : a.providers.length > 0 ? (
+                  a.providers.map((p) => (
+                    <div>
+                      {p.website ? (
+                        <a
+                          href={p.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="group/p flex items-center justify-between gap-2"
+                        >
+                          <span class="font-mono text-[0.75rem] tracking-[0.03em] text-ink/65 transition-colors group-hover/p:text-atlantic truncate">
+                            {p.name}
+                          </span>
+                          <span class="shrink-0 font-mono text-[0.6rem] text-atlantic/70">↗</span>
+                        </a>
+                      ) : (
+                        <span class="block font-mono text-[0.75rem] tracking-[0.03em] text-ink/55">
+                          {p.name}
+                        </span>
+                      )}
+                      {a.providers.length === 1 && (p.phone ? (
+                        <span class="block font-mono text-[0.68rem] tracking-[0.03em] text-mute/70 mt-0.5">
+                          {p.phone}
+                        </span>
+                      ) : p.email ? (
+                        <a
+                          href={`mailto:${p.email}`}
+                          class="block font-mono text-[0.68rem] tracking-[0.03em] text-mute/70 hover:text-atlantic transition-colors mt-0.5"
+                        >
+                          {p.email}
+                        </a>
+                      ) : null)}
+                    </div>
+                  ))
+                ) : a.moreUrl ? (
+                  <a
+                    href={a.moreUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="group/more flex items-center justify-between gap-2"
+                  >
+                    <span class="font-mono text-[0.72rem] tracking-[0.03em] text-ink/45 transition-colors group-hover/more:text-atlantic">
+                      govisitdonegal.com
+                    </span>
+                    <span class="shrink-0 font-mono text-[0.6rem] text-atlantic/70">↗</span>
+                  </a>
+                ) : null}
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <div
+        id="golf-panel"
+        aria-hidden="true"
+        class="mt-14 overflow-hidden border-t border-line"
+        style="max-height: 0; transition: max-height 0.55s cubic-bezier(0.4,0,0.2,1);"
+      >
+        <div class="pt-12 pb-2 flex items-end justify-between gap-6">
+          <div>
+            <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.26em] text-atlantic">
+              Galf · 10 gcúrsa craobhchomórtais
+            </p>
+            <h3 class="mt-3 font-display text-[clamp(1.6rem,3vw,2.6rem)] font-normal leading-[1.02]">
+              Deich gcúrsa. Aon chontae amháin.
+            </h3>
+          </div>
+          <span id="golf-counter" class="font-mono text-[0.62rem] text-mute tabular-nums shrink-0">3 / {golfClubs.length}</span>
+        </div>
+
+        <div class="mt-8 flex items-center gap-6">
+          <button
+            id="golf-prev"
+            aria-label="Roimhe seo"
+            class="flex-none flex h-11 w-11 items-center justify-center rounded-full border border-ink/25 text-ink/50 text-[0.95rem] transition-all hover:border-ink/60 hover:text-ink disabled:opacity-20"
+          >←</button>
+          <div id="golf-carousel-wrap" class="flex-1 overflow-hidden">
+          <ul id="golf-track" class="flex" style="gap: 1.5rem; transition: transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94);">
+            {golfClubs.map((c) => (
+              <li data-golf-card class="flex-none">
+                <a href={c.website} target="_blank" rel="noopener noreferrer" class="block group/card">
+                  <figure class="relative aspect-[4/3] w-full overflow-hidden bg-surface-lo">
+                    {c.photo && (
+                      <img data-src={c.photo} alt={c.name} class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover/card:scale-[1.04]" />
+                    )}
+                    <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/55 via-transparent to-transparent"></div>
+                    <figcaption class="pointer-events-none absolute bottom-3 left-4 font-mono text-[0.58rem] uppercase tracking-[0.2em] text-white" style="text-shadow:0 1px 5px rgba(0,0,0,0.8)">
+                      {c.location}
+                    </figcaption>
+                  </figure>
+                </a>
+                <div class="mt-4">
+                  <h4 class="font-display text-[1.25rem] font-bold leading-tight">
+                    {c.name}
+                  </h4>
+                  <a
+                    href={`mailto:${c.contact}`}
+                    class="mt-2 block font-mono text-[0.72rem] tracking-[0.08em] text-atlantic transition-colors hover:text-ink"
+                  >
+                    {c.contact}
+                  </a>
+                  <span class="block font-mono text-[0.72rem] tracking-[0.06em] text-mute/70 mt-0.5">
+                    {c.phone}
+                  </span>
+                  {c.website && (
+                    <a
+                      href={c.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="mt-3 inline-flex items-center gap-1.5 border-b border-ink/30 pb-0.5 font-mono text-[0.68rem] uppercase tracking-[0.18em] text-ink transition-colors hover:border-atlantic hover:text-atlantic"
+                    >
+                      Tabhair cuairt ar an suíomh →
+                    </a>
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+          </div>
+          <button
+            id="golf-next"
+            aria-label="Ar aghaidh"
+            class="flex-none flex h-11 w-11 items-center justify-center rounded-full border border-ink/25 text-ink/50 text-[0.95rem] transition-all hover:border-ink/60 hover:text-ink disabled:opacity-20"
+          >→</button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  {/* ─── ISLANDS ────────────────────────────────────────────────────────────── */}
+  <section id="islands" class="border-b border-line bg-surface-lo/40">
+    <div class="mx-auto max-w-7xl px-6 py-20">
+
+      <div class="mb-8 flex items-end justify-between gap-6">
+        <div>
+          <p
+            data-animate="fade-up"
+            class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.26em] text-atlantic"
+          >
+            Oileáin amach ón gcósta
+          </p>
+          <h2
+            data-split
+            data-animate="fade-up"
+            data-animate-delay="0.1"
+            class="mt-3 font-display text-[clamp(2rem,4.5vw,4.2rem)] font-normal leading-[0.97]"
+          >
+            Tá na hoileáin ag fanacht<br />leo siúd a thrasnaíonn.
+          </h2>
+        </div>
+        <span id="isl-counter" class="font-mono text-[0.62rem] text-mute tabular-nums shrink-0">
+          4 / {islands.length}
+        </span>
+      </div>
+
+      <div data-animate="fade-up" data-animate-delay="0.22" class="flex items-center gap-4 sm:gap-6">
+        <button
+          id="isl-prev"
+          aria-label="An t-oileán roimhe seo"
+          class="flex-none flex h-11 w-11 items-center justify-center rounded-full border border-ink/25 text-ink/50 text-[0.95rem] transition-all hover:border-ink/60 hover:text-ink disabled:opacity-20"
+        >←</button>
+
+        <div id="isl-carousel-wrap" class="flex-1 overflow-hidden">
+          <ul id="isl-track" class="flex" style="gap:1.5rem;transition:transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94);">
+            {islands.map((isl) => (
+              <li data-isl-card data-tilt class="flex-none group">
+                <figure data-drag-fig class="relative aspect-[3/4] w-full overflow-hidden bg-surface-lo">
+                  {isl.src && (
+                    <img
+                      data-drag-img
+                      src={isl.src}
+                      alt={isl.name}
+                      class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                      style={`object-position: ${isl.srcPos}`}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  )}
+                  {!isl.src && (
+                    <div class="absolute inset-0 bg-gradient-to-b from-atlantic/20 to-ink/60"></div>
+                  )}
+                  <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/75 via-ink/10 to-transparent"></div>
+                  <div class="absolute bottom-5 left-5 right-4">
+                    <p class="font-mono text-[0.55rem] uppercase tracking-[0.22em] text-white/60">
+                      {isl.ferry}
+                    </p>
+                    <h3 class="mt-1 font-display text-[1.6rem] font-normal leading-tight text-white">
+                      {isl.name}
+                    </h3>
+                    <p class="font-display text-[0.9rem] italic text-white/55">{isl.irish}</p>
+                  </div>
+                  <div data-drag-overlay class="pointer-events-none absolute inset-0"></div>
+                  <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono text-[0.6rem] text-white backdrop-blur-sm">
+                    {isl.srcPos}
+                  </div>
+                  {isl.credit && (
+                    <a
+                      href={isl.creditUrl}
+                      target="_blank"
+                      rel="noopener"
+                      class="absolute bottom-2 right-2 z-10 font-mono text-[0.5rem] uppercase tracking-[0.15em] text-white/40 transition-colors hover:text-white/80"
+                    >
+                      Grianghraf: {isl.credit}
+                    </a>
+                  )}
+                </figure>
+                <div class="mt-4">
+                  <p class="font-mono text-[0.65rem] uppercase tracking-[0.2em] text-mute">
+                    {isl.drive}
+                  </p>
+                  <p class="mt-2 text-[0.88rem] leading-relaxed text-mute">
+                    {isl.text}
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <button
+          id="isl-next"
+          aria-label="An chéad oileán eile"
+          class="flex-none flex h-11 w-11 items-center justify-center rounded-full border border-ink/25 text-ink/50 text-[0.95rem] transition-all hover:border-ink/60 hover:text-ink disabled:opacity-20"
+        >→</button>
+      </div>
+
+    </div>
+  </section>
+
+  {/* ─── ILLUSTRATED MAP ──────────────────────────────────────────────────────
+      Gaeilge-only copy of the interactive map (public/map/donegal-map-ga.html).
+      The English page keeps its own donegal-map.html untouched. */}
+  <section id="destinations" class="relative border-b border-line overflow-hidden" style="background:#0c1714;scroll-margin-top:var(--header-h)">
+    <iframe
+      id="don-map-frame"
+      src="/map/donegal-map-ga.html"
+      title="Léarscáil idirghníomhach Dhún na nGall"
+      style="display:block;width:100%;height:min(88vh,860px);min-height:600px;border:none;"
+      allow="fullscreen"
+    ></iframe>
+  </section>
+
+
+</BaseLayout>
+
+<style>
+  [data-drag-img] {
+    transform-origin: center;
+    transition: transform 0.1s ease;
+  }
+
+  #golf-prev:disabled,
+  #golf-next:disabled { opacity: 0.3; pointer-events: none; }
+
+  #isl-prev:disabled,
+  #isl-next:disabled { opacity: 0.2; pointer-events: none; }
+
+  #golf-toggle-arrow { transition: transform 0.35s ease; }
+  #golf-card:hover #golf-toggle-arrow { transform: translateY(3px); }
+  #golf-panel.is-open ~ * #golf-toggle-arrow,
+  #golf-card[aria-expanded="true"] #golf-toggle-arrow { transform: rotate(180deg); }
+</style>
+
+<script>
+  function initPhotoDrag() {
+    if (!new URLSearchParams(location.search).has("edit")) return;
+
+    document.querySelectorAll<HTMLElement>("[data-drag-fig]").forEach((fig) => {
+      const img     = fig.querySelector<HTMLImageElement>("[data-drag-img]");
+      const overlay = fig.querySelector<HTMLElement>("[data-drag-overlay]");
+      const readout = fig.querySelector<HTMLElement>("[data-drag-readout]");
+      if (!img || !overlay) return;
+      overlay.classList.remove("pointer-events-none");
+      overlay.classList.add("cursor-grab");
+
+      const initial = img.style.objectPosition || "50% 50%";
+      const [ix, iy] = initial.split(" ").map((v) => parseFloat(v));
+      let posX = isNaN(ix) ? 50 : ix;
+      let posY = isNaN(iy) ? 50 : iy;
+      let zoom  = 1;
+      let tx    = 0;
+      let ty    = 0;
+      let dragging = false;
+      let startX = 0, startY = 0;
+
+      const clampPos = (v: number) => Math.max(0, Math.min(100, v));
+      const clampT   = () => {
+        const mx = fig.offsetWidth  * (zoom - 1) / (2 * zoom);
+        const my = fig.offsetHeight * (zoom - 1) / (2 * zoom);
+        tx = Math.max(-mx, Math.min(mx, tx));
+        ty = Math.max(-my, Math.min(my, ty));
+      };
+      const apply = () => {
+        img.style.objectPosition = `${Math.round(posX)}% ${Math.round(posY)}%`;
+        img.style.transform = zoom > 1 ? `scale(${zoom}) translate(${tx}px,${ty}px)` : "";
+        if (readout) {
+          const pos = `${Math.round(posX)}% ${Math.round(posY)}%`;
+          readout.textContent = zoom > 1 ? `×${zoom.toFixed(1)}  ${pos}` : pos;
+        }
+      };
+
+      overlay.addEventListener("wheel", (e) => {
+        e.preventDefault();
+        zoom = Math.max(1, Math.min(4, zoom - e.deltaY * 0.002));
+        if (zoom === 1) { tx = 0; ty = 0; }
+        clampT();
+        if (readout) readout.classList.remove("hidden");
+        apply();
+      }, { passive: false });
+
+      overlay.addEventListener("mousedown", (e) => {
+        dragging = true;
+        startX = e.clientX; startY = e.clientY;
+        if (readout) readout.classList.remove("hidden");
+        overlay.style.cursor = "grabbing";
+        e.preventDefault();
+      });
+      window.addEventListener("mousemove", (e) => {
+        if (!dragging) return;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        startX = e.clientX; startY = e.clientY;
+        if (zoom > 1) {
+          tx -= dx / zoom;
+          ty -= dy / zoom;
+          clampT();
+        } else {
+          const rect = overlay.getBoundingClientRect();
+          posX = clampPos(posX - dx / rect.width  * 100);
+          posY = clampPos(posY - dy / rect.height * 100);
+        }
+        apply();
+      });
+      window.addEventListener("mouseup", () => {
+        dragging = false;
+        overlay.style.cursor = "grab";
+      });
+      overlay.style.cursor = "grab";
+      apply();
+    });
+  }
+
+  function initGolfCarousel() {
+    const wrap    = document.getElementById("golf-carousel-wrap");
+    const track   = document.getElementById("golf-track");
+    const prevBtn = document.getElementById("golf-prev") as HTMLButtonElement | null;
+    const nextBtn = document.getElementById("golf-next") as HTMLButtonElement | null;
+    const counter = document.getElementById("golf-counter");
+    if (!wrap || !track || !prevBtn || !nextBtn) return;
+
+    const cards = Array.from(track.querySelectorAll<HTMLElement>("[data-golf-card]"));
+    const gap = 24;
+    let idx = 0;
+    const perView = 3;
+    const maxIdx = cards.length - perView;
+
+    const setWidths = () => {
+      const w = Math.floor((wrap.offsetWidth - gap * (perView - 1)) / perView);
+      cards.forEach((c) => (c.style.width = `${w}px`));
+    };
+
+    track.querySelectorAll<HTMLImageElement>("img[data-src]").forEach((img) => {
+      img.src = img.dataset.src!;
+    });
+
+    const go = (i: number) => {
+      idx = Math.max(0, Math.min(maxIdx, i));
+      const step = cards[0].offsetWidth + gap;
+      track.style.transform = `translateX(-${idx * step}px)`;
+      if (counter) counter.textContent = `${Math.min(idx + perView, cards.length)} / ${cards.length}`;
+      prevBtn.disabled = idx === 0;
+      nextBtn.disabled = idx >= maxIdx;
+    };
+
+    setWidths();
+    go(0);
+
+    prevBtn.addEventListener("click", () => go(idx - 1));
+    nextBtn.addEventListener("click", () => go(idx + 1));
+    window.addEventListener("resize", () => { setWidths(); go(idx); });
+  }
+
+  function initGolfPanel() {
+    const card  = document.getElementById("golf-card");
+    const panel = document.getElementById("golf-panel");
+    const arrow = document.getElementById("golf-toggle-arrow");
+    if (!card || !panel) return;
+
+    let open = false;
+    let carouselReady = false;
+
+    card.addEventListener("click", () => {
+      open = !open;
+      card.setAttribute("aria-expanded", String(open));
+      panel.setAttribute("aria-hidden", String(!open));
+      panel.classList.toggle("is-open", open);
+      panel.style.maxHeight = open ? panel.scrollHeight + 600 + "px" : "0";
+      if (arrow) arrow.style.transform = open ? "rotate(180deg)" : "";
+      if (open) {
+        setTimeout(() => {
+          panel.scrollIntoView({ behavior: "smooth", block: "start" });
+          if (!carouselReady) { initGolfCarousel(); carouselReady = true; }
+        }, 80);
+      }
+    });
+  }
+
+  function initGrain() {
+    if (document.getElementById("grain-overlay")) return;
+    const d = document.createElement("div");
+    d.id = "grain-overlay";
+    d.setAttribute("aria-hidden", "true");
+    d.style.cssText = "position:fixed;inset:-25%;width:150%;height:150%;z-index:9999;pointer-events:none;opacity:0.055;will-change:transform;";
+    const c = document.createElement("canvas");
+    c.width = c.height = 512;
+    const ctx = c.getContext("2d")!;
+    const img = ctx.createImageData(512, 512);
+    for (let i = 0; i < img.data.length; i += 4) {
+      const v = (Math.random() * 255) | 0;
+      img.data[i] = img.data[i + 1] = img.data[i + 2] = v;
+      img.data[i + 3] = 255;
+    }
+    ctx.putImageData(img, 0, 0);
+    d.style.backgroundImage = `url(${c.toDataURL()})`;
+    d.style.backgroundSize = "256px";
+    document.body.appendChild(d);
+    let f = 0, grainScrolling = false, grainScrollTimer = 0;
+    window.addEventListener('scroll', () => {
+      grainScrolling = true;
+      clearTimeout(grainScrollTimer);
+      grainScrollTimer = setTimeout(() => { grainScrolling = false; }, 150) as unknown as number;
+    }, { passive: true });
+    (function tick() {
+      requestAnimationFrame(tick);
+      if (document.hidden || grainScrolling) return;
+      if (++f % 3 === 0)
+        d.style.transform = `translate(${((Math.random() * 40 - 20) | 0)}px,${((Math.random() * 40 - 20) | 0)}px)`;
+    })();
+  }
+
+  function initCardTilt() {
+    document.querySelectorAll<HTMLElement>("[data-tilt]").forEach((card) => {
+      let raf = 0;
+      let leaveTimer: ReturnType<typeof setTimeout>;
+      let entering = false;
+
+      const figure = card.querySelector<HTMLElement>("figure");
+      const img = !card.querySelector("[data-drag-img]")
+        ? card.querySelector<HTMLImageElement>("img")
+        : null;
+
+      let spot: HTMLDivElement | null = null;
+      if (figure) {
+        spot = document.createElement("div");
+        spot.setAttribute("aria-hidden", "true");
+        spot.style.cssText =
+          "position:absolute;inset:0;pointer-events:none;z-index:3;" +
+          "opacity:0;transition:opacity 0.35s ease;border-radius:inherit;";
+        figure.appendChild(spot);
+      }
+
+      let cardRect: DOMRect | null = null;
+      let figureRect: DOMRect | null = null;
+
+      card.addEventListener("mouseenter", () => {
+        clearTimeout(leaveTimer);
+        entering = true;
+        cardRect = card.getBoundingClientRect();
+        figureRect = figure ? figure.getBoundingClientRect() : null;
+        card.style.transition = "transform 0.2s ease";
+        if (img) img.style.transition = "transform 0.2s ease";
+        if (spot) spot.style.opacity = "1";
+      });
+
+      card.addEventListener("mousemove", (e) => {
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => {
+          if (!cardRect) return;
+          const x = (e.clientX - cardRect.left) / cardRect.width - 0.5;
+          const y = (e.clientY - cardRect.top) / cardRect.height - 0.5;
+
+          if (entering) {
+            entering = false;
+          } else {
+            card.style.transition = "";
+            if (img) img.style.transition = "";
+          }
+
+          card.style.transform = `perspective(900px) rotateY(${x * 7}deg) rotateX(${-y * 4}deg)`;
+
+          if (spot && figureRect) {
+            spot.style.background = `radial-gradient(circle 200px at ${e.clientX - figureRect.left}px ${e.clientY - figureRect.top}px, rgba(255,255,255,0.09) 0%, transparent 70%)`;
+          }
+
+          if (img) {
+            img.style.transform = `translateX(${-x * 10}px) translateY(${-y * 7}px) scale(1.06)`;
+          }
+        });
+      });
+
+      card.addEventListener("mouseleave", () => {
+        cancelAnimationFrame(raf);
+        entering = false;
+        if (spot) spot.style.opacity = "0";
+        clearTimeout(leaveTimer);
+        leaveTimer = setTimeout(() => {
+          card.style.transition = "transform 0.55s cubic-bezier(0.23,1,0.32,1)";
+          card.style.transform = "";
+          if (img) {
+            img.style.transition = "transform 0.55s cubic-bezier(0.23,1,0.32,1)";
+            img.style.transform = "";
+          }
+        }, 40);
+      });
+    });
+  }
+
+  function initOdometer() {
+    document.querySelectorAll<HTMLElement>("[data-odometer]").forEach((el) => {
+      const text = el.textContent ?? "";
+      const m = text.match(/\d+/);
+      if (!m) return;
+      const target = parseInt(m[0]);
+      const pre = text.slice(0, m.index);
+      const suf = text.slice((m.index ?? 0) + m[0].length);
+      const obs = new IntersectionObserver(([entry]) => {
+        if (!entry.isIntersecting) return;
+        obs.disconnect();
+        const t0 = performance.now();
+        const dur = 2400;
+        (function tick(now: number) {
+          const p = Math.min((now - t0) / dur, 1);
+          const ease = 1 - (1 - p) ** 3;
+          el.textContent = pre + Math.round(ease * target) + suf;
+          if (p < 1) requestAnimationFrame(tick);
+        })(performance.now());
+      }, { threshold: 0.6 });
+      obs.observe(el);
+    });
+  }
+
+  function initIslandCarousel() {
+    const wrap    = document.getElementById("isl-carousel-wrap");
+    const track   = document.getElementById("isl-track");
+    const prevBtn = document.getElementById("isl-prev") as HTMLButtonElement | null;
+    const nextBtn = document.getElementById("isl-next") as HTMLButtonElement | null;
+    const counter = document.getElementById("isl-counter");
+    if (!wrap || !track || !prevBtn || !nextBtn) return;
+
+    const cards = Array.from(track.querySelectorAll<HTMLElement>("[data-isl-card]"));
+    const gap = 24;
+    let idx = 0;
+
+    const getPerView = () => window.innerWidth >= 1024 ? 4 : window.innerWidth >= 640 ? 2 : 1;
+
+    const setWidths = () => {
+      const pv = getPerView();
+      const w = Math.floor((wrap.offsetWidth - gap * (pv - 1)) / pv);
+      cards.forEach((c) => (c.style.width = `${w}px`));
+    };
+
+    const go = (i: number) => {
+      const pv = getPerView();
+      const maxIdx = Math.max(0, cards.length - pv);
+      idx = Math.max(0, Math.min(maxIdx, i));
+      const step = cards[0].offsetWidth + gap;
+      track.style.transform = `translateX(-${idx * step}px)`;
+      if (counter) counter.textContent = `${Math.min(idx + pv, cards.length)} / ${cards.length}`;
+      prevBtn.disabled = idx === 0;
+      nextBtn.disabled = idx >= maxIdx;
+    };
+
+    setWidths();
+    go(0);
+
+    prevBtn.addEventListener("click", () => go(idx - 1));
+    nextBtn.addEventListener("click", () => go(idx + 1));
+    window.addEventListener("resize", () => { setWidths(); go(idx); });
+  }
+
+  document.addEventListener("astro:page-load", () => {
+    initPhotoDrag();
+    initGolfPanel();
+    initIslandCarousel();
+    initGrain();
+    initCardTilt();
+    initOdometer();
+
+    const frame = document.getElementById('don-map-frame') as HTMLIFrameElement | null;
+    if (frame) {
+      const obs = new IntersectionObserver(([entry]) => {
+        if (!entry.isIntersecting) return;
+        obs.disconnect();
+        setTimeout(() => {
+          frame.contentWindow?.postMessage({ type: 'don-start-intro' }, '*');
+        }, 1100);
+      }, { threshold: 0.15 });
+      obs.observe(frame);
+
+      const wawVis = new IntersectionObserver(([entry]) => {
+        frame.contentWindow?.postMessage(
+          { type: entry.isIntersecting ? 'don-waw-resume' : 'don-waw-pause' }, '*'
+        );
+      }, { threshold: 0 });
+      wawVis.observe(frame);
+
+      window.addEventListener('message', (e) => {
+        if (e.data?.type !== 'don-scroll-through') return;
+        const delta = e.data.deltaY * (e.data.deltaMode === 1 ? 20 : 1);
+        window.scrollBy({ top: delta, left: 0, behavior: 'auto' });
+      });
+
+      const exploreLink = document.querySelector<HTMLAnchorElement>('a[href="#destinations"]');
+      if (exploreLink) {
+        exploreLink.addEventListener('click', () => {
+          setTimeout(() => {
+            frame.contentWindow?.postMessage({ type: 'don-replay-intro' }, '*');
+          }, 450);
+        });
+      }
+    }
+  });
+</script>

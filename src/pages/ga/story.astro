@@ -1,0 +1,630 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import StoryEditor from "../../components/StoryEditor.astro";
+
+const title = "An scéal · Aerfort Dhún na nGall";
+const description =
+  "Ó stráice féir 610 méadar i 1978 agus ticéad £85 Oíche Nollag 1985 go dtí an cur chuige is áille ar domhan agus an chéad aerfort in Éirinn a bhfuil creidiúnú carbóin ACA Leibhéal 4 aige. Scéal CFN.";
+
+/*
+  Path-drawing story layout (v5).
+  Desktop: SVG curved path draws itself as the user scrolls. Six chapter
+  cards alternate left / right of the path. The GSAP + ScrollTrigger
+  wiring lives in animations.ts → setupStoryPath().
+  Mobile: single centred column, SVG hidden.
+*/
+type Chapter = {
+  year: string;
+  range: string;
+  title: string;
+  lead: string;
+  body: string[];
+  photo?: string;
+  photoAlt?: string;
+  photoCaption?: string;
+  /* Squarish photos (taller at the same width) need a taller panel. */
+  photoTall?: boolean;
+  /* Optional per-chapter vertical nudge (px). Shifts BOTH the photo and the
+     text card down together, keeping them aligned, when one panel reads a
+     touch high. */
+  photoShiftY?: number;
+  /* Per-chapter downward shift (px) applied to the text card so its centre
+     lines up with the photo's centre. Depends on the photo's height (aspect),
+     so it's set per chapter. Defaults to 58 (panoramic) when omitted. */
+  cardShiftY?: number;
+  /* Optional size overrides (from the in-browser editor). photoW = panoramic
+     width e.g. "52%"; photoH = portrait height e.g. "82vh". */
+  photoW?: string;
+  photoH?: string;
+  /* Optional year-watermark overrides: vertical nudge (px) and font size
+     e.g. "20rem". */
+  yearShiftY?: number;
+  yearSize?: string;
+  /* Caption position overrides (px). Applied via transform so they don't
+     affect layout flow. captionShiftY: negative = up, positive = down.
+     captionShiftX: negative = left, positive = right. */
+  captionShiftY?: number;
+  captionShiftX?: number;
+};
+
+const chapters: Chapter[] = [
+  {
+    year: "1978",
+    range: "Sula raibh an t-aerfort ann",
+    title: "Stráice féir ar na dumhcha.",
+    lead:
+      "Bhí nasc aeir ag teastáil ón IDA don eastát tionsclaíochta nua in Anagaire. I mí an Mhárta 1978, ar bharacam gainimh idir an tAigéan Atlantach agus Sliabh na hEaragaile, osclaíodh rúidbhealach féir 610 méadar.",
+    body: [
+      "Ar feadh seacht mbliana níor eitil eitilt sceidealta ar bith as. Dornán aerárthaí príobháideacha, ceangal ócáideach le Doire, agus rúidbhealach a d'imigh faoi ghaineamh séidte gach geimhreadh.",
+      "Faoi lár na 1980idí cuireadh dromchla crua in áit an fhéir agus tógadh teirminéal sealadach réamhdhéanta. Bhí aeradróm ag Dún na nGall. Ní raibh aerlíne aige fós, sin an méid.",
+    ],
+    photo: "/photos/story/story-ch01.webp",
+    photoAlt: "An chéad teirminéal agus aprún ag Aerfort Charraig Fhinn, na blianta tosaigh",
+    photoCaption: "Carraig Fhinn · rúidbhealach dromchlaithe · timpeall 1982",
+    photoShiftY: -42,
+    cardShiftY: 66,
+    photoW: "48%",
+    captionShiftY: 9,
+    captionShiftX: 106,
+  },
+  {
+    year: "1985",
+    range: "Oíche Nollag",
+    title: "Dlíodóir, Islander, agus ticéad ochtó a cúig punt.",
+    lead:
+      "Ar Oíche Nollag 1985 d'eitil Frank Cannon — aturnae as Glaschú a raibh a athair as Ard an Rátha agus a mháthair as Rann na Feirste — an chéad seirbhís tráchtála é féin. Britten-Norman Islander naoi suíochán, cúig nóiméad is caoga go Glaschú, £85 an bealach amháin.",
+    body: [
+      "Beirtheadh an smaoineamh os cionn dinnéir le Danny \"Minnie\" Ó Briain in Anagaire. Malinair a bhí ar an aerlíne. Faoi shamhradh 1986 bhí sí ag eitilt deich n-uaire sa lá ó a sé ar maidin, bhí na Dorniers tar éis na nIslanders a chur ina n-áit, agus bhí Dún Éideann agus Manchester ar an sceideal.",
+      "Faoi 1987 bhí Malinair féimheach agus tháinig Air Ecosse i gcabhair ar feadh cúpla seachtain. Chuaigh an aerlíne faoi. Lean an t-aerfort ar aghaidh.",
+    ],
+    photo: "/photos/story/story-ch02.webp",
+    photoAlt: "Aerárthach Malinair ar aprún Charraig Fhinn, 1985–1987",
+    photoCaption: "Malinair · aprún Charraig Fhinn · 1985–87",
+    cardShiftY: -10,
+    captionShiftY: 19,
+  },
+  {
+    year: "1988",
+    range: "Blianta Loganair",
+    title: "Filleann Loganair. Triaileann Ryanair Luton.",
+    lead:
+      "I 1988 tháinig Loganair ar ais le seirbhís rialta go Glaschú agus d'fhan siad ar feadh deich mbliana. Cuireadh síneadh leis an rúidbhealach go 1,450 méadar, agus arís i 1992–93 go 1,500 méadar. I 1990 sheol Ryanair seirbhís go Londain Luton.",
+    body: [
+      "I ngeimhreadh 1994 mhair stoirm ar feadh seachtainí. Ní fhéadfadh an bád farantóireachta go Toraigh seoladh. Bhog an tAerchór héileacaptair go Carraig Fhinn agus rith siad soláthairtí — arán, post, oideasanna, páistí scoile — amach chuig an oileán go dtí gur chiúnaigh an fharraige. D'fhan an patrún: ar feadh na mblianta fada ina dhiaidh sin, théadh héileacaptar Thoraí trí CFN aon uair a dhruid an aimsir isteach ar Mhachaire Rabhartaigh.",
+    ],
+    photo: "/photos/story/story-ch03.webp",
+    photoAlt: "ATR Ryanair, Shorts 360 Loganair 'Aerlíne na hAlban', agus héileacaptar faoisimh Thoraí ag Carraig Fhinn, sna 1990idí",
+    photoCaption: "Ryanair · Loganair · héileacaptar faoisimh Thoraí",
+    photoTall: true,
+    cardShiftY: 36,
+    captionShiftY: 12,
+    captionShiftX: 38,
+  },
+  {
+    year: "1996",
+    range: "Blianta an PSO",
+    title: "Baile Átha Cliath gach lá.",
+    lead:
+      "I mí Lúnasa 1996 bronnadh conradh PSO Dhún na nGall–Bhaile Átha Cliath den chéad uair, ceann de na chéad bhealaí PSO in Éirinn.",
+    body: [
+      "D'eitil Ireland Airways é, ansin Aer Arann ó 1998, ansin Euroceltic, ansin Aer Arann arís. Faoi 2008 bhí an t-aerfort ag iompar 65,539 paisinéir — an taifead is airde riamh.",
+    ],
+    photo: "/photos/story/story-ch04.webp",
+    photoAlt: "Shorts 360 Aer Arann agus aerárthach Ireland Airways lena chriú ar aprún Charraig Fhinn, deireadh na 1990idí",
+    photoCaption: "Ireland Airways · Aer Arann · Carraig Fhinn · deireadh na 1990idí",
+    cardShiftY: 33,
+    photoW: "45%",
+    captionShiftY: 20,
+  },
+  {
+    year: "2001",
+    range: "Héileacaptair siar",
+    title: "Ritheann imeall an Atlantaigh ar bhreosla Dhún na nGall.",
+    lead:
+      "Ar feadh timpeall deich mbliana bhí Dún na nGall ina mhol oibríochtúil d'obair héileacaptar amach ón gcósta ar imeall an Atlantaigh. Bhí gá le hathruithe rialta criú ag machaire gáis an Chorrib — a aimsíodh i 1996 amach ó chósta iarthuaisceart Mhaigh Eo — agus roghnaigh oibreoirí na héileacaptar Carraig Fhinn mar a mbunáit.",
+    body: [
+      "Héileacaptair Sikorsky ar an aprún, criúnna i gcultacha marthanais, leoraithe breosla. Ar feadh cúpla bliain bhí rithim ag an aerfort nach raibh baint ar bith aici le seirbhísí sceidealta — agus cuspóir a shín céad míle amach san Atlantach.",
+    ],
+    photo: "/photos/story/story-ch05.webp",
+    photoAlt: "Héileacaptair Sikorsky agus criúnna amach ón gcósta i gcultacha marthanais ar aprún Charraig Fhinn, tús na 2000idí",
+    photoCaption: "Athrú criú amach ón gcósta · Carraig Fhinn · tús na 2000idí",
+    photoTall: true,
+    photoShiftY: 28,
+    cardShiftY: -7,
+    captionShiftX: 96,
+  },
+  {
+    year: "2025",
+    range: "Inniu",
+    title: "Níos glaise ná Baile Átha Cliath.",
+    lead:
+      "I mí Eanáir 2025 bhí Dún na nGall ar an gcéad aerfort ar oileán na hÉireann a bhain amach Leibhéal 4 \"Trasfhoirmiú\" den Airport Carbon Accreditation — roimh Bhaile Átha Cliath, Corcaigh agus an tSionainn.",
+    body: [
+      "Painéil ghréine ar dhíon an hangair. MVHR ar fud an teirminéil. LED i ngach áit. Ceithre luchtaire leictreacha 22-kileavata sa charrchlós. An bealach chuig laghdú seachtó faoin gcéad ar astaíochtaí scóip-1 agus scóip-2 faoi 2030, agus Glan-Nialas faoi 2050.",
+      "Eitlíonn Emerald Airlines go Baile Átha Cliath faoi dhó sa lá faoi bhranda Aer Lingus Regional. Tá Loganair ag eitilt go Glaschú i rith na bliana. D'iompair an t-aerfort 50,530 paisinéir in 2024, méadú fiche a haon faoin gcéad.",
+    ],
+    photo: "/photos/story/story-ch06.webp",
+    photoAlt: "Radharc dróin ón aer ar Aerfort Dhún na nGall le ATR Emerald Airlines ar an aprún, 2025",
+    photoCaption: "Aer Lingus Regional · Dún na nGall",
+    photoShiftY: -118,
+    cardShiftY: 65,
+    photoW: "55%",
+    captionShiftY: -58,
+  },
+];
+
+/*
+  Operators. `code` = IATA where reliably known (blank for defunct minnows
+  without one). `color` = brand-ish tint used by the ORIGINAL stylised
+  tail-fin mark (our own design, not a reproduction of any real livery).
+  `logo` is optional — drop in an official logo file later and it overrides
+  the stylised tail for that carrier.
+*/
+type Airline = {
+  name: string;
+  route: string;
+  years: string;
+  code?: string;
+  color: string;
+  logo?: string;
+};
+
+const airlines: Airline[] = [
+  { name: "Malinair", route: "Glaschú · Manchester · Dún Éideann", years: "1985 – 1987", code: "WG", color: "#a07840" },
+  { name: "Air Ecosse", route: "Glaschú", years: "1987", code: "EC", color: "#4d6173" },
+  { name: "Loganair", route: "Glaschú", years: "1988 – 1997", code: "LM", color: "#14315f" },
+  { name: "Ryanair", route: "Londain Luton", years: "1990 – 1991", code: "FR", color: "#0a3d91" },
+  { name: "Macair", route: "Dún Éideann · Birmingham", years: "1995", code: "CC", color: "#6b6b2e" },
+  { name: "Gill Airways", route: "Glaschú Prestwick", years: "1996 · 1999", code: "9C", color: "#7a3a5a" },
+  { name: "Ireland Airways", route: "PSO Bhaile Átha Cliath", years: "1996 – 1998", code: "2E", color: "#2f6b3a" },
+  { name: "Bright Air", route: "Glaschú", years: "1997 – 1998", code: "C6", color: "#b9822a" },
+  { name: "Aer Arann", route: "Baile Átha Cliath · Corcaigh · Glaschú Idirn.", years: "1998 – 2012", code: "RE", color: "#1f6b3a" },
+  { name: "Euroceltic", route: "PSO Bhaile Átha Cliath", years: "2001 – 2003", code: "5Q", color: "#7a2e2e" },
+  { name: "CityJet", route: "Rotterdam (cairtfhostaithe séasúracha)", years: "2005 – 2012", code: "WX", color: "#b4472c" },
+  { name: "Loganair / Flybe", route: "Baile Átha Cliath", years: "2012 – 2015", code: "BE", color: "#4a2a86" },
+  { name: "Stobart Air", route: "Aer Lingus Regional · PSO Bhaile Átha Cliath", years: "2015 – 2021", code: "EI", color: "#2c5430" },
+  { name: "Amapola Flyg", route: "PSO Bhaile Átha Cliath (eatramhach)", years: "2021 – 2022", code: "HG", color: "#b03a2c" },
+  { name: "Emerald Airlines", route: "Baile Átha Cliath · 2×/lá", years: "2022 – today", code: "EI", color: "#0a8f4a" },
+  { name: "Loganair (relaunch)", route: "Glaschú · i rith na bliana", years: "2023 – today", code: "LM", color: "#14315f" },
+];
+---
+
+<BaseLayout title={title} description={description}>
+
+  {/* SVG filter — edge treatment for the hand-cut organic photos.
+      The PNG already carries the organic silhouette (its alpha). On top of
+      that we add the two effects requested:
+        1. FRAY  — feDisplacementMap shoves the alpha contour around with
+                   fine turbulence → ragged, torn-print deckle edge.
+        2. FEATHER (degradado) — feGaussianBlur softens that frayed alpha so
+                   the very edge fades into the page instead of a hard cut.
+      feComposite "in" then clips the UNTOUCHED sharp photo (SourceGraphic)
+      into that frayed+feathered alpha → interior razor-sharp, edge organic
+      + torn + softly faded. RGB pixels never move. */}
+  <svg class="absolute h-0 w-0 overflow-hidden" aria-hidden="true" focusable="false">
+    <defs>
+      <filter id="photo-torn" x="-8%" y="-8%" width="116%" height="116%">
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.018 0.02"
+          numOctaves="3"
+          seed="7"
+          result="noise"
+        />
+        <feDisplacementMap
+          in="SourceAlpha"
+          in2="noise"
+          scale="26"
+          xChannelSelector="R"
+          yChannelSelector="G"
+          result="ragged"
+        />
+        <feGaussianBlur in="ragged" stdDeviation="1.2" result="softAlpha" />
+        <feComposite in="SourceGraphic" in2="softAlpha" operator="in" />
+      </filter>
+    </defs>
+  </svg>
+
+  {/* ------------------------------------------------------------------ */}
+  {/* HERO — drone photo full-bleed, text at bottom                       */}
+  {/* ------------------------------------------------------------------ */}
+  <section
+    class="relative isolate flex min-h-[80vh] w-full items-end overflow-hidden border-b border-line"
+  >
+    {/* Background photo */}
+    <div class="absolute inset-0" aria-hidden="true">
+      <img
+        src="/photos/story/story-hero.jpg"
+        alt=""
+        class="h-full w-full object-cover object-center"
+        loading="eager"
+        decoding="async"
+      />
+    </div>
+
+    {/* Text — light tokens via cfn-hero-content */}
+    <div class="cfn-hero-content relative z-10 mx-auto w-full max-w-7xl px-6 pb-16 pt-40 sm:pb-24">
+      <p
+        data-animate="fade-up"
+        class="font-mono text-[0.72rem] font-bold uppercase tracking-[0.32em] text-white"
+        style="text-shadow: 0 2px 10px rgba(0,0,0,0.55), 0 1px 30px rgba(0,0,0,0.4);"
+      >
+        CFN · Carraig Fhinn · Dún na nGall
+      </p>
+      <h1
+        data-split
+        data-split-delay="0.1"
+        class="mt-8 max-w-5xl font-display text-[clamp(2.75rem,7vw,7.5rem)] font-light leading-[0.95] text-white"
+      >
+        Daichead bliain ar an trá.
+      </h1>
+      <p
+        data-animate="fade-up"
+        data-animate-delay="0.35"
+        class="mt-10 max-w-2xl text-base font-medium leading-relaxed text-white sm:text-lg"
+        style="text-shadow: 0 2px 6px rgba(0,0,0,0.75), 0 1px 16px rgba(0,0,0,0.6);"
+      >
+        Sé chaibidil · 1978 go 2025. Scéal rúidbhealaigh a tógadh ar
+        bharacam gainimh idir an tAigéan Atlantach agus an Earagail.
+      </p>
+
+      <div
+        data-animate="fade-up"
+        data-animate-delay="0.5"
+        class="mt-12 flex items-center gap-3 text-white"
+        style="text-shadow: 0 2px 10px rgba(0,0,0,0.55), 0 1px 30px rgba(0,0,0,0.4);"
+        aria-hidden="true"
+      >
+        <span class="scroll-hint font-mono text-[0.65rem] uppercase tracking-[0.24em]">
+          Scrollaigh
+        </span>
+        <span class="scroll-hint text-base">↓</span>
+      </div>
+    </div>
+  </section>
+
+  {/* ------------------------------------------------------------------ */}
+  {/* STORY PATH — unified desktop + mobile layout                        */}
+  {/*                                                                     */}
+  {/* Desktop: SVG curved path draws as you scroll. Chapters alternate   */}
+  {/* left / right of the path. animations.ts → setupStoryPath() wires  */}
+  {/* the stroke-dashoffset animation.                                    */}
+  {/*                                                                     */}
+  {/* Mobile: single centred column, SVG hidden via CSS.                 */}
+  {/* ------------------------------------------------------------------ */}
+  <section data-story-section class="relative bg-surface">
+
+    {/* SVG canvas — absolute, inset-0, sized to section by JS */}
+    <svg
+      data-story-svg
+      class="pointer-events-none absolute inset-0 h-full w-full"
+      aria-hidden="true"
+      preserveAspectRatio="none"
+    >
+      <defs>
+        {/* Drop shadow for the aircraft */}
+        <filter id="cfn-plane-shadow" x="-60%" y="-60%" width="220%" height="220%">
+          <feDropShadow
+            dx="2" dy="3" stdDeviation="3"
+            flood-color="#11202d" flood-opacity="0.16"
+          />
+        </filter>
+      </defs>
+
+      {/* Faint guide track — always visible on desktop */}
+      <path
+        data-story-track
+        fill="none"
+        stroke="var(--color-sand)"
+        stroke-width="1"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        opacity="0.12"
+      />
+      {/* Animated drawing path */}
+      <path
+        data-story-path
+        fill="none"
+        stroke="var(--color-sand)"
+        stroke-width="1.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        opacity="0.8"
+      />
+
+      {/*
+        ATR 72-600 · Emerald Airlines · top-down view
+        Nose points UP (−y). GSAP translates + rotates this group
+        to sit at the leading tip of the drawing path.
+        Scale: fuselage ≈ 62 SVG-px tall, wingspan ≈ 92 SVG-px.
+        Drawing order: back-to-front so fuselage sits on top of wings.
+      */}
+      <g data-story-plane opacity="0" filter="url(#cfn-plane-shadow)">
+
+        {/* Horizontal stabilizers — real ATR planform: swept leading edge + raked tips */}
+        <path d="M-8,21 L-23,23.3 L-22.2,26.2 L-8,28 Z" fill="#D5D8D2"/>
+        <path d="M8,21 L23,23.3 L22.2,26.2 L8,28 Z"   fill="#D5D8D2"/>
+
+        {/* Teal tips on the stabilizers (Aer Lingus Regional accent) */}
+        <path d="M-19,22.69 L-23,23.3 L-22.2,26.2 L-19,26.61 Z" fill="#119488"/>
+        <path d="M19,22.69 L23,23.3 L22.2,26.2 L19,26.61 Z"    fill="#119488"/>
+
+        {/* Elevator hinge line */}
+        <path d="M-9,26.6 L-21.8,25.0 M9,26.6 L21.8,25.0"
+              stroke="rgba(17,32,45,0.18)" stroke-width="0.4"/>
+
+        {/* Wings — nearly rectangular, ATR 72 low-taper planform */}
+        <path d="M-8,-9 L-46,-8 L-46,3 L-8,4 Z"  fill="#E3E7E0"/>
+        <path d="M8,-9 L46,-8 L46,3 L8,4 Z"    fill="#E3E7E0"/>
+
+        {/* Fuselage — drawn over wings so it occludes the root */}
+        <path
+          d="M0,-30 C5,-30 8,-25 8,-18 L8,20
+             C8,26 5,31 0,31
+             C-5,31 -8,26 -8,20 L-8,-18
+             C-8,-25 -5,-30 0,-30 Z"
+          fill="#F2EFE8"
+          stroke="rgba(17,32,45,0.07)"
+          stroke-width="0.5"
+        />
+
+        {/* Teal tail wrap — Aer Lingus Regional / Emerald livery */}
+        <path d="M-8,17 C-8,24 -5,30 0,31 C5,30 8,24 8,17 L8,20
+                 C8,26 5,31 0,31 C-5,31 -8,26 -8,20 Z" fill="#119488"/>
+
+        {/* Lime shamrock on the tail */}
+        <g transform="translate(0,24.5) scale(0.5)">
+          <circle cx="0"    cy="-2.4" r="2.1" fill="#93C84B"/>
+          <circle cx="-2.2" cy="0.6"  r="2.1" fill="#93C84B"/>
+          <circle cx="2.2"  cy="0.6"  r="2.1" fill="#93C84B"/>
+          <rect x="-0.5" y="0.5" width="1" height="3.2" fill="#93C84B"/>
+        </g>
+
+        {/* Engine nacelles — teal */}
+        <ellipse cx="-29" cy="-3" rx="5"  ry="9"  fill="#119488"/>
+        <ellipse cx="29"  cy="-3" rx="5"  ry="9"  fill="#119488"/>
+
+        {/* Propeller discs — spinning = semi-transparent disc */}
+        <ellipse cx="-29" cy="-14" rx="13" ry="2"
+                 fill="rgba(10,10,10,0.36)"/>
+        <ellipse cx="29"  cy="-14" rx="13" ry="2"
+                 fill="rgba(10,10,10,0.36)"/>
+
+        {/* Cockpit windows */}
+        <ellipse cx="-2.8" cy="-26" rx="1.6" ry="1.1"
+                 fill="rgba(40,70,120,0.35)"/>
+        <ellipse cx="2.8"  cy="-26" rx="1.6" ry="1.1"
+                 fill="rgba(40,70,120,0.35)"/>
+
+      </g>
+    </svg>
+
+    {/* ---- INTRO ---- */}
+    <div class="relative z-10 flex min-h-[28vh] items-center justify-center px-6 py-20">
+      <div class="text-center">
+        <p
+          data-animate="fade-up"
+          class="font-mono text-[0.95rem] uppercase tracking-[0.26em] text-atlantic"
+        >
+          An amlíne
+        </p>
+        <h2
+          data-split
+          data-split-delay="0.05"
+          class="mt-5 font-display text-[clamp(2.4rem,4.5vw,4.5rem)] font-light leading-[1]"
+        >
+          Mar a d'fhoghlaim baracam gainimh eitilt.
+        </h2>
+        <p
+          data-animate="fade-up"
+          data-animate-delay="0.2"
+          class="mx-auto mt-6 max-w-sm text-base leading-relaxed text-mute"
+        >
+          Ó stráice féir gan aerlíne i 1978 go dtí an t-aerfort beag is
+          glaise in Éirinn in 2025.
+        </p>
+      </div>
+    </div>
+
+    {/* ---- CHAPTER PANELS ---- */}
+    {
+      chapters.map((c, i) => {
+        // side = the CARD's side. Chapter 1 starts with the card on the
+        // LEFT (so text left, photo right), then alternates.
+        const side = i % 2 === 0 ? "left" : "right";
+        const styleVars = [
+          c.photoShiftY != null ? `--photo-shift:${c.photoShiftY}px` : null,
+          c.cardShiftY != null ? `--card-shift:${c.cardShiftY}px` : null,
+          c.photoW ? `--photo-w:${c.photoW}` : null,
+          c.photoH ? `--photo-h:${c.photoH}` : null,
+          c.yearShiftY != null ? `--year-shift:${c.yearShiftY}px` : null,
+          c.yearSize ? `--year-size:${c.yearSize}` : null,
+          c.captionShiftY != null ? `--cap-shift-y:${c.captionShiftY}px` : null,
+          c.captionShiftX != null ? `--cap-shift-x:${c.captionShiftX}px` : null,
+        ]
+          .filter(Boolean)
+          .join(";");
+        return (
+          <div
+            class:list={[
+              "story-chapter relative flex flex-wrap min-h-[75vh] items-center py-16",
+              c.photo && "has-photo",
+              c.photoTall && "has-tall-photo",
+            ]}
+            data-story-chapter
+            data-side={side}
+            style={styleVars || undefined}
+          >
+            {/*
+              Waypoint marker — invisible 0×0 span used ONLY for path
+              calculation. JS reads getBoundingClientRect() to find
+              where to thread the SVG curve.
+              Positioned at the inner edge of the content card:
+                right chapters → left: 65% of section width
+                left  chapters → left: 35% of section width
+            */}
+            <span
+              class="story-waypoint"
+              data-waypoint
+              aria-hidden="true"
+            />
+
+            {/* Large year as architectural background — opposite side from card */}
+            <span
+              aria-hidden="true"
+              class={`story-year-bg ${side === "right" ? "story-year-bg--l" : "story-year-bg--r"}`}
+            >
+              {c.year}
+            </span>
+
+            {/* Content card */}
+            <div class="story-card relative z-10">
+              <p class="font-mono text-[0.82rem] uppercase tracking-[0.24em] text-sand">
+                {c.range}
+                <span class="ml-3 text-atlantic">{c.year}</span>
+              </p>
+
+              <h2
+                class="mt-5 font-display text-[clamp(2.25rem,3.8vw,4.25rem)] font-light leading-[1.02]"
+              >
+                {c.title}
+              </h2>
+
+              <p class="mt-6 text-[1rem] leading-[1.72] text-ink sm:text-[1.06rem]">
+                {c.lead}
+              </p>
+
+              {c.body.map((para) => (
+                <p class="mt-4 text-[0.95rem] leading-[1.72] text-mute">
+                  {para}
+                </p>
+              ))}
+
+            </div>
+
+            {/* Photo — OPPOSITE side from the text card.
+                Desktop: position:absolute via CSS, in the year-watermark zone.
+                Mobile:  flex-basis:100% so it wraps below the card. */}
+            {c.photo && (
+              <figure data-photo data-story-photo>
+                {/* Slide in from the photo's side. Cheap now that the wrapper
+                    no longer carries the heavy SVG filter. */}
+                <div data-animate={side === "right" ? "fade-right" : "fade-left"}>
+                  {/* wrapper receives the displacement filter after img is masked */}
+                  <div class="photo-painted-wrapper">
+                    <img
+                      src={c.photo}
+                      alt={c.photoAlt ?? ""}
+                      class="photo-painted-img block w-full"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+                  {c.photoCaption && (
+                    <figcaption class="mt-2 font-mono text-[0.6rem] uppercase tracking-[0.2em] text-ink/60">
+                      {c.photoCaption}
+                    </figcaption>
+                  )}
+                </div>
+              </figure>
+            )}
+          </div>
+        );
+      })
+    }
+
+    {/* Gradient fade — no text, just a visual hint that the page continues */}
+    <div
+      class="pointer-events-none absolute bottom-0 left-0 right-0 z-20 h-36 bg-gradient-to-b from-transparent to-surface"
+      aria-hidden="true"
+    />
+
+  </section>
+
+  {/* ------------------------------------------------------------------ */}
+  {/* AIRLINES TABLE                                                       */}
+  {/* ------------------------------------------------------------------ */}
+  <section class="cfn-operators">
+    {/* Decorative flight-route arcs — faint, behind the content */}
+    <svg class="op-deco" viewBox="0 0 1200 640" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+      <defs>
+        <radialGradient id="op-glow" cx="78%" cy="0%" r="80%">
+          <stop offset="0%" stop-color="#3b82c4" stop-opacity="0.5" />
+          <stop offset="100%" stop-color="#3b82c4" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+      <rect width="1200" height="640" fill="url(#op-glow)" />
+      <g fill="none" stroke="#8fbce6" stroke-width="1.4" stroke-dasharray="2 9" stroke-linecap="round" opacity="0.5">
+        <path d="M-40,560 C320,360 760,300 1260,170" />
+        <path d="M-40,620 C360,470 820,440 1260,330" />
+        <path d="M120,680 C460,520 900,540 1320,440" />
+      </g>
+      <g fill="#bcd9f2" opacity="0.55">
+        <circle cx="262" cy="430" r="3.2" /><circle cx="760" cy="305" r="3.2" />
+        <circle cx="1042" cy="208" r="3.2" /><circle cx="494" cy="487" r="2.6" />
+      </g>
+    </svg>
+    <div class="relative z-10 mx-auto max-w-5xl px-6 py-24">
+      <p
+        data-animate="fade-up"
+        class="op-eyebrow font-mono text-[0.95rem] uppercase tracking-[0.26em]"
+      >
+        Oibreoirí
+      </p>
+      <h2
+        data-split
+        class="op-title mt-3 max-w-3xl font-display text-[clamp(2.4rem,4.6vw,4.25rem)] font-light leading-[1.04]"
+      >
+        Gach aerlíne a d'eitil go Dún na nGall.
+      </h2>
+
+      <div data-animate="fade-up" class="airline-grid mt-14">
+        {
+          airlines.map((a) => (
+            <div class="airline-pass">
+              {a.code && <span class="pass-code">{a.code}</span>}
+              <div class="pass-logo">
+                {a.logo ? (
+                  <img src={a.logo} alt={`${a.name} logo`} loading="lazy" />
+                ) : (
+                  <svg viewBox="0 0 64 64" aria-hidden="true">
+                    {/* Original, generic swept tail-fin — NOT a real livery. */}
+                    <path d="M14,55 L41,9 L53,9 L47,55 Z" fill={a.color} />
+                    <path d="M14,55 L41,9 L46,26 L25,55 Z" fill="rgba(255,255,255,0.28)" />
+                  </svg>
+                )}
+              </div>
+              <div class="pass-body">
+                <div class="pass-name">{a.name}</div>
+                <div class="pass-route">{a.route}</div>
+                <div class="pass-years">{a.years}</div>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  {/* DEV-only in-browser visual tuner. Self-gates on import.meta.env.DEV,
+      so it never ships to production. */}
+  <StoryEditor />
+
+</BaseLayout>
+
+<style>
+  /* Gaeilge airline routes run longer than their English equivalents
+     (e.g. "Aer Lingus Regional · PSO Bhaile Átha Cliath"), so the shared
+     15.5rem card width from global.css truncates them with an ellipsis.
+     Widen the cards and let the route line wrap instead of cutting off —
+     scoped to this page only, so the English /story page (and its
+     15.5rem cards) is untouched. */
+  .airline-grid {
+    grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+  }
+  .airline-pass .pass-route {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+</style>

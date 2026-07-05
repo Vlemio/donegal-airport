@@ -1,0 +1,219 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const title = "Teagmháil · Aerfort Dhún na nGall";
+const description = "Déan teagmháil le hAerfort Dhún na nGall (CFN). Fón, ríomhphost, seoladh, uaireanta oscailte, earraí caillte agus teagmháil preasa.";
+
+// TODO: swap for the airport's own Web3Forms access key once they've
+// confirmed which mailbox submissions should land in (currently on hold).
+const WEB3FORMS_KEY = "REPLACE_WITH_REAL_ACCESS_KEY";
+---
+
+<BaseLayout title={title} description={description}>
+  <section class="mx-auto max-w-7xl px-6 pb-24 pt-40">
+    <p class="font-mono text-[0.7rem] uppercase tracking-[0.28em] text-atlantic">
+      Teagmháil
+    </p>
+    <h1
+      data-split
+      class="mt-4 max-w-4xl font-display text-[clamp(2.5rem,6vw,5.5rem)] font-normal leading-[0.98]"
+    >
+      Labhair linn.
+    </h1>
+    <p class="mt-7 max-w-2xl text-base leading-relaxed text-mute sm:text-lg">
+      Fiosrúcháin ghinearálta, earraí caillte, preas, ATC. Freagraímid go
+      tapa — foireann bheag atáimid.
+    </p>
+
+    <div
+      data-animate="fade-up"
+      class="mt-16 grid divide-y divide-line border-y border-line md:grid-cols-2 md:divide-x md:divide-y-0"
+    >
+      <div class="px-2 py-10 sm:px-6">
+        <p class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-sand">
+          Ginearálta
+        </p>
+        <p class="mt-4 max-w-xs text-sm text-mute">
+          Carraig Fhinn, Cionn Caslach, Leitir Ceanainn, Co. Dhún na nGall · F94 X2RH
+        </p>
+        <p class="mt-5 font-display text-2xl">
+          <a href="tel:+353749548284" class="text-ink transition-colors hover:text-sand">
+            +353 (0)74 9548284
+          </a>
+        </p>
+        <p class="mt-1 text-sm">
+          <a href="mailto:info@donegalairport.ie" class="text-ink transition-colors hover:text-sand">
+            info@donegalairport.ie
+          </a>
+        </p>
+      </div>
+      <div class="px-2 py-10 sm:px-6">
+        <p class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-sand">
+          Rialú Aerthráchta
+        </p>
+        <p class="mt-4 max-w-xs text-sm text-mute">
+          Le haghaidh PPR, oibríochtaí dróin agus fiosrúcháin aeradróim.
+        </p>
+        <p class="mt-5 font-display text-2xl">
+          <a href="tel:+353749548604" class="text-ink transition-colors hover:text-sand">
+            +353 (0)74 9548604
+          </a>
+        </p>
+        <p class="mt-1 text-sm">
+          <a href="mailto:atc@donegalairport.ie" class="text-ink transition-colors hover:text-sand">
+            atc@donegalairport.ie
+          </a>
+        </p>
+      </div>
+    </div>
+
+    <p data-animate="fade-up" class="mt-6 max-w-2xl text-sm leading-relaxed text-mute">
+      Ar chaill tú rud éigin ag an aerfort, nó an bhfuil fiosrúchán preasa
+      agat? Bain úsáid as an teagmháil ghinearálta thuas — cinnteoimid go
+      sroicheann sé an duine ceart.
+    </p>
+
+    <div data-animate="fade-up" class="mt-14 grid gap-10 lg:grid-cols-2">
+      {/* Contact form */}
+      <div>
+        <p class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-sand">
+          Seol teachtaireacht
+        </p>
+        <h2 class="mt-3 font-display text-2xl leading-snug text-ink">
+          Freagróimid tú laistigh de lá oibre amháin.
+        </h2>
+
+        <form
+          id="contact-form"
+          class="mt-7 space-y-5"
+          action="https://api.web3forms.com/submit"
+          method="POST"
+        >
+          <input type="hidden" name="access_key" value={WEB3FORMS_KEY} />
+          <input type="hidden" name="subject" value="Fiosrúchán nua (Gaeilge) — suíomh gréasáin Aerfort Dhún na nGall" />
+          <input type="checkbox" name="botcheck" class="hidden" style="display:none" tabindex="-1" autocomplete="off" />
+
+          <div class="grid gap-5 sm:grid-cols-2">
+            <label class="block">
+              <span class="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-mute">Ainm</span>
+              <input
+                type="text" name="name" required
+                class="mt-2 w-full border-b border-line bg-transparent pb-2 text-base text-ink outline-none transition-colors focus:border-atlantic"
+              />
+            </label>
+            <label class="block">
+              <span class="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-mute">Ríomhphost</span>
+              <input
+                type="email" name="email" required
+                class="mt-2 w-full border-b border-line bg-transparent pb-2 text-base text-ink outline-none transition-colors focus:border-atlantic"
+              />
+            </label>
+          </div>
+
+          <label class="block">
+            <span class="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-mute">Cúis</span>
+            <select
+              name="reason"
+              class="mt-2 w-full border-b border-line bg-transparent pb-2 text-base text-ink outline-none transition-colors focus:border-atlantic"
+            >
+              <option>Fiosrúchán ginearálta</option>
+              <option>PPR agus ATC</option>
+              <option>Earraí caillte</option>
+              <option>Preas agus meáin</option>
+            </select>
+          </label>
+
+          <label class="block">
+            <span class="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-mute">Teachtaireacht</span>
+            <textarea
+              name="message" required rows="4"
+              class="mt-2 w-full resize-none border-b border-line bg-transparent pb-2 text-base text-ink outline-none transition-colors focus:border-atlantic"
+            ></textarea>
+          </label>
+
+          <button
+            type="submit"
+            class="inline-flex items-center gap-2 border-b border-ink pb-1 font-mono text-xs uppercase tracking-[0.22em] text-ink transition-colors hover:border-sand hover:text-sand"
+          >
+            Seol teachtaireacht →
+          </button>
+
+          <p data-form-status class="hidden text-sm"></p>
+        </form>
+      </div>
+
+      {/* Mini map */}
+      <div>
+        <p class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-sand">
+          Aimsigh muid
+        </p>
+        <h2 class="mt-3 font-display text-2xl leading-snug text-ink">
+          Carraig Fhinn, ar chósta na Rosann.
+        </h2>
+        <div class="mt-6 overflow-hidden rounded-2xl border border-line">
+          <iframe
+            title="Suíomh Aerfort Dhún na nGall"
+            src="https://www.openstreetmap.org/export/embed.html?bbox=-8.3760%2C55.0260%2C-8.3060%2C55.0620&layer=mapnik&marker=55.0442%2C-8.3410"
+            class="h-[320px] w-full"
+            loading="lazy"
+          ></iframe>
+        </div>
+        <a
+          href="https://www.google.com/maps/dir/?api=1&destination=55.0442,-8.3410"
+          target="_blank"
+          rel="noopener"
+          class="mt-4 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.2em] text-atlantic transition-colors hover:text-ink"
+        >
+          Faigh treoracha ↗
+        </a>
+      </div>
+    </div>
+
+    <div data-animate="fade-up" class="mt-14 border-t border-line pt-10">
+      <p class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-mute">
+        Ag teacht
+      </p>
+      <p class="mt-4 max-w-2xl font-display text-2xl leading-snug text-ink">
+        Uaireanta oscailte an teirminéil.
+      </p>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  document.addEventListener("astro:page-load", () => {
+    const form = document.getElementById("contact-form") as HTMLFormElement | null;
+    if (!form) return;
+    const status = form.querySelector<HTMLElement>("[data-form-status]");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!status) return;
+      const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+      submitBtn?.setAttribute("disabled", "true");
+      status.className = "text-sm text-mute";
+      status.textContent = "Á sheoladh…";
+
+      try {
+        const res = await fetch(form.action, {
+          method: "POST",
+          body: new FormData(form),
+          headers: { Accept: "application/json" },
+        });
+        const data = await res.json();
+        if (data.success) {
+          status.className = "text-sm text-atlantic";
+          status.textContent = "Go raibh maith agat — tá do theachtaireacht ar an mbealach. Freagróimid laistigh de lá oibre amháin.";
+          form.reset();
+        } else {
+          throw new Error(data.message || "Unknown error");
+        }
+      } catch {
+        status.className = "text-sm text-[#b23b3b]";
+        status.textContent = "Tharla earráid — seol ríomhphost chugainn go díreach ag info@donegalairport.ie le do thoil.";
+      } finally {
+        submitBtn?.removeAttribute("disabled");
+      }
+    });
+  });
+</script>

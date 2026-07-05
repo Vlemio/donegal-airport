@@ -116,7 +116,7 @@ const _mapNews = (n: (typeof _newsSorted)[0]) => ({
     ? n.data.image.startsWith("/") ? n.data.image : `/photos/${n.data.image}`
     : "/photos/intro-airport.webp",
 });
-const news = _newsSorted.slice(0, 3).map(_mapNews);
+const news = _newsSorted.slice(0, 7).map(_mapNews);
 const allNews = _newsSorted.map(_mapNews);
 ---
 

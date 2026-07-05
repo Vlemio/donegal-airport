@@ -1,0 +1,1008 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const title = "Pleanáil do thuras · Aerfort Dhún na nGall";
+const description = "Conas teacht anseo, páirceáil, cíos gluaisteán, tacsaithe, inrochtaineacht (PRM) agus slándáil ag Aerfort Dhún na nGall (CFN).";
+
+const carHire = [
+  {
+    name: "Enterprise",
+    details: ["Aois 25+", "Bailiú agus fágáil ag an teirminéal", "Gnó agus fóillíocht", "+353 74 910 3202"],
+    website: "https://www.enterprise.ie/en/car-hire-locations/ie/donegal-airport-i128.html",
+    bg: "#089759",
+    logo: "/photos/plan/cars/logo-enterprise-white.png",
+    car: "/photos/plan/cars/car-enterprise.png",
+    roof: "/photos/plan/cars/logo-enterprise-white.png",
+    side: "left", logoW: 54, logoLeft: 44,
+  },
+  {
+    name: "Yuko Car Rental",
+    details: ["Aois 22–70", "Flít Toyota — lámhrothar agus uathoibríoch", "Cuir in áirithe ar líne tríd an aip Yuko", "Luan–Sath 06:30–20:00", "Domh 08:00–20:00", "+353 74 912 1385"],
+    website: "https://letterkenny.kellystoyota.com/car-rentals-at-kellys-toyota",
+    bg: "#E62334",
+    logo: "/photos/plan/cars/logo-yuko-decal.png",
+    car: "/photos/plan/cars/car-yuko.png",
+    roof: "/photos/plan/cars/logo-yuko-decal.png",
+    side: "right", logoW: 38, logoLeft: 56,
+  },
+  {
+    name: "Europcar",
+    details: ["07:30–20:30 gach lá", "Réamh-áirithint do sliotáin 07:30–09:00", "10% lascaine ar áirithintí díreacha", "+353 74 970 7000", "+353 86 199 1651 — tar éis am oscailte"],
+    website: "https://www.europcar.ie/en-ie/places/car-rental-ireland/carrickfinn/donegal-airport",
+    bg: "#009B01",
+    logo: "/photos/plan/cars/logo-europcar-white.png",
+    car: "/photos/plan/cars/car-europcar.png",
+    roof: "/photos/plan/cars/logo-europcar-white.png",
+    side: "left", logoW: 44, logoLeft: 43,
+  },
+  {
+    name: "GoCar",
+    details: ["Cíos uaire", "Breosla agus árachas san áireamh", "Solúbtha — gan gealltanas fadtéarmach"],
+    website: "https://www.gocar.ie/",
+    bg: "#8DC73F",
+    logo: "/photos/plan/cars/logo-gocar-white.png",
+    car: "/photos/plan/cars/car-gocar.png",
+    roof: "/photos/plan/cars/logo-gocar-white.png",
+    side: "right", logoW: 38, logoLeft: 56,
+  },
+] as const;
+
+const tariff = [
+  { d: "2 uair", p: "Saor in aisce" },
+  { d: "1 lá",   p: "€7" },
+  { d: "2 lá",  p: "€14" },
+  { d: "3 lá",  p: "€21" },
+  { d: "4 lá",  p: "€28" },
+  { d: "5 lá",  p: "€35" },
+  { d: "6 lá",  p: "€39" },
+  { d: "7 lá",  p: "€45", best: true },
+  { d: "8 lá",  p: "€45", best: true },
+  { d: "9 lá",  p: "€45", best: true },
+  { d: "10 lá", p: "€45", best: true },
+  { d: "11 lá", p: "€50" },
+  { d: "12 lá", p: "€54" },
+  { d: "13 lá", p: "€58" },
+  { d: "14 lá", p: "€60" },
+  { d: "15+ lá", p: "€4/lá" },
+] as const;
+
+const tariffLeft = tariff.slice(0, 8);
+const tariffRight = tariff.slice(8);
+
+const taxis = [
+  { name: "Jackie Hughes Airport Transfers", phone: "087 261 8885", href: "tel:+353872618885" },
+  { name: "Josie Joe / Larsson Cabs",        phone: "087 653 6272", href: "tel:+353876536272" },
+  { name: "Charlie Mac Taxis",               phone: "087 260 3757", href: "tel:+353872603757" },
+  { name: "Teague Taxis",                    phone: "087 641 5985", href: "tel:+353876415985" },
+  { name: "Frank Gallagher",                 phone: "086 821 5936", href: "tel:+353868215936" },
+  { name: "Packie Gallagher",                phone: "087 261 5625", href: "tel:+353872615625" },
+  { name: "James Rodgers",                   phone: "086 809 3561", href: "tel:+353868093561" },
+  { name: "Martin McGlynn",                  phone: "087 259 6521", href: "tel:+353872596521" },
+] as const;
+
+const transfers = [
+  { name: "Cronan Mac Buses",          phone: "087 237 8888", href: "tel:+353872378888", note: "Aistrithe do ghrúpaí móra agus cóistí" },
+  { name: "Turas Cartha · Nicola Doherty", phone: "087 055 6708", href: "tel:+353870556708", note: "Suas le 8 · turais agus corparáideach" },
+  { name: "Donegal Tour Guide · Henry Doohan", phone: "086 333 1031", href: "tel:+353863331031", note: "Tiománaí príobháideach · turais agus corparáideach" },
+] as const;
+
+const cardTints = [
+  { bg: "bg-[color-mix(in_srgb,var(--color-atlantic)_10%,var(--color-surface))]", hover: "hover:bg-[var(--color-atlantic)]" },
+  { bg: "bg-[color-mix(in_srgb,var(--color-sand)_13%,var(--color-surface))]",     hover: "hover:bg-[var(--color-sand)]" },
+];
+
+const coffees = [
+  { name: "Flat White",  desc: "Ristretto dúbailte faoi bhainne galaithe síodúil. Gan chúr, gan trioblóid.",   img: "/photos/plan/coffees/cup-flatwhite.png" },
+  { name: "Cappuccino",  desc: "Espresso, bainne galaithe agus barr cúir domhain, cócó dusta air.",  img: "/photos/plan/coffees/cup-cappuccino.png" },
+  { name: "Americano",   desc: "Deoch espresso scaoilte le huisce te. Fada, dubh agus éasca.", img: "/photos/plan/coffees/cup-americano.png" },
+  { name: "Latte",       desc: "Bainne galaithe doirte ar espresso — cúr, leis an gcaife thíos.",  img: "/photos/plan/coffees/cup-latte.png" },
+];
+
+// Local Link bus times at Donegal Airport. Each pair is depart → arrive.
+// "ms: true" = Mon–Sat only; all other trips run daily (incl. Sun & public holidays).
+// Place names use their Irish forms — An Fál Carrach (Falcarragh), Croithlí
+// (Crolly), An Clochán Liath (Dungloe) — matching the route-info line below.
+const busToAirport = [
+  { place: "An Fál Carrach", route: "966", pairs: [
+    { dep: "06:20", arr: "07:15", ms: true },
+    { dep: "11:00", arr: "11:55" },
+    { dep: "16:10", arr: "17:05" },
+    { dep: "19:50", arr: "20:45" },
+  ] },
+  { place: "Croithlí", route: "992", pairs: [
+    { dep: "14:50", arr: "15:05", ms: true, demand: true },
+  ] },
+  { place: "An Clochán Liath", route: "966", pairs: [
+    { dep: "08:50", arr: "09:25", ms: true },
+    { dep: "12:50", arr: "13:25" },
+    { dep: "14:10", arr: "14:45" },
+    { dep: "18:10", arr: "18:45" },
+    { dep: "21:30", arr: "22:05" },
+  ] },
+] as const;
+
+const busFromAirport = [
+  { place: "An Fál Carrach", route: "966", pairs: [
+    { dep: "09:25", arr: "10:20", ms: true },
+    { dep: "13:25", arr: "15:40" },
+    { dep: "14:45", arr: "15:40" },
+    { dep: "18:45", arr: "19:40" },
+    { dep: "22:05", arr: "23:00" },
+  ] },
+  { place: "Croithlí", route: "992", pairs: [
+    { dep: "13:55", arr: "14:10", ms: true, demand: true },
+  ] },
+  { place: "An Clochán Liath", route: "966", pairs: [
+    { dep: "07:15", arr: "07:50", ms: true },
+    { dep: "11:55", arr: "12:30" },
+    { dep: "17:05", arr: "17:40" },
+    { dep: "20:45", arr: "21:20" },
+  ] },
+] as const;
+
+const busColumns = [
+  { title: "Go dtí an t-aerfort", sub: "imeacht → teacht ag an aerfort", legs: busToAirport },
+  { title: "Ón aerfort", sub: "imeacht ón aerfort → teacht", legs: busFromAirport },
+] as const;
+---
+
+<BaseLayout title={title} description={description}>
+
+  {/* ─── HERO ── mirrors plan.astro (EN) section-for-section ─────────────── */}
+  <section class="relative isolate flex min-h-[80vh] w-full items-end overflow-hidden border-b border-line">
+    <div class="absolute inset-0" aria-hidden="true">
+      <img
+        src="/photos/plan/plan-cafe-02.jpg"
+        alt="Taobh istigh de theirminéal Aerfort Dhún na nGall"
+        class="h-full w-full object-cover object-[center_30%]"
+        loading="eager"
+        decoding="async"
+      />
+    </div>
+    <div class="cfn-hero-content relative z-10 mx-auto w-full max-w-7xl px-6 pb-16 pt-40 sm:pb-24">
+      <p
+        data-animate="fade-up"
+        class="font-mono text-[0.72rem] uppercase tracking-[0.32em] text-ink [text-shadow:0_1px_8px_rgba(0,0,0,.5)]"
+      >
+        Pleanáil do thuras · CFN
+      </p>
+      <h1
+        data-split
+        data-split-delay="0.1"
+        class="mt-8 max-w-5xl font-display text-[clamp(2.75rem,7vw,7.5rem)] font-light leading-[0.95] text-ink [text-shadow:0_2px_24px_rgba(0,0,0,.55),0_1px_6px_rgba(0,0,0,.4)]"
+      >
+        Gach rud a theastaíonn uait<br/>sula n-eitlíonn tú.
+      </h1>
+      <p
+        data-animate="fade-up"
+        data-animate-delay="0.35"
+        class="mt-10 max-w-2xl text-base leading-relaxed text-mute sm:text-lg [text-shadow:0_1px_10px_rgba(0,0,0,.5)]"
+      >
+        Conas teacht anseo, páirceáil, iompar, amanna seiceála isteach,
+        cúnamh speisialta agus a bhfuil sa teirminéal — uilig in aon áit
+        amháin.
+      </p>
+    </div>
+  </section>
+
+  {/* ─── PARKING ── ────────────────────────────────────── */}
+  <section class="relative isolate border-t border-line">
+    <div class="absolute inset-0 -z-10" aria-hidden="true">
+      <img
+        src="/photos/plan/plan-parking-aerial.jpg"
+        alt="Radharc aeriúil ar theirminéal Aerfort Dhún na nGall agus a charrchlós in aice leis an rúidbhealach"
+        class="h-full w-full object-cover object-center"
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
+
+    <div class="cfn-hero-content mx-auto flex min-h-[88vh] max-w-7xl flex-col justify-between gap-y-16 px-6 pb-14 pt-24">
+      <div>
+        <p
+          data-animate="fade-up"
+          class="font-mono text-base font-bold uppercase tracking-[0.3em] text-white [text-shadow:0_1px_10px_rgba(0,0,0,.6)]"
+        >
+          Páirceáil
+        </p>
+        <h2
+          data-split
+          class="mt-3 font-display text-[clamp(2.4rem,4.5vw,4.2rem)] font-normal leading-[1.02] text-white [text-shadow:0_2px_22px_rgba(0,0,0,.6)]"
+        >
+          Páirceáil agus siúil isteach díreach.
+        </h2>
+        <p
+          data-animate="fade-up"
+          data-animate-delay="0.08"
+          class="mt-5 max-w-xl text-[1.05rem] font-medium leading-relaxed text-white [text-shadow:0_1px_14px_rgba(0,0,0,.75)]"
+        >
+          Tá an carrchlós díreach os comhair an teirminéil — siúlóid nóiméad
+          amháin ón gcarrchlós go dtí an seiceáil isteach. Íoc trí mheaisín
+          (airgead tirim nó cárta) nó tapáil gan teagmháil ag an mbacainn
+          imeachta.
+        </p>
+      </div>
+
+      <div>
+        <div
+          id="parking-figures"
+          class="grid gap-px overflow-hidden rounded-xl bg-white/15 sm:grid-cols-3"
+        >
+          <div class="bg-black/30 p-8 backdrop-blur-sm">
+            <div data-animate="fade-up">
+              <p class="font-display text-[3.2rem] leading-none text-white">2 u</p>
+              <p class="mt-3 font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">Saor in aisce</p>
+              <p class="mt-2 text-sm leading-relaxed text-white/75">
+                An chéad dhá uair saor in aisce — fág, bailigh, nó suigh
+                isteach le haghaidh caife.
+              </p>
+            </div>
+          </div>
+          <div class="flex flex-col bg-black/30 p-8 backdrop-blur-sm">
+            <div data-animate="fade-up" data-animate-delay="0.08">
+              <p class="font-display text-[3.2rem] leading-none text-white">Fanacht Fada</p>
+              <p class="mt-3 font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">Ó €7 / lá</p>
+              <p class="mt-2 text-sm leading-relaxed text-white/75">
+                €45 do 7–10 lá · €60 do choicís, ansin €4/lá.
+              </p>
+              <button
+                type="button"
+                data-tariff-toggle
+                aria-expanded="false"
+                aria-controls="tariff-panel"
+                class="mt-4 inline-flex w-fit items-center gap-1.5 font-mono text-[0.7rem] font-bold uppercase tracking-[0.18em] text-white underline decoration-white/40 underline-offset-4 transition-opacity hover:opacity-70"
+              >
+                <span data-tariff-label>Taispeáin an táille iomlán</span>
+                <span data-tariff-arrow>↓</span>
+              </button>
+            </div>
+          </div>
+          <div class="bg-black/30 p-8 backdrop-blur-sm">
+            <div data-animate="fade-up" data-animate-delay="0.16">
+              <p class="font-display text-[3.2rem] leading-none text-white">EV</p>
+              <p class="mt-3 font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">4 × luchtaire 22 kW</p>
+              <p class="mt-2 text-sm leading-relaxed text-white/75">
+                Pointí luchtaithe EVBox sa charrchlós. Rochtain tríd an aip EVBox.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div
+          id="tariff-panel"
+          class="overflow-hidden transition-[max-height,opacity] duration-500 ease-out"
+          style="max-height: 0; opacity: 0;"
+        >
+          <div class="mt-3 rounded-xl bg-black/45 p-8 backdrop-blur-md">
+            <div class="flex items-baseline justify-between">
+              <p class="font-mono text-[0.68rem] font-bold uppercase tracking-[0.25em] text-white/90">Táille iomlán an charrchlóis</p>
+              <p class="font-mono text-[0.62rem] uppercase tracking-[0.15em] text-white/55">Íoc ag an imeacht</p>
+            </div>
+
+            <div class="mt-5 grid grid-cols-1 gap-x-12 sm:grid-cols-2">
+              <ul class="divide-y divide-white/10">
+                {tariffLeft.map((t) => (
+                  <li class={`flex items-center justify-between py-1.5 ${t.best ? "text-white" : "text-white/80"}`}>
+                    <span class={`text-sm ${t.best ? "font-semibold" : ""}`}>{t.d}</span>
+                    <span class={`font-mono text-sm ${t.best ? "font-semibold text-white" : "text-white/80"}`}>{t.p}</span>
+                  </li>
+                ))}
+              </ul>
+              <ul class="divide-y divide-white/10">
+                {tariffRight.map((t) => (
+                  <li class={`flex items-center justify-between py-1.5 ${t.best ? "text-white" : "text-white/80"}`}>
+                    <span class={`text-sm ${t.best ? "font-semibold" : ""}`}>
+                      {t.d}
+                      {t.d === "10 lá" && (
+                        <span class="ml-2 rounded-full bg-white/15 px-2 py-0.5 font-mono text-[0.5rem] font-bold uppercase tracking-[0.12em] text-white">
+                          Luach is fearr
+                        </span>
+                      )}
+                    </span>
+                    <span class={`font-mono text-sm ${t.best ? "font-semibold text-white" : "text-white/80"}`}>{t.p}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {/* ─── CHECK-IN & BAGGAGE ── ──────────────────────────── */}
+  <section id="checkin" class="scroll-mt-[calc(var(--header-h)+2rem)] border-t border-line">
+    <div class="mx-auto max-w-7xl px-6 py-20">
+      <div class="grid items-start gap-12 lg:grid-cols-[1.35fr_1fr] lg:gap-16">
+
+        <div>
+          <p
+            data-animate="fade-up"
+            class="font-mono text-base font-bold uppercase tracking-[0.3em] text-atlantic"
+          >
+            Seiceáil isteach agus bagáiste
+          </p>
+          <h2
+            data-split
+            class="mt-3 font-display text-[clamp(1.8rem,3.5vw,3rem)] font-normal leading-[1.02]"
+          >
+            Bí ar an eolas faoi na spriocamanna.
+          </h2>
+
+          <div data-animate="fade-up" data-animate-delay="0.1" class="mt-10">
+            <div class="relative mt-2">
+              <div class="absolute left-[12%] right-[12%] top-[6px] h-px bg-line" aria-hidden="true"></div>
+              <div class="relative grid grid-cols-3 text-center">
+                <div class="flex flex-col items-center">
+                  <span class="h-3 w-3 rounded-full bg-sand"></span>
+                  <p class="mt-5 font-display text-[clamp(2.4rem,5vw,3.6rem)] leading-none text-sand">45</p>
+                  <p class="mt-2 font-mono text-[0.72rem] font-bold uppercase tracking-[0.18em] text-atlantic">nóim. roimh ré</p>
+                  <p class="mt-1 text-sm text-ink">Dúnann fágáil bagáiste</p>
+                </div>
+                <div class="flex flex-col items-center">
+                  <span class="h-3 w-3 rounded-full bg-sand"></span>
+                  <p class="mt-5 font-display text-[clamp(2.4rem,5vw,3.6rem)] leading-none text-sand">30</p>
+                  <p class="mt-2 font-mono text-[0.72rem] font-bold uppercase tracking-[0.18em] text-atlantic">nóim. roimh ré</p>
+                  <p class="mt-1 text-sm text-ink">Slándáil agus geata</p>
+                </div>
+                <div class="flex flex-col items-center">
+                  <span class="h-3 w-3 rounded-full bg-ink"></span>
+                  <p class="mt-4 font-display text-[clamp(2.4rem,5vw,3.6rem)] leading-none text-ink">✈</p>
+                  <p class="mt-2 font-mono text-[0.72rem] font-bold uppercase tracking-[0.18em] text-atlantic">eitilt</p>
+                  <p class="mt-1 text-sm text-ink">Imeacht</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <dl data-animate="fade-up" data-animate-delay="0.15" class="mt-12 divide-y divide-line border-y border-line">
+            <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-4">
+              <dt class="font-mono text-[0.72rem] font-bold uppercase tracking-[0.16em] text-atlantic">Bagáiste cábáin · Aer Lingus Regional</dt>
+              <dd class="basis-full text-sm text-ink">San áireamh sa bhagáiste seiceáilte de réir réamhshocraithe — costaíonn <span class="font-medium">10 kg</span> sa chábán breis: réamh-áirithint ar líne, nó <span class="font-medium">€35</span> ag an aerfort</dd>
+            </div>
+            <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-4">
+              <dt class="font-mono text-[0.72rem] font-bold uppercase tracking-[0.16em] text-atlantic">Osclaíonn seiceáil isteach ar líne</dt>
+              <dd class="text-sm text-ink">Aer Lingus <span class="font-medium">48u</span> · Loganair <span class="font-medium">96u</span></dd>
+            </div>
+            <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-4">
+              <dt class="font-mono text-[0.72rem] font-bold uppercase tracking-[0.16em] text-atlantic">Cúnamh speisialta · PRM</dt>
+              <dd class="text-sm text-ink">Socraigh le d'aerlíne <span class="font-medium">48u</span> roimh ré</dd>
+            </div>
+          </dl>
+
+          <div data-animate="fade-up" data-animate-delay="0.2" class="mt-10">
+            <p class="font-mono text-[0.72rem] font-bold uppercase tracking-[0.16em] text-atlantic">Ag nascadh ar aghaidh trí Bhaile Átha Cliath</p>
+            <p class="mt-2 text-sm text-ink">
+              Bí i láthair <span class="font-medium">1u 30</span> roimh d'eitilt go Dún na nGall — ansin braitheann sé ar do bhagáiste:
+            </p>
+            <dl class="mt-4 divide-y divide-line border-y border-line">
+              <div class="py-4">
+                <dt class="font-mono text-[0.68rem] font-bold uppercase tracking-[0.14em] text-sand">Bagáiste cábáin amháin</dt>
+                <dd class="mt-1 text-sm leading-relaxed text-ink">Conair na Nasceitiltí díreach go dtí do gheata — gan slándáil ná inimirce arís.</dd>
+              </div>
+              <div class="py-4">
+                <dt class="font-mono text-[0.68rem] font-bold uppercase tracking-[0.14em] text-sand">Bagáiste seiceáilte</dt>
+                <dd class="mt-1 text-sm leading-relaxed text-ink">Fiafraigh ag an seiceáil isteach an féidir do bhagáiste a lipéadú go dtí do cheann scríbe deiridh. Más féidir, ní bheidh aon éileamh ar ais ag Baile Átha Cliath. Mura féidir, tugann Aerfort Dhún na nGall Dearbhán Taistil Intíre duit — bailigh agus athsheiceáil do bhagáiste ag Baile Átha Cliath, agus tugann an dearbhán bealach tapa duit tríd an slándáil ansin.</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+
+        <div
+          data-animate="fade-up"
+          data-animate-delay="0.2"
+          class="relative overflow-hidden rounded-xl lg:sticky lg:top-32"
+        >
+          <img
+            src="/photos/plan/plan-emerald.jpg"
+            alt="ATR 72 Aer Lingus Regional á oibriú ag Emerald Airlines ar an aparán ag Aerfort Dhún na nGall leis an túr rialaithe ar chúl"
+            class="aspect-[3/4] w-full object-cover object-center"
+            loading="lazy"
+          />
+          <p class="mt-3 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-mute">
+            Aer Lingus Regional ag Carraig Fhinn · gach lá go Baile Átha Cliath
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  {/* ─── CAR HIRE ── ───── */}
+  <section class="border-t border-line">
+    <div id="ch-track" class="relative h-auto md:h-[125vh]">
+      <div class="ch-sticky static flex flex-col justify-center overflow-x-clip py-20 md:sticky md:top-0 md:min-h-screen md:py-0">
+
+        <div class="mx-auto w-full max-w-7xl px-6">
+          <p data-animate="fade-up" class="font-mono text-base font-bold uppercase tracking-[0.3em] text-atlantic">
+            Cíos gluaisteán
+          </p>
+          <h2 data-split class="mt-3 font-display text-[clamp(3.2rem,5.5vw,5rem)] font-normal leading-[1.02]">
+            Bailigh ó theachtaí.
+          </h2>
+          <p data-animate="fade-up" data-animate-delay="0.05" class="mt-5 max-w-xl text-lg leading-relaxed text-mute">
+            Ceithre oibreoir le deasca nó bualadh-agus-fáiltiú i halla na
+            dteachtaí. Cuir in áirithe go díreach don ráta is fearr.
+          </p>
+        </div>
+
+        <div id="ch-stage" class="relative mt-10 w-full">
+          <canvas id="ch-trail" class="pointer-events-none absolute inset-0 z-[1] hidden h-full w-full md:block"></canvas>
+
+          <div class="mx-auto w-full max-w-7xl px-6">
+            <div id="car-hire-grid" class="relative z-[2] grid gap-4 sm:grid-cols-2">
+              {carHire.map((c, i) => (
+                <a
+                  href={c.website}
+                  target="_blank"
+                  rel="noopener"
+                  data-idx={i}
+                  class="ch-card relative flex items-stretch overflow-hidden rounded-xl md:opacity-0"
+                  style={`background-color:${c.bg};`}
+                >
+                  <div class="relative z-[2] flex flex-1 flex-col justify-between p-7">
+                    <ul class="space-y-0.5">
+                      {c.details.map((d) => (
+                        <li class="text-sm leading-relaxed text-white [text-shadow:0_1px_8px_rgba(0,0,0,.5)]">{d}</li>
+                      ))}
+                    </ul>
+                    <p class="mt-4 font-mono text-[0.74rem] font-bold uppercase tracking-[0.18em] text-white [text-shadow:0_1px_8px_rgba(0,0,0,.5)]">
+                      Cuir in áirithe anois ↗
+                    </p>
+                  </div>
+                  <div class="flex shrink-0 basis-[36%] items-center justify-end p-4">
+                    <img src={c.logo} alt={c.name} class="max-h-[58%] max-w-full object-contain" loading="lazy" />
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {carHire.map((c, i) => (
+            <div class="ch-car pointer-events-none absolute left-0 top-0 z-[3] hidden md:block" data-idx={i} data-side={c.side}>
+              <img
+                src={c.car}
+                alt=""
+                class="ch-car-body block w-[200px] [filter:drop-shadow(0_12px_14px_rgba(0,0,0,.28))]"
+                style={c.side === "right" ? "transform:scaleX(-1)" : ""}
+              />
+              <img
+                src={c.roof}
+                alt=""
+                class="ch-car-roof absolute top-1/2"
+                style={`width:${c.logoW}px;left:${c.logoLeft}%;transform:translate(-50%,-50%);`}
+              />
+            </div>
+          ))}
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  {/* ─── TAXIS & BUSES ──────────────────────────────────────────────────────── */}
+  <section class="border-t border-line">
+    <div class="mx-auto max-w-7xl px-6 py-20">
+      <p
+        data-animate="fade-up"
+        class="font-mono text-base font-bold uppercase tracking-[0.3em] text-atlantic"
+      >
+        Tacsaithe agus aistrithe
+      </p>
+      <h2
+        data-split
+        class="mt-3 font-display text-[clamp(2.4rem,4.5vw,3.8rem)] font-normal leading-[1.02]"
+      >
+        Tiománaithe áitiúla, doras go doras.
+      </h2>
+      <p data-animate="fade-up" data-animate-delay="0.05" class="mt-5 max-w-xl text-base leading-relaxed text-mute">
+        Tá gach oibreoir lonnaithe sa cheantar. Moltar áirithint roimh ré.
+      </p>
+
+      <p data-animate="fade-up" class="mt-12 font-mono text-[1.05rem] font-bold uppercase tracking-[0.16em] text-atlantic">
+        Tacsaithe
+      </p>
+      <div
+        data-animate="fade-up"
+        data-animate-delay="0.05"
+        class="mt-4 grid gap-px bg-[rgba(24,29,22,0.16)] grid-cols-2 sm:grid-cols-4"
+      >
+        {taxis.map((t, i) => (
+          <a
+            href={t.href}
+            class={`group flex flex-col p-6 transition-colors duration-300 ${cardTints[i % cardTints.length].bg} ${cardTints[i % cardTints.length].hover}`}
+          >
+            <p class="text-base font-medium leading-snug text-ink transition-colors duration-300 group-hover:text-white">
+              {t.name}
+            </p>
+            <p class="mt-4 font-mono text-[0.8rem] uppercase tracking-[0.15em] text-sand transition-all duration-300 group-hover:text-[0.95rem] group-hover:text-white">
+              {t.phone}
+            </p>
+          </a>
+        ))}
+      </div>
+
+      <p data-animate="fade-up" class="mt-10 font-mono text-[1.05rem] font-bold uppercase tracking-[0.16em] text-atlantic">
+        Aistrithe · grúpaí &amp; turais
+      </p>
+      <div
+        data-animate="fade-up"
+        data-animate-delay="0.05"
+        class="mt-4 grid gap-px bg-[rgba(24,29,22,0.16)] grid-cols-1 sm:grid-cols-3"
+      >
+        {transfers.map((t, i) => (
+          <a
+            href={t.href}
+            class={`group flex flex-col p-6 transition-colors duration-300 ${cardTints[i % cardTints.length].bg} ${cardTints[i % cardTints.length].hover}`}
+          >
+            <p class="text-base font-medium leading-snug text-ink transition-colors duration-300 group-hover:text-white">
+              {t.name}
+            </p>
+            {t.note && (
+              <p class="mt-1 font-mono text-[0.68rem] uppercase tracking-[0.14em] text-mute transition-colors duration-300 group-hover:text-white/70">
+                {t.note}
+              </p>
+            )}
+            <p class="mt-4 font-mono text-[0.8rem] uppercase tracking-[0.15em] text-sand transition-all duration-300 group-hover:text-[0.95rem] group-hover:text-white">
+              {t.phone}
+            </p>
+          </a>
+        ))}
+      </div>
+
+      <div
+        data-animate="fade-up"
+        data-animate-delay="0.1"
+        class="mt-10 bg-line"
+      >
+        <div class="bg-[var(--color-bg)] px-8 py-10 sm:px-10">
+          <div>
+            <p class="font-mono text-base font-bold uppercase tracking-[0.3em] text-atlantic">Bus · Local Link Dhún na nGall</p>
+            <p class="mt-2 font-display text-[clamp(1.4rem,2.5vw,2rem)] font-normal leading-snug text-ink">
+              Stadann bealaí <span class="font-sans font-medium tabular-nums">966</span> agus <span class="font-sans font-medium tabular-nums">992</span> ag an aerfort.
+            </p>
+          </div>
+
+          <div class="mt-8 border-t border-line pt-6">
+            <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.18em] text-sand">Amanna bus ag an aerfort</p>
+
+            <div class="mt-6 grid grid-cols-2 gap-x-6 border-b border-line pb-3 sm:gap-x-12">
+              <p class="font-mono text-[1.05rem] font-bold uppercase tracking-[0.16em] text-atlantic">Go dtí an t-aerfort</p>
+              <p class="font-mono text-[1.05rem] font-bold uppercase tracking-[0.16em] text-atlantic">Ón aerfort</p>
+            </div>
+
+            {busToAirport.map((toLeg, i) => (
+              <div class="grid grid-cols-2 gap-x-6 border-b border-line py-4 sm:gap-x-12">
+                {[toLeg, busFromAirport[i]].map((leg) => (
+                  <div>
+                    <p class="flex items-baseline gap-1.5">
+                      <span class="text-base font-semibold text-ink">{leg.place}</span>
+                      <span class="font-mono text-[0.6rem] font-bold uppercase tracking-[0.1em] text-sand">{leg.route}</span>
+                    </p>
+                    <div class="mt-2 flex flex-col gap-1.5 font-mono text-base tabular-nums text-ink">
+                      {leg.pairs.map((p) => (
+                        <span class="whitespace-nowrap">
+                          {p.dep} <span class="text-mute">→</span> {p.arr}{(p as any).demand ? <span class="text-sand">&sup1;</span> : p.ms && <span class="text-sand">*</span>}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+
+          <div class="my-6 space-y-1.5 text-sm leading-relaxed text-mute">
+            <p>Stad bus: Os comhair an Teirminéil.</p>
+            <p><span class="text-sand">*</span> Luan–Sath amháin; ritheann gach turas eile gach lá, lena n-áirítear Domhnaigh agus laethanta saoire poiblí.</p>
+            <p><span class="text-sand">&sup1;</span> An t-aon nasc atá ag Bealach 992 gach bealach (Luan–Sath) — deimhnigh go díreach le Local Link sula mbraitheann tú air.</p>
+            <p>Deimhnigh i gcónaí ar an sceideal beo.</p>
+          </div>
+
+          <div class="flex flex-col gap-4 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
+            <div class="space-y-2 text-sm text-ink">
+              <p>
+                <span class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.18em] text-atlantic">Bealach 966</span>
+                <span class="ml-2 text-mute">An Fál Carrach ↔ An Clochán Liath, tríd an aerfort</span>
+              </p>
+              <p>
+                <span class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.18em] text-atlantic">Bealach 992</span>
+                <span class="ml-2 text-mute">Croithlí ↔ An Clochán Liath, tríd an aerfort</span>
+              </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-x-6 gap-y-3 sm:flex-nowrap">
+              <a
+                href="https://locallinkdsl.ie/timetables/"
+                target="_blank"
+                rel="noopener"
+                class="font-mono text-[0.7rem] font-bold uppercase tracking-[0.18em] text-sand transition-opacity hover:opacity-70"
+              >
+                Féach ar an sceideal beo ↗
+              </a>
+              <a
+                href="tel:+353749741644"
+                class="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-mute transition-colors hover:text-ink"
+              >
+                074 974 1644
+              </a>
+              <a
+                href="mailto:donegal@locallink.ie"
+                class="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-mute transition-colors hover:text-ink"
+              >
+                donegal@locallink.ie
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  {/* ─── AT THE AIRPORT · CAFÉ ──────────────────────────────────────────────── */}
+  <section class="border-t border-line">
+    <div id="cafe-track" class="relative h-auto lg:h-[460vh]">
+      <div class="static lg:sticky lg:top-0 lg:h-screen">
+        <div class="w-full px-6 lg:h-full lg:px-0">
+          <div class="grid gap-10 py-16 lg:h-full lg:grid-cols-[0.82fr_1.18fr] lg:items-stretch lg:gap-0 lg:py-0">
+
+            <div class="relative mx-auto aspect-[9/16] w-full max-w-[340px] overflow-hidden shadow-[0_34px_64px_-28px_rgba(0,0,0,0.55)] lg:mx-0 lg:aspect-auto lg:h-full lg:max-w-none lg:shadow-none">
+              <video
+                class="h-full w-full object-cover"
+                autoplay
+                muted
+                loop
+                playsinline
+                preload="metadata"
+                poster="/photos/plan/cafe-video-poster.jpg"
+              >
+                <source src="/photos/plan/cafe-video.mp4" type="video/mp4" />
+              </video>
+            </div>
+
+            <div class="relative hidden h-full overflow-hidden lg:block">
+              <div class="absolute left-[7%] top-[calc(var(--header-h)+3vh)] z-10">
+                <p class="font-mono text-[0.95rem] font-bold uppercase tracking-[0.3em] text-[#a06a34]">
+                  Ag an aerfort
+                </p>
+                <h2 class="cafe-name mt-2 text-[clamp(2rem,3vw,2.9rem)] leading-[1.02] text-[#2b1a10]">
+                  Caife an Aerfoirt
+                </h2>
+              </div>
+
+              <p class="absolute bottom-[8%] left-[7%] z-10 font-mono text-[0.78rem] uppercase tracking-[0.16em] text-[#6a5142]">
+                Oscailte gach lá · maidineacha go dtí <span class="font-bold text-[#a06a34]">3in</span>
+              </p>
+
+              <div id="cafe-stage" class="absolute inset-0">
+                <div id="cafe-groups"></div>
+                <div id="cafe-text" class="px-4">
+                  <h3 id="cafe-name" class="cafe-name text-[clamp(2.4rem,4vw,3.6rem)] leading-none text-[#2b1a10]"></h3>
+                  <p id="cafe-desc" class="mx-auto mt-4 max-w-sm text-[1.05rem] font-medium leading-relaxed text-[#6a5142]"></p>
+                </div>
+                <p id="cafe-outro" class="cafe-name text-[clamp(2.2rem,3.4vw,3.2rem)] leading-tight text-[#a06a34]">
+                  Cupán ceart sula n-eitlíonn tú.
+                </p>
+              </div>
+            </div>
+
+            <div class="lg:hidden">
+              <p class="font-mono text-[0.8rem] font-bold uppercase tracking-[0.3em] text-[#a06a34]">Ag an aerfort</p>
+              <h2 class="cafe-name mt-2 text-[clamp(1.9rem,8vw,2.6rem)] leading-[1.02] text-[#2b1a10]">Caife an Aerfoirt</h2>
+              <p class="mt-3 font-mono text-[0.72rem] uppercase tracking-[0.16em] text-[#6a5142]">
+                Oscailte gach lá · maidineacha go dtí <span class="font-bold text-[#a06a34]">3in</span>
+              </p>
+              <div class="mt-8 divide-y divide-line border-y border-line">
+                {coffees.map((c) => (
+                  <div class="flex items-center gap-5 py-5">
+                    <img src={c.img} alt={`${c.name} ag Caife Aerfort Dhún na nGall`} class="w-20 shrink-0" loading="lazy" />
+                    <div>
+                      <h3 class="cafe-name text-[1.5rem] leading-none text-[#2b1a10]">{c.name}</h3>
+                      <p class="mt-1.5 text-sm leading-relaxed text-[#6a5142]">{c.desc}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p class="cafe-name mt-8 text-center text-[clamp(1.5rem,6vw,2rem)] leading-tight text-[#a06a34]">
+                Cupán ceart sula n-eitlíonn tú.
+              </p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="application/json" id="cafe-data" is:inline set:html={JSON.stringify(coffees)}></script>
+  </section>
+
+
+
+<script>
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+  gsap.registerPlugin(ScrollTrigger);
+
+  // ── Car hire: branded cars drive in from the sides and become their cards ──
+  function initCarHireDrive() {
+    const track = document.getElementById("ch-track");
+    const stage = document.getElementById("ch-stage");
+    const grid  = document.getElementById("car-hire-grid");
+    const canvas = document.getElementById("ch-trail");
+    if (!track || !stage || !grid || !canvas) return;
+    const ctx = canvas.getContext("2d");
+    const cardEls = [...grid.querySelectorAll(".ch-card")];
+    const carEls  = [...stage.querySelectorAll(".ch-car")];
+    if (!cardEls.length || !carEls.length) return;
+
+    const isMobile = () => window.matchMedia("(max-width: 767px)").matches;
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    let cars = [], W = 0, H = 0, enabled = false;
+
+    function hideCards() { cardEls.forEach(c => { c.style.opacity = "0"; }); }
+    function showCards() { cardEls.forEach(c => { c.style.opacity = ""; }); }
+
+    function measure() {
+      if (isMobile()) {
+        enabled = false;
+        showCards();
+        carEls.forEach(c => { c.style.opacity = "0"; });
+        if (ctx) ctx.clearRect(0, 0, W, H);
+        return;
+      }
+      enabled = true;
+      W = stage.clientWidth; H = stage.clientHeight;
+      canvas.width = W * dpr; canvas.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const sRect = stage.getBoundingClientRect();
+      cars = carEls.map(el => {
+        const i = +el.dataset.idx;
+        const side = el.dataset.side;
+        const body = el.querySelector(".ch-car-body");
+        const carW = body.offsetWidth || 200;
+        const carH = el.offsetHeight || carW * 0.66;
+        const card = cardEls.find(c => +c.dataset.idx === i);
+        const cR = card.getBoundingClientRect();
+        const cx = cR.left - sRect.left + cR.width / 2;
+        const cy = cR.top - sRect.top + cR.height / 2;
+        const startX = side === "left" ? -carW - 60 : W + 60;
+        const dir = side === "left" ? 1 : -1;
+        el.style.opacity = "1";
+        return { el, card, side, carW, carH, cy, startX, endX: cx - carW / 2, dir, i };
+      });
+      hideCards();
+      render();
+    }
+
+    function render() {
+      if (!enabled) return;
+      const r = track.getBoundingClientRect();
+      const vh = window.innerHeight;
+      const total = r.height - vh;
+      const startPx = vh * 0.65;
+      const endPx = total > 0 ? -total * 0.65 : -vh * 0.9;
+      const p = clamp((startPx - r.top) / (startPx - endPx), 0, 1);
+      const cf = clamp((p - 0.8) / 0.2, 0, 1);
+      const DWIN = [[0.00, 0.60], [0.06, 0.66], [0.32, 0.80], [0.40, 0.80]];
+      ctx.clearRect(0, 0, W, H);
+      cars.forEach(c => {
+        const win = DWIN[c.i] || [0, 0.8];
+        const drive = clamp((p - win[0]) / (win[1] - win[0]), 0, 1);
+        const x = c.startX + (c.endX - c.startX) * easeOutCubic(drive);
+        c.el.style.transform = `translate(${x}px, ${c.cy - c.carH / 2}px)`;
+        c.el.style.opacity = String(1 - cf);
+        c.card.style.opacity = String(cf);
+        if (cf < 1) {
+          const carCx = x + c.carW / 2;
+          const rearX = carCx - c.dir * c.carW * 0.30;
+          const edgeX = c.dir > 0 ? 0 : W;
+          const grad = ctx.createLinearGradient(edgeX, 0, rearX, 0);
+          grad.addColorStop(0, "rgba(24,29,22,0)");
+          grad.addColorStop(1, `rgba(24,29,22,${0.18 * (1 - cf)})`);
+          ctx.strokeStyle = grad; ctx.lineWidth = 4; ctx.lineCap = "round";
+          const dy = c.carH * 0.16;
+          [c.cy - dy, c.cy + dy].forEach(y => { ctx.beginPath(); ctx.moveTo(edgeX, y); ctx.lineTo(rearX, y); ctx.stroke(); });
+        }
+      });
+    }
+
+    measure();
+    function loop() { render(); requestAnimationFrame(loop); }
+    requestAnimationFrame(loop);
+    let rt;
+    window.addEventListener("resize", () => { clearTimeout(rt); rt = window.setTimeout(measure, 200); });
+    window.addEventListener("load", measure);
+  }
+
+  function initTariffPanel() {
+    const panel = document.getElementById("tariff-panel");
+    const btn = document.querySelector("[data-tariff-toggle]");
+    if (!panel || !btn) return;
+    const label = btn.querySelector("[data-tariff-label]");
+    const arrow = btn.querySelector("[data-tariff-arrow]");
+    let open = false;
+
+    const setState = () => {
+      if (open) {
+        panel.style.maxHeight = panel.scrollHeight + "px";
+        panel.style.opacity = "1";
+        btn.setAttribute("aria-expanded", "true");
+        if (label) label.textContent = "Folaigh an táille iomlán";
+        if (arrow) arrow.textContent = "↑";
+      } else {
+        panel.style.maxHeight = "0";
+        panel.style.opacity = "0";
+        btn.setAttribute("aria-expanded", "false");
+        if (label) label.textContent = "Taispeáin an táille iomlán";
+        if (arrow) arrow.textContent = "↓";
+      }
+    };
+
+    btn.addEventListener("click", () => { open = !open; setState(); });
+    window.addEventListener("resize", () => { if (open) panel.style.maxHeight = panel.scrollHeight + "px"; });
+  }
+
+  function initCafeCoffee() {
+    const track = document.getElementById("cafe-track");
+    const stage = document.getElementById("cafe-stage");
+    const wrap  = document.getElementById("cafe-groups");
+    const textEl = document.getElementById("cafe-text");
+    const nameEl = document.getElementById("cafe-name");
+    const descEl = document.getElementById("cafe-desc");
+    const outroEl = document.getElementById("cafe-outro");
+    const dataEl = document.getElementById("cafe-data");
+    if (!track || !stage || !wrap || !textEl || !dataEl) return;
+    let COFFEES;
+    try { COFFEES = JSON.parse(dataEl.textContent || "[]"); } catch { return; }
+    if (!COFFEES.length) return;
+
+    const N = COFFEES.length;
+    const BEAN = "/photos/plan/coffees/bean.png";
+    const M_BEANS = 8, HOLD = 0.26, SPIN = 190, GAP = 0.06;
+    const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+    const smooth = t => t*t*(3 - 2*t);
+    const isDesktop = () => window.matchMedia("(min-width: 1024px)").matches;
+
+    const groups = COFFEES.map(c => {
+      const g = document.createElement("div"); g.className = "cafe-group";
+      const cup = document.createElement("img"); cup.className = "cafe-cup"; cup.src = c.img; cup.alt = "";
+      g.appendChild(cup);
+      const beans = [];
+      const half = M_BEANS/2;
+      for (let j = 0; j < M_BEANS; j++) {
+        const b = document.createElement("img"); b.className = "cafe-bean"; b.src = BEAN; b.alt = "";
+        const side = (j < half) ? -1 : 1;
+        const k = (side < 0) ? j : j - half;
+        let ang;
+        if (side < 0) {
+          ang = -Math.PI/2 + ((k/(half-1)) - 0.5)*1.9 + (Math.random()-0.5)*0.25;
+        } else {
+          const lr = (k % 2 === 0) ? 1 : -1;
+          const tier = Math.floor(k/2);
+          ang = Math.PI/2 + lr*(0.95 + tier*0.45 + (Math.random()-0.5)*0.2);
+        }
+        const rt = 0.58 + Math.random()*0.34;
+        const tx = Math.cos(ang)*rt, ty = Math.sin(ang)*rt;
+        const startMul = 2.2 + Math.random()*1.0;
+        const sp = Math.random()*360;
+        const tw = (50 + Math.random()*150) * (Math.random() < 0.5 ? -1 : 1);
+        g.appendChild(b);
+        beans.push({ el:b, side, tx, ty, startMul, sp, tw });
+      }
+      wrap.appendChild(g);
+      return { g, cup, beans };
+    });
+
+    function spinDeg(d) {
+      if (d <= -HOLD) return (d + HOLD)/(1 - HOLD) * SPIN;
+      if (d >=  HOLD) return (d - HOLD)/(1 - HOLD) * SPIN;
+      return 0;
+    }
+    function beanPresence(d, side) {
+      const dC    = side < 0 ?  0.02 : -0.18;
+      const halfW = side < 0 ?  0.52 :  0.62;
+      return clamp(1 - Math.abs((d - dC)/halfW), 0, 1);
+    }
+
+    function render() {
+      if (!isDesktop()) return;
+      const r = track.getBoundingClientRect();
+      const total = track.offsetHeight - window.innerHeight;
+      if (total <= 0) return;
+      const p = clamp(-r.top / total, 0, 1);
+
+      const W = stage.clientWidth, H = stage.clientHeight;
+      if (!W || !H) return;
+      const cupSize = Math.min(H*0.40, W*0.50);
+      const beanSize = cupSize*0.13;
+      const R  = Math.min(W*0.64, H*0.40);
+      const cx = W, cy = H*0.46, centreX = cx - R;
+
+      const segLen = 1/N;
+      let centreIdx = 0, centreVal = 0;
+
+      groups.forEach((grp, i) => {
+        const lp = ((p - i*segLen)/segLen - GAP)/(1 - 2*GAP);
+        if (lp < 0 || lp > 1) { grp.g.style.opacity = "0"; return; }
+        grp.g.style.opacity = "1";
+
+        const d = (lp < 0.5) ? (-1 + lp/0.5) : ((lp - 0.5)/0.5);
+        const ad = Math.abs(d);
+
+        const centred = clamp(1 - ad/0.5, 0, 1);
+        if (centred > centreVal) { centreVal = centred; centreIdx = i; }
+
+        const th = d * Math.PI/2;
+        const x = cx - R*Math.cos(th);
+        const y = cy + R*Math.sin(th);
+        grp.g.style.transform = `translate(${x}px, ${y}px)`;
+
+        const cupOp = clamp((0.94 - ad)/0.2, 0, 1);
+        grp.cup.style.width = cupSize+"px";
+        grp.cup.style.opacity = String(cupOp);
+        grp.cup.style.transform = `translate(-50%,-50%) rotate(${spinDeg(d)}deg)`;
+
+        grp.beans.forEach(b => {
+          const pres = beanPresence(d, b.side);
+          const gather = smooth(pres);
+          const bx = b.tx*cupSize;
+          const by = b.ty*cupSize*gather + b.side*b.startMul*cupSize*(1 - gather);
+          const rot = b.sp + (1 - gather)*b.tw;
+          b.el.style.width = beanSize+"px";
+          b.el.style.opacity = String(clamp(pres/0.4, 0, 1));
+          b.el.style.transform = `translate(${bx}px, ${by}px) translate(-50%,-50%) rotate(${rot}deg)`;
+        });
+      });
+
+      if (nameEl) nameEl.textContent = COFFEES[centreIdx].name;
+      if (descEl) descEl.textContent = COFFEES[centreIdx].desc;
+      textEl.style.opacity = String(centreVal);
+      textEl.style.transform =
+        `translate(${centreX}px, ${cy + cupSize*0.66 + (1-centreVal)*16}px) translate(-50%,0)`;
+
+      if (outroEl) {
+        const outro = clamp((p - 0.90)/0.06, 0, 1);
+        outroEl.style.opacity = String(outro);
+        outroEl.style.transform =
+          `translate(${W/2}px, ${cy}px) translate(-50%,-50%) translateY(${(1-outro)*22}px)`;
+      }
+    }
+
+    function loop() { render(); requestAnimationFrame(loop); }
+    requestAnimationFrame(loop);
+  }
+
+  document.addEventListener("astro:page-load", () => {
+    initCarHireDrive();
+    initTariffPanel();
+    initCafeCoffee();
+  });
+</script>
+
+<style is:global>
+  .cafe-name { font-family: "Playfair Display", Georgia, serif; font-style: italic; font-weight: 600; }
+
+  #cafe-groups { position: absolute; inset: 0; pointer-events: none; }
+  .cafe-group { position: absolute; left: 0; top: 0; }
+  .cafe-cup {
+    position: absolute; left: 0; top: 0; max-width: none; transform-origin: center;
+    will-change: transform, opacity;
+    filter: drop-shadow(0 24px 30px rgba(0, 0, 0, 0.26));
+  }
+  .cafe-bean {
+    position: absolute; left: 0; top: 0; max-width: none; transform-origin: center;
+    will-change: transform, opacity;
+    filter: drop-shadow(0 3px 4px rgba(0, 0, 0, 0.25));
+  }
+  #cafe-text {
+    position: absolute; left: 0; top: 0; width: 62%; text-align: center;
+    opacity: 0; pointer-events: none; will-change: transform, opacity;
+  }
+  #cafe-outro {
+    position: absolute; left: 0; top: 0; width: 68%; text-align: center;
+    opacity: 0; pointer-events: none; will-change: transform, opacity;
+  }
+</style>
+
+</BaseLayout>

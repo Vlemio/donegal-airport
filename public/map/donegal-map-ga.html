@@ -1,0 +1,832 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Marcellus&family=Karla:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="/map/vendor/maplibre-gl.css" rel="stylesheet">
+<script src="/map/vendor/maplibre-gl.js"></script>
+<style>
+  html,body{margin:0;padding:0;background:#0c1714;width:100%;height:100%;overflow:hidden;}
+  *{box-sizing:border-box;}
+  .maplibregl-popup-content{border-radius:12px!important;padding:12px!important;box-shadow:0 18px 50px rgba(8,20,15,.45)!important;background:#fbf6ea!important;border:1px solid #e7dcc2!important;}
+  .maplibregl-popup-tip{border-top-color:#fbf6ea!important;border-bottom-color:#fbf6ea!important;}
+  .maplibregl-popup-close-button{font-size:18px!important;color:#7c8a7e!important;padding:2px 8px!important;}
+  .maplibregl-ctrl-attrib{display:none!important;}
+  .maplibregl-marker{transition:opacity .25s ease;}
+  .donrail::-webkit-scrollbar{width:7px;}
+  .donrail::-webkit-scrollbar-thumb{background:rgba(203,182,126,.3);border-radius:4px;}
+  @keyframes grainshift{0%{transform:translate(0,0)}25%{transform:translate(-2%,1%)}50%{transform:translate(1%,-2%)}75%{transform:translate(-1%,2%)}100%{transform:translate(0,0)}}
+  @keyframes pulsering{0%{transform:scale(.55);opacity:.6}70%{transform:scale(1.7);opacity:0}100%{opacity:0}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @keyframes fadein{from{opacity:0}to{opacity:1}}
+  @media(max-width:760px){
+    .donhead{padding:16px 18px 36px!important;}
+    .donhead h1{font-size:33px!important;}
+    .donhead p{font-size:13px!important;max-width:none!important;}
+    .donaside{top:auto!important;bottom:0!important;left:0!important;right:0!important;width:100%!important;height:auto!important;padding:0!important;}
+    .donaside-card{max-height:46vh!important;border-radius:16px 16px 0 0!important;}
+    .doncredit{display:none!important;}
+  }
+  .don-hint{
+    position:absolute;left:50%;transform:translateX(-50%);
+    background:rgba(18,30,24,.85);backdrop-filter:blur(8px);
+    border:1px solid rgba(203,182,126,.3);color:#dfe6dc;border-radius:30px;
+    padding:8px 18px;font:600 11.5px/1 Karla,sans-serif;letter-spacing:.04em;
+    pointer-events:none;opacity:0;transition:opacity .4s;z-index:20;white-space:nowrap;
+  }
+  .don-hint.show{opacity:1;}
+  #hint-ctrl{bottom:82px;}
+  #hint-alt{bottom:44px;}
+</style>
+</head>
+<body>
+<section id="don-section" style="position:relative;width:100%;height:100vh;min-height:600px;overflow:hidden;font-family:Karla,system-ui,sans-serif;background:#0c1714;">
+
+  <div id="don-map" style="position:absolute;inset:0;"></div>
+
+  <!-- Vignette + warm wash + grain -->
+  <div style="position:absolute;inset:0;pointer-events:none;background:radial-gradient(120% 90% at 50% 35%, rgba(120,150,120,.04) 0%, rgba(40,55,40,.10) 55%, rgba(14,24,18,.5) 100%);mix-blend-mode:multiply;"></div>
+  <div style="position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg, rgba(214,176,92,.10), rgba(31,92,61,.06));mix-blend-mode:soft-light;"></div>
+  <div style="position:absolute;inset:-20%;pointer-events:none;opacity:.06;mix-blend-mode:overlay;animation:grainshift 8s steps(4) infinite;background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22160%22 height=%22160%22><filter id=%22n%22><feTurbulence type=%22fractalNoise%22 baseFrequency=%220.9%22 numOctaves=%222%22/></filter><rect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23n)%22/></svg>');"></div>
+
+  <!-- Header -->
+  <header class="donhead" style="position:absolute;top:0;left:0;right:0;padding:30px 36px 60px;pointer-events:none;background:linear-gradient(180deg, rgba(10,20,15,.62) 0%, rgba(10,20,15,.26) 55%, rgba(10,20,15,0) 100%);">
+    <div style="display:flex;align-items:center;gap:10px;color:#e8d9b0;font-size:11.5px;letter-spacing:.28em;text-transform:uppercase;font-weight:600;">
+      <span style="width:26px;height:1px;background:#cbb67e;"></span>Aerfort Dhún na nGall · Carraig Fhinn
+    </div>
+    <h1 style="margin:8px 0 0;font-family:Marcellus,serif;font-weight:400;color:#fbf6ea;font-size:54px;line-height:.98;letter-spacing:.01em;text-shadow:0 2px 24px rgba(0,0,0,.45);">Áiteanna le cuairt a thabhairt orthu</h1>
+    <p style="margin:12px 0 0;max-width:480px;color:#dfe6dc;font-size:15px;line-height:1.5;text-shadow:0 1px 10px rgba(0,0,0,.5);">Iarthuaisceart fiáin na hÉireann i bhfíor-fhaoiseamh — scag, eitil agus iniúch. <span style="opacity:.7;font-size:13px;">Ctrl+scrollaigh chun súmáil &nbsp;·&nbsp; Ctrl+tarraing chun claonadh &amp; rothlú</span></p>
+  </header>
+
+  <!-- Side panel -->
+  <aside class="donaside" style="position:absolute;top:0;right:0;height:100%;width:298px;padding:104px 18px 26px;display:flex;flex-direction:column;pointer-events:none;">
+    <div id="don-panel" class="donaside-card" style="pointer-events:auto;background:rgba(18,30,24,.74);backdrop-filter:blur(10px);border:1px solid rgba(203,182,126,.22);border-radius:16px;overflow:hidden;box-shadow:0 22px 60px rgba(6,14,10,.5);display:flex;flex-direction:column;max-height:100%;"></div>
+  </aside>
+
+  <!-- Compass + credit -->
+  <div class="doncredit" style="position:absolute;left:36px;bottom:26px;display:flex;align-items:flex-end;gap:18px;">
+    <div style="position:relative;width:60px;height:60px;border-radius:50%;background:rgba(18,30,24,.72);backdrop-filter:blur(8px);border:1px solid rgba(203,182,126,.28);box-shadow:0 12px 30px rgba(6,14,10,.4);display:flex;align-items:center;justify-content:center;">
+      <span style="position:absolute;top:5px;font-size:9px;font-weight:700;letter-spacing:.1em;color:#cbb67e;">N</span>
+      <div id="don-needle" style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:22px solid #d9a441;transform:translateY(-3px);filter:drop-shadow(0 1px 2px rgba(0,0,0,.4));"></div>
+    </div>
+  </div>
+
+  <!-- Scroll hints -->
+  <div id="hint-ctrl" class="don-hint">Ctrl + scrollaigh chun súmáil</div>
+  <div id="hint-alt" class="don-hint">Ctrl + tarraing chun claonadh &amp; rothlú</div>
+
+  <!-- Loading screen -->
+  <div id="don-loading" style="position:absolute;inset:0;background:#0e1c17;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;z-index:30;animation:fadein .3s;">
+    <div style="width:40px;height:40px;border-radius:50%;border:3px solid rgba(217,164,65,.25);border-top-color:#d9a441;animation:spin 1s linear infinite;"></div>
+    <div style="font-family:Marcellus,serif;color:#e8d9b0;font-size:17px;letter-spacing:.04em;">Ag ardú thír-raon Dhún na nGall&hellip;</div>
+  </div>
+
+</section>
+<script>
+(function(){
+'use strict';
+
+// ---- Data ----------------------------------------------------------------
+
+const CATS = [
+  { key:'airport', label:'Aerfort',                     color:'#e9b94e', icon:'✈' },
+  { key:'nature',  label:'Dúlra',                       color:'#2f7d4f', icon:'▲' },
+  { key:'towns',   label:'Bailte agus cathracha',       color:'#c8693f', icon:'⌂' },
+  { key:'islands', label:'Oileáin',                     color:'#3a7ca5', icon:'∿' },
+  { key:'golf',    label:'Galf',                        color:'#8a9b2e', icon:'⚑' },
+  { key:'waw',     label:'Bealach Fiáin an Atlantaigh',  color:'#2f7fae', icon:'≈' },
+];
+
+const PLACES = [
+  { cat:'airport', name:'Aerfort Dhún na nGall',  sub:'Carraig Fhinn · tús',   lng:-8.3410,  lat:55.0442,  desc:'Aerfort Dhún na nGall — ceann de na cuir chuige is áille san Eoraip, idir dumhcha agus an tAigéan Atlantach.', photo:'/photos/map/cfn-airport.jpg' },
+  { cat:'nature',  name:'An Earagail', sub:'Sliabh · 751 m', lng:-8.11237, lat:55.03393, desc:'Buaic chuartzite gheal cháiliúil an chontae.', photo:'/photos/map/errigal.jpg' },
+  { cat:'nature',  name:'Páirc Náisiúnta Ghleann Bheatha', sub:'Páirc agus caisleán',              lng:-7.94518, lat:55.05655, desc:'Gleann oighreach, loch agus caisleán Victeoiriach i measc gairdíní.', photo:'/photos/map/glenveagh.jpg' },
+  { cat:'nature',  name:'Sliabh Liag', sub:'Aillte mara',                 lng:-8.6889,  lat:54.6383,  desc:'Aillte mara beagnach 600 m ar airde — i measc na cinn is airde san Eoraip.', photo:'/photos/map/slieve-league.jpg' },
+  { cat:'nature',  name:'Cionn Mhálanna', sub:'Rinn thuaisceart na hÉireann', lng:-7.3736,  lat:55.3817,  desc:'An pointe is faide ó thuaidh in Éirinn, ar Leithinis Inis Eoghain.', photo:'/photos/map/malin-head.jpg' },
+  { cat:'nature',  name:'Grianán Ailigh', sub:'Ráth cloiche',       lng:-7.4283,  lat:55.0236,  desc:'Fáinne cloiche ag 250 m le radhairc 360° thar na lochanna.', photo:'/photos/map/grianan-of-aileach.jpg' },
+  { cat:'nature',  name:'Páirc Foraoise na hAirde', sub:'Foraois chósta',             lng:-7.90209, lat:55.15435, desc:'480 heicteár d\'fhoraois, dumhcha agus tránna ar Chuan na gCaorach.', photo:'/photos/map/ards-forest-park.jpg' },
+  { cat:'nature',  name:'Caisleán na Dumhcha', sub:'Caisleán ón 15ú haois',             lng:-7.86861, lat:55.13787, desc:'Túr-theach meánaoiseach cois uisce in aice le Craoslach.', photo:'/photos/map/doe-castle.jpg' },
+  { cat:'nature',  name:'Trá Charraig Fhinn', sub:'Trá an aerfoirt',              lng:-8.34978, lat:55.04081, desc:'Trá gainimh bháin faoi Bhrat Gorm díreach in aice leis an rúidbhealach.', photo:'/photos/map/carrickfinn-beach.jpg' },
+  { cat:'nature',  name:'Leithinis Inis Eoghain', sub:'Réigiún thuaisceart',            lng:-7.2900,  lat:55.2500,  desc:'An leithinis is faide ó thuaidh in Éirinn; áit dúchais Chionn Mhálanna.', photo:'/photos/map/inishowen-peninsula.jpg' },
+  { cat:'towns',   name:'Baile Dhún na nGall', sub:'Caisleán agus bá',               lng:-8.1100,  lat:54.6542,  desc:'Croílár an deiscirt, le caisleán agus céibh.', photo:'/photos/map/donegal-town.jpg' },
+  { cat:'towns',   name:'Leitir Ceanainn', sub:'Príomhbhaile',                  lng:-7.7344,  lat:54.9558,  desc:'Baile is mó Dhún na nGall agus mol seirbhíse.', photo:'/photos/map/letterkenny.jpg' },
+  { cat:'towns',   name:'Bun Dobhráin', sub:'Marcaíocht toinne agus trá',               lng:-8.2811,  lat:54.4783,  desc:'Príomhchathair marcaíochta toinne na hÉireann, le trá Brat Gorm ar Bhealach Fiáin an Atlantaigh.', photo:'/photos/map/bundoran.jpg' },
+  { cat:'towns',   name:'Na Cealla Beaga', sub:'Calafort iascaireachta',               lng:-8.4500,  lat:54.6333,  desc:'Calafort iascaireachta is mó na hÉireann.', photo:'/photos/map/killybegs.jpg' },
+  { cat:'towns',   name:'Gleann Cholm Cille', sub:'Sráidbhaile dúchais',               lng:-8.74134, lat:54.70806, desc:'Iarsmalann dhúchais faoin aer agus cósta drámatúil an iardheiscirt.', photo:'/photos/map/glencolmcille.jpg' },
+  { cat:'towns',   name:'Ard an Rátha', sub:'Baile oidhreachta',              lng:-8.4100,  lat:54.7700,  desc:'Clúiteach as bréidín agus ceardaíocht olla.', photo:'/photos/map/ardara.jpg' },
+  { cat:'towns',   name:'Béal Átha Seanaidh', sub:'Béal na hÉirne',          lng:-8.1897,  lat:54.5028,  desc:'Ceann de na bailte is sine in Éirinn.', photo:'/photos/map/ballyshannon.jpg' },
+  { cat:'islands', name:'Árainn Mhór', sub:'Arranmore',      lng:-8.52591, lat:54.98914, desc:'Oileán áitrithe is mó Dhún na nGall, pobal Gaeltachta.', photo:'/photos/map/arranmore.jpg' },
+  { cat:'islands', name:'Toraigh', sub:'Tory Island',                    lng:-8.2333,  lat:55.2667,  desc:'Oileán iargúlta lena rí féin agus pobal ealaíontóirí.', photo:'/photos/map/tory-island.jpg' },
+  { cat:'islands', name:'Oileán Ghabhla', sub:'Gola Island',        lng:-8.36369, lat:55.09094, desc:'Aillte agus tránna; tóir ag dreapadóirí carraige air.', photo:'/photos/map/gola-island.jpg' },
+  { cat:'islands', name:'Inis Bó Finne', sub:'Inishbofin',         lng:-8.16954, lat:55.17661, desc:'Oileán beag Gaeltachta amach ó Mhachaire Rabhartaigh.' },
+  { cat:'islands', name:'Inis Fraoigh', sub:'Inishfree',               lng:-8.4411,  lat:54.94479, desc:'Oileánín amach ó chósta na Rosann.' },
+  { cat:'islands', name:'Inis Oirthir', sub:'Inishirrer',               lng:-8.3357,  lat:55.12433, desc:'In aice le hOileán Ghabhla, le huisce gléghlan.' },
+  { cat:'islands', name:'Inis Caorach', sub:'Inishkerragh',               lng:-8.49415, lat:54.96017, desc:'Oileánín neamháitrithe d\'oileánra na Rosann.' },
+  { cat:'islands', name:'Inis Trá Thoill', sub:'Inishtrahull',          lng:-7.2333,  lat:55.4333,  desc:'Oileán is faide ó thuaidh na hÉireann, amach ó Chionn Mhálanna.', photo:'/photos/map/inishtrahull.jpg' },
+  { cat:'islands', name:'Oileán Ruaidh', sub:'Island Roy',         lng:-7.79068, lat:55.1922,  desc:'Oileánín i gCuan Mhaoil Ruaidh, in aice le Na Dúnaibh.' },
+  { cat:'golf',    name:'Rosapenna Golf Resort', sub:'Na Dúnaibh',                   lng:-7.82604, lat:55.18671, photo:'https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_05.png' },
+  { cat:'golf',    name:'Ballyliffin Golf Club', sub:'Baile Uí Fhloinn (Inis Eoghain)',    lng:-7.3708,  lat:55.30551, photo:'https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_08.png' },
+  { cat:'golf',    name:'Portsalon Golf Club', sub:'Port Salann',                  lng:-7.6217,  lat:55.2056, photo:'https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_07.png' },
+  { cat:'golf',    name:'Narin & Portnoo Golf Club', sub:'Port Nua',                lng:-8.44196, lat:54.83649, photo:'https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_02.png' },
+  { cat:'golf',    name:'Cruit Island Golf Club', sub:'Cionn Caslach',               lng:-8.42291, lat:55.03688, photo:'https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_01.png' },
+  { cat:'golf',    name:'Dunfanaghy Golf Club', sub:'Dún Fionnachaidh',                lng:-7.9700,  lat:55.1850, photo:'https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_04.png' },
+  { cat:'golf',    name:'Gweedore Golf Club', sub:'Gaoth Dobhair',                  lng:-8.31614, lat:55.08554, photo:'https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_03.png' },
+  { cat:'golf',    name:'Donegal Golf Club', sub:'Murbhach',                   lng:-8.15838, lat:54.61403, photo:'https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_06.png' },
+  { cat:'golf',    name:'Bundoran Golf Club', sub:'Bun Dobhráin',                  lng:-8.27408, lat:54.48739, photo:'https://donegalairport.ie/wp-content/uploads/2024/12/bundoran.jpeg' },
+  { cat:'golf',    name:'North West Golf Club', sub:'Bun Cranncha',                  lng:-7.45422, lat:55.11766, photo:'https://donegalairport.ie/wp-content/uploads/2024/12/buncrana.jpg' },
+];
+
+const WAW = [
+  [-8.290,54.470],[-8.420,54.540],[-8.460,54.615],[-8.700,54.622],[-8.730,54.705],
+  [-8.520,54.770],[-8.470,54.835],[-8.450,54.930],[-8.400,55.010],[-8.330,55.075],
+  [-8.300,55.150],[-8.110,55.195],[-7.970,55.205],[-7.760,55.200],[-7.630,55.280],
+  [-7.560,55.200],[-7.540,55.110],[-7.450,55.130],[-7.380,55.300],[-7.373,55.382],
+];
+
+const TERR_EXO = 0; // terrain disabled — hillshade provides depth, interaction is smooth
+const HC = '#ffd98a';
+const OV_KEY = 'donegal_pin_overrides_v1';
+
+// ---- State ---------------------------------------------------------------
+
+let map = null;
+let filters = { airport:true, nature:true, towns:true, islands:true, golf:true, waw:true };
+let maxMin = 0;
+let editMode = false;
+let markerPool = [];
+let elByName = {};
+let popup = null;
+let raf = null, wawRaf = null;
+let _donF = null, _loaded = false, _revealed = false, _replaying = false;
+let _wawStarted = false, _ptsSetup = false;
+let _orig = {};
+let catMap = {}, byName = {};
+let airport = null;
+
+CATS.forEach(c => { catMap[c.key] = c; });
+PLACES.forEach(p => { byName[p.name] = p; _orig[p.name] = [p.lng, p.lat]; });
+airport = byName['CFN Airport'];
+
+// ---- DOM refs ------------------------------------------------------------
+
+const mapEl     = document.getElementById('don-map');
+const panelEl   = document.getElementById('don-panel');
+const needleEl  = document.getElementById('don-needle');
+const loadingEl = document.getElementById('don-loading');
+const hintCtrl  = document.getElementById('hint-ctrl');
+const hintAlt   = document.getElementById('hint-alt');
+
+// ---- Utils ---------------------------------------------------------------
+
+function islandSvgHtml(color) {
+  return '<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="'+color+'" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">'
+    +'<circle cx="8" cy="6.2" r="3.2" fill="'+color+'" stroke="none"/>'
+    +'<line x1="3" y1="11.4" x2="13" y2="11.4"/>'
+    +'<line x1="5" y1="13.5" x2="11" y2="13.5"/>'
+    +'</svg>';
+}
+
+function wawSvgHtml(color) {
+  return '<svg width="13" height="8" viewBox="0 0 24 12" fill="none">'
+    +'<polyline points="0,3 4,9 8,3 12,9 16,3 20,9 24,3" stroke="'+color+'" stroke-width="2.3" stroke-linejoin="miter" stroke-linecap="square"/>'
+    +'</svg>';
+}
+
+function isMobile()  { return (window.innerWidth || 1024) < 760; }
+function lf(c)       { return { type:'Feature', geometry:{ type:'LineString', coordinates:c } }; }
+
+function activeCats() {
+  return new Set(CATS.map(c=>c.key).filter(k => k !== 'waw' && filters[k] !== false));
+}
+
+function hav(a, b) {
+  const R=6371, toR=Math.PI/180;
+  const dLat=(b.lat-a.lat)*toR, dLng=(b.lng-a.lng)*toR;
+  const la1=a.lat*toR, la2=b.lat*toR;
+  const x = Math.sin(dLat/2)**2 + Math.cos(la1)*Math.cos(la2)*Math.sin(dLng/2)**2;
+  return 2*R*Math.asin(Math.sqrt(x));
+}
+
+function driveMin(p) {
+  if(!airport || p.cat==='airport') return 0;
+  const d = hav(airport, p);
+  if(p.cat==='islands') return null;
+  return Math.round(d*1.32/68*60);
+}
+
+function timeOk(p) {
+  if(!maxMin) return true;
+  const m = driveMin(p);
+  if(m === null) return false;
+  return m <= maxMin;
+}
+
+function placeVisible(p) { return activeCats().has(p.cat) && timeOk(p); }
+
+function fromCFN(place) {
+  if(!place || !airport || place.cat==='airport') return null;
+  const d = hav(airport, place);
+  if(place.cat==='islands') return { km:Math.round(d), txt:'díreach · + bád farantóireachta' };
+  const road = Math.round(d*1.32);
+  const min = Math.max(5, Math.round(road/68*60));
+  return { km:road, txt:'~'+min+' nóim tiomána' };
+}
+
+function infoRow(name) {
+  const info = fromCFN(byName[name]);
+  if(!info) return '';
+  return '<div style="display:flex;align-items:center;gap:7px;margin-top:9px;font-size:11.5px;color:#4a5a4f;background:#f1ebd9;border:1px solid #e4dabf;border-radius:8px;padding:6px 9px;">'
+    +'<span style="color:#c89a3a;font-size:12px;">✈</span>'
+    +'<span><b style="color:#2f3f33;">'+info.km+' km</b> · '+info.txt+' ó CFN</span>'
+    +'</div>';
+}
+
+function cardHTML(pr) {
+  const c = catMap[pr.cat] || {label:'',color:'#888'};
+  const photoEl = pr.photo
+    ? '<img src="'+pr.photo+'" alt="'+pr.name+'" style="width:100%;height:100%;object-fit:cover;object-position:'+(pr.photoPos||'center')+';display:block;" loading="lazy">'
+    : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#8a7f63;font:10.5px/1.5 monospace;text-align:center;letter-spacing:.05em;text-transform:uppercase;padding:8px;">'+pr.name+'</div>';
+  return '<div style="font-family:Karla,sans-serif;width:236px;">'
+    +'<div style="height:116px;border-radius:9px;overflow:hidden;background:'+(pr.photo?'#111b14':'repeating-linear-gradient(45deg,#e9e1cd,#e9e1cd 9px,#ded5bd 9px,#ded5bd 18px)')+';">'+photoEl+'</div>'
+    +'<div style="display:flex;align-items:center;gap:7px;margin:9px 0 2px;">'
+      +'<span style="width:9px;height:9px;border-radius:50%;background:'+c.color+';"></span>'
+      +'<span style="font:700 9.5px/1 Karla,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:'+c.color+';">'+c.label+'</span>'
+    +'</div>'
+    +'<div style="font-family:Marcellus,serif;font-size:18px;color:#1f3a2e;">'+pr.name+'</div>'
+    +(pr.desc?'<div style="font-size:12.5px;color:#4a5a4f;line-height:1.5;margin-top:3px;">'+pr.desc+'</div>':'')
+    +infoRow(pr.name)
+    +'</div>';
+}
+
+// ---- Panel ---------------------------------------------------------------
+
+function renderPanel() {
+  let visible = 0;
+  let html = '';
+
+  // Header
+  html += '<div style="padding:15px 18px 12px;border-bottom:1px solid rgba(203,182,126,.16);display:flex;align-items:baseline;justify-content:space-between;">'
+        + '<div style="font-family:Marcellus,serif;color:#fbf6ea;font-size:19px;">Áiteanna</div>'
+        + '<div id="don-count" style="color:#9fb0a3;font-size:11px;letter-spacing:.04em;"></div>'
+        + '</div>';
+
+  // Drive time filter
+  const timeOpts = [{v:0,label:'Ar bith'},{v:30,label:'≤30 nóim'},{v:60,label:'≤60 nóim'}];
+  html += '<div style="padding:11px 12px;border-bottom:1px solid rgba(203,182,126,.16);">'
+        + '<div style="font:600 10px/1 Karla,sans-serif;letter-spacing:.16em;text-transform:uppercase;color:#9fb0a3;padding:2px 4px 9px;">Am tiomána ó CFN</div>'
+        + '<div style="display:flex;gap:6px;">';
+  timeOpts.forEach(o => {
+    const active = maxMin === o.v;
+    if(active) {
+      html += '<button data-tfilter="'+o.v+'" style="flex:1;border:1px solid #d9a441;border-radius:9px;padding:7px 4px;cursor:pointer;font:700 12px/1 Karla,sans-serif;background:linear-gradient(180deg,#e6b24e,#d09a35);color:#231a06;">'+o.label+'</button>';
+    } else {
+      html += '<button data-tfilter="'+o.v+'" style="flex:1;border:1px solid rgba(203,182,126,.25);border-radius:9px;padding:7px 4px;cursor:pointer;font:600 12px/1 Karla,sans-serif;background:transparent;color:#cdd9cd;">'+o.label+'</button>';
+    }
+  });
+  html += '</div></div>';
+
+  // Category list
+  html += '<div class="donrail" style="overflow-y:auto;flex:1;">';
+  CATS.forEach(c => {
+    const on = filters[c.key] !== false;
+    const psList = PLACES.filter(p => p.cat === c.key && timeOk(p));
+    const count = c.key === 'waw' ? '' : psList.length;
+    if(on && c.key !== 'waw') visible += psList.length;
+
+    const iconHtml = c.key === 'islands' ? islandSvgHtml('#fff') : c.key === 'waw' ? wawSvgHtml('#fff') : '<span style="font:700 11px/1 system-ui,Segoe UI Symbol,sans-serif;">'+c.icon+'</span>';
+    const swatchHtml = on
+      ? '<span style="flex:0 0 19px;height:19px;border-radius:6px;background:'+c.color+';box-shadow:inset 0 0 0 1px rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;color:#fff;">'+iconHtml+'</span>'
+      : '<span style="flex:0 0 19px;height:19px;border-radius:6px;border:1.5px solid rgba(203,182,126,.4);display:flex;align-items:center;justify-content:center;color:#7f9286;">'+iconHtml+'</span>';
+
+    html += '<div style="border-bottom:1px solid rgba(203,182,126,.10);">'
+          + '<button data-catkey="'+c.key+'" style="display:flex;align-items:center;gap:10px;width:100%;background:transparent;border:0;padding:11px 14px;cursor:pointer;text-align:left;">'
+          + swatchHtml
+          + '<span style="flex:1;min-width:0;font-family:Marcellus,serif;font-size:15px;color:#fbf6ea;">'+c.label+'</span>'
+          + '<span style="font-size:11px;color:#9fb0a3;">'+count+'</span>'
+          + '</button>';
+
+    if(on && psList.length > 0) {
+      html += '<div style="padding:0 8px 9px;display:flex;flex-direction:column;gap:1px;">';
+      psList.forEach(p => {
+        const enc = encodeURIComponent(p.name);
+        html += '<button data-place="'+enc+'" style="display:flex;align-items:center;gap:9px;width:100%;text-align:left;background:transparent;border:0;border-radius:8px;padding:7px 9px 7px 34px;cursor:pointer;">'
+              + '<span style="flex:0 0 8px;height:8px;border-radius:50%;background:'+c.color+';"></span>'
+              + '<span style="min-width:0;">'
+              + '<span style="display:block;font-size:13px;color:#eaf1ea;line-height:1.2;">'+p.name+'</span>'
+              + '<span style="display:block;font-size:10.5px;color:#8ea394;line-height:1.25;">'+p.sub+'</span>'
+              + '</span></button>';
+      });
+      html += '</div>';
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+
+  html += '<div style="padding:12px 16px;border-top:1px solid rgba(203,182,126,.16);color:#8ea394;font-size:11px;line-height:1.45;flex-shrink:0;">Tapáil áit chun eitilt ann &middot; scoránaigh na catagóirí thuas. Scarann na sféar uimhrithe amach agus tú ag súmáil isteach.</div>';
+
+  panelEl.innerHTML = html;
+
+  const countEl = document.getElementById('don-count');
+  if(countEl) countEl.textContent = visible + ' á dtaispeáint';
+
+  // Bind panel events
+  panelEl.querySelectorAll('[data-tfilter]').forEach(btn => {
+    btn.addEventListener('click', () => toggleTime(parseInt(btn.dataset.tfilter)));
+  });
+  panelEl.querySelectorAll('[data-catkey]').forEach(btn => {
+    btn.addEventListener('click', () => toggleCat(btn.dataset.catkey));
+  });
+  panelEl.querySelectorAll('[data-place]').forEach(btn => {
+    const name = decodeURIComponent(btn.dataset.place);
+    btn.addEventListener('click', () => flyToPlace(name));
+    btn.addEventListener('mouseenter', () => hoverPlace(name, true));
+    btn.addEventListener('mouseleave', () => hoverPlace(name, false));
+  });
+}
+
+// ---- State mutators ------------------------------------------------------
+
+function toggleCat(key) {
+  filters = { ...filters, [key]: !filters[key] };
+  if(map && key === 'waw') {
+    if(map.getLayer('waw-line')) {
+      const v = filters.waw ? 'visible' : 'none';
+      ['waw-glow','waw-line'].forEach(id => map.setLayoutProperty(id, 'visibility', v));
+    }
+  } else if(map) {
+    recluster();
+  }
+  renderPanel();
+}
+
+function toggleTime(v) {
+  maxMin = (v !== 0 && maxMin === v) ? 0 : v;
+  renderPanel();
+  if(map) recluster();
+}
+
+function flyToPlace(name) {
+  const p = byName[name];
+  if(!map || !p) return;
+  pauseWAWAnim();
+  map.easeTo({ center:[p.lng,p.lat], zoom:10.4, pitch:62, bearing:-14, duration:1100 });
+  map.once('moveend', resumeWAWAnim);
+  setTimeout(() => openPopup([p.lng,p.lat], { name:p.name, sub:p.sub, cat:p.cat, desc:p.desc||'', photo:p.photo, photoPos:p.photoPos }), 780);
+}
+
+function hoverPlace(name, on) {
+  const rec = elByName && elByName[name];
+  if(!rec || !rec.el) return;
+  const el = rec.el;
+  if(on) {
+    el.style.transition = 'transform .18s ease, filter .18s ease';
+    el.style.transform = 'scale(1.5)';
+    el.style.filter = 'drop-shadow(0 0 10px #ffd98a)';
+    el.style.zIndex = '30';
+  } else {
+    el.style.transform = '';
+    el.style.filter = '';
+    el.style.zIndex = '';
+  }
+}
+
+// ---- Markers -------------------------------------------------------------
+
+function makePinEl(p) {
+  const el = document.createElement('div');
+  el.style.cursor = 'pointer';
+  if(p.cat === 'airport') {
+    el.style.zIndex = '10';
+    el.innerHTML = '<div style="position:relative;width:38px;height:38px;">'
+      +'<span style="position:absolute;inset:-7px;border-radius:50%;border:2px solid #ffd98a;animation:pulsering 2.6s ease-out infinite;"></span>'
+      +'<span style="position:absolute;inset:0;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f3c869,#d99a32);border:2.5px solid #fff7e6;box-shadow:0 7px 18px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;color:#2a1e05;font-size:18px;">✈</span>'
+      +'</div>';
+  } else {
+    const c = catMap[p.cat] || {};
+    const col = c.color || '#888';
+    const inner = (p.cat === 'islands')
+      ? islandSvgHtml('#fff')
+      : '<span style="font:700 12px/1 system-ui,Segoe UI Symbol,sans-serif;">'+(c.icon||'')+'</span>';
+    el.innerHTML = '<span style="display:flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:'+col+';border:2px solid #fff7e6;box-shadow:0 3px 8px rgba(0,0,0,.45);color:#fff;">'+inner+'</span>';
+  }
+  return el;
+}
+
+function makeClusterEl(count) {
+  const sz = count > 9 ? 36 : 31;
+  const el = document.createElement('div');
+  el.style.cursor = 'pointer';
+  el.innerHTML = '<div style="width:'+sz+'px;height:'+sz+'px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fbf1d8,#ecd9a6);border:2px solid #caa14a;box-shadow:0 6px 16px rgba(0,0,0,.42);display:flex;align-items:center;justify-content:center;color:#3a2c10;font:700 13px Karla,sans-serif;">'+count+'</div>';
+  return el;
+}
+
+function clearMarkers() { markerPool.forEach(m => m.remove()); markerPool = []; }
+
+function recluster() {
+  if(!map || _replaying) return;
+  elByName = {};
+  const pts = PLACES.filter(p => placeVisible(p));
+  const items = pts.map(p => ({ p, s: map.project([p.lng, p.lat]) }));
+  let groups = [];
+
+  if(editMode) {
+    groups = items.map(it => [it]);
+  } else {
+    const R = 22, R2 = R*R;
+    const used = new Array(items.length).fill(false);
+    for(let i = 0; i < items.length; i++) {
+      if(used[i]) continue;
+      const g = [items[i]]; used[i] = true;
+      for(let j = i+1; j < items.length; j++) {
+        if(used[j]) continue;
+        const dx = items[i].s.x - items[j].s.x, dy = items[i].s.y - items[j].s.y;
+        if(dx*dx + dy*dy < R2) { g.push(items[j]); used[j] = true; }
+      }
+      groups.push(g);
+    }
+  }
+
+  clearMarkers();
+  groups.forEach(g => {
+    if(g.length === 1) addPointMarker(g[0].p);
+    else {
+      const lng = g.reduce((s,x) => s+x.p.lng, 0) / g.length;
+      const lat = g.reduce((s,x) => s+x.p.lat, 0) / g.length;
+      addClusterMarker([lng, lat], g);
+    }
+  });
+
+  if(!_revealed) {
+    _revealed = true;
+    markerPool.forEach((m, i) => {
+      const el = m.getElement();
+      el.style.transition = 'opacity .5s ease';
+      setTimeout(() => { el.style.opacity = '1'; }, 480 + i*55);
+    });
+  }
+}
+
+function addPointMarker(p) {
+  const el = makePinEl(p);
+  const drag = !!editMode;
+  if(drag) {
+    el.style.cursor = 'grab';
+  } else {
+    el.addEventListener('click', ev => {
+      ev.stopPropagation();
+      openPopup([p.lng, p.lat], { name:p.name, sub:p.sub, cat:p.cat, desc:p.desc||'', photo:p.photo, photoPos:p.photoPos });
+    });
+  }
+  elByName[p.name] = { el: el.firstElementChild || el };
+  if(!_revealed) el.style.opacity = '0';
+  const m = new maplibregl.Marker({ element:el, anchor:'center', draggable:drag }).setLngLat([p.lng, p.lat]).addTo(map);
+  if(drag) {
+    m.on('dragstart', () => { el.style.cursor = 'grabbing'; });
+    m.on('dragend', () => {
+      const ll = m.getLngLat();
+      p.lng = ll.lng; p.lat = ll.lat;
+      const b = byName[p.name];
+      if(b) { b.lng = ll.lng; b.lat = ll.lat; }
+      try {
+        const o = JSON.parse(localStorage.getItem(OV_KEY)||'{}');
+        o[p.name] = [ll.lng, ll.lat];
+        localStorage.setItem(OV_KEY, JSON.stringify(o));
+      } catch(e) {}
+      el.style.cursor = 'grab';
+    });
+  }
+  markerPool.push(m);
+}
+
+function addClusterMarker(center, g) {
+  const el = makeClusterEl(g.length);
+  g.forEach(x => { elByName[x.p.name] = { el: el.firstElementChild || el }; });
+  el.addEventListener('click', ev => {
+    ev.stopPropagation();
+    pauseWAWAnim();
+    const b = new maplibregl.LngLatBounds();
+    g.forEach(x => b.extend([x.p.lng, x.p.lat]));
+    const same = g.every(x => x.p.lng === g[0].p.lng && x.p.lat === g[0].p.lat);
+    if(same) map.easeTo({ center, zoom: Math.min(11.5, map.getZoom()+2.2), duration:500 });
+    else map.fitBounds(b, { padding:150, maxZoom:11.3, duration:500 });
+    map.once('moveend', resumeWAWAnim);
+  });
+  if(!_revealed) el.style.opacity = '0';
+  const m = new maplibregl.Marker({ element:el, anchor:'center' }).setLngLat(center).addTo(map);
+  markerPool.push(m);
+}
+
+function openPopup(coords, pr) {
+  if(!map) return;
+  if(popup) popup.remove();
+  popup = new maplibregl.Popup({ offset:14, maxWidth:'260px' }).setLngLat(coords).setHTML(cardHTML(pr)).addTo(map);
+}
+
+function setupPoints() {
+  if(!_ptsSetup) {
+    _ptsSetup = true;
+    let _reclusterTimer = 0;
+    const deferRecluster = () => { clearTimeout(_reclusterTimer); _reclusterTimer = setTimeout(recluster, 50); };
+    map.on('moveend', deferRecluster);
+    map.on('zoomend', deferRecluster);
+
+    // Pause WAW during any map interaction so setPaintProperty doesn't
+    // compete with WebGL rendering on every drag/zoom/pitch frame
+    let _wawResumeTimer = 0;
+    function onInteractStart() {
+      clearTimeout(_wawResumeTimer);
+      pauseWAWAnim();
+    }
+    function onInteractEnd() {
+      clearTimeout(_wawResumeTimer);
+      _wawResumeTimer = setTimeout(resumeWAWAnim, 80);
+    }
+    map.on('movestart',  onInteractStart);
+    map.on('zoomstart',  onInteractStart);
+    map.on('pitchstart', onInteractStart);
+    map.on('moveend',    onInteractEnd);
+    map.on('zoomend',    onInteractEnd);
+    map.on('pitchend',   onInteractEnd);
+
+    // At very high pitch (near maxPitch), distant points project above the
+    // horizon into the sky instead of being clipped — fade markers/popup
+    // out before that happens rather than let them float in the sky.
+    const PITCH_FADE_START = 64, PITCH_FADE_END = 76;
+    function updateMarkerFade() {
+      const t = Math.max(0, Math.min(1, (map.getPitch() - PITCH_FADE_START) / (PITCH_FADE_END - PITCH_FADE_START)));
+      const op = 1 - t;
+      map.getContainer().querySelectorAll('.maplibregl-marker').forEach(el => { el.style.opacity = op; });
+      if(popup && t > 0.5) { popup.remove(); popup = null; }
+    }
+    map.on('pitch', updateMarkerFade);
+  }
+  recluster();
+}
+
+// ---- WAW -----------------------------------------------------------------
+
+function addWAW() {
+  if(map.getSource('waw')) { startWAWAnim(); return; }
+  map.addSource('waw', { type:'geojson', data:lf(WAW) });
+  map.addLayer({ id:'waw-glow', type:'line', source:'waw', layout:{ 'line-cap':'round','line-join':'round' }, paint:{ 'line-color':'#7fcfe8', 'line-width':9, 'line-blur':8, 'line-opacity':0.35 } });
+  map.addLayer({ id:'waw-line', type:'line', source:'waw', layout:{ 'line-cap':'round','line-join':'round' }, paint:{ 'line-color':'#3aa0c8', 'line-width':3, 'line-dasharray':[2,1.5], 'line-opacity':0.9 } });
+  const v = filters.waw === false ? 'none' : 'visible';
+  ['waw-glow','waw-line'].forEach(id => map.setLayoutProperty(id, 'visibility', v));
+  startWAWAnim();
+}
+
+const WAW_SEQ = [[0,4,3],[0.5,4,2.5],[1,4,2],[1.5,4,1.5],[2,4,1],[2.5,4,0.5],[3,4,0],[0,0.5,4,2.5],[0,1,4,2],[0,1.5,4,1.5],[0,2,4,1],[0,2.5,4,0.5]];
+let _wawStep = 0, _wawLast = 0;
+
+function _wawFrame(t) {
+  if(map && map.getLayer('waw-line')) {
+    if(t - _wawLast > 75) {
+      if(map.getLayoutProperty('waw-line','visibility') !== 'none') {
+        try { map.setPaintProperty('waw-line','line-dasharray', WAW_SEQ[_wawStep]); } catch(e) {}
+      }
+      _wawStep = (_wawStep+1) % WAW_SEQ.length; _wawLast = t;
+    }
+  }
+  wawRaf = requestAnimationFrame(_wawFrame);
+}
+
+function startWAWAnim() {
+  if(_wawStarted) return; _wawStarted = true;
+  wawRaf = requestAnimationFrame(_wawFrame);
+}
+
+function pauseWAWAnim() {
+  if(wawRaf) { cancelAnimationFrame(wawRaf); wawRaf = null; }
+}
+
+function resumeWAWAnim() {
+  if(_wawStarted && !wawRaf) wawRaf = requestAnimationFrame(_wawFrame);
+}
+
+// ---- County silhouette ---------------------------------------------------
+
+function drawSilhouette(f) {
+  ['draw','draw-glow'].forEach(id => { if(map.getLayer(id)) map.removeLayer(id); });
+  if(map.getSource('draw')) map.removeSource('draw');
+
+  let main = f.geometry.coordinates[0][0];
+  f.geometry.coordinates.forEach(p => { if(p[0].length > main.length) main = p[0]; });
+  const stepN = Math.max(1, Math.floor(main.length / 440));
+  const ring = [];
+  for(let i = 0; i < main.length; i += stepN) ring.push(main[i]);
+  ring.push(main[main.length-1]);
+
+  map.addSource('draw', { type:'geojson', data:lf([ring[0]]) });
+  map.addLayer({ id:'draw-glow', type:'line', source:'draw', layout:{ 'line-cap':'round','line-join':'round' }, paint:{ 'line-color':HC, 'line-width':11, 'line-blur':10, 'line-opacity':0.5 } });
+  map.addLayer({ id:'draw',      type:'line', source:'draw', layout:{ 'line-cap':'round','line-join':'round' }, paint:{ 'line-color':'#fff7df', 'line-width':2.8 } });
+
+  const dur = 2300, t0 = performance.now();
+  const tick = now => {
+    const k = Math.min(1, (now-t0)/dur);
+    const e = 1 - Math.pow(1-k, 2);
+    const n = Math.max(2, Math.floor(e * ring.length));
+    if(map.getSource('draw')) map.getSource('draw').setData(lf(ring.slice(0, n)));
+    if(k < 1) raf = requestAnimationFrame(tick);
+    else finishDonegal(f);
+  };
+  raf = requestAnimationFrame(tick);
+}
+
+function finishDonegal(f) {
+  _replaying = false;
+  ['draw','draw-glow','donegal-fill','donegal-halo','donegal-glow','donegal-line'].forEach(id => { if(map.getLayer(id)) map.removeLayer(id); });
+  ['draw','donegal'].forEach(id => { if(map.getSource(id)) map.removeSource(id); });
+
+  map.addSource('donegal', { type:'geojson', data:f });
+  map.addLayer({ id:'donegal-fill', type:'fill', source:'donegal', paint:{ 'fill-color':HC, 'fill-opacity':0, 'fill-opacity-transition':{duration:1100, delay:350} } });
+  map.addLayer({ id:'donegal-halo', type:'line', source:'donegal', paint:{ 'line-color':HC, 'line-width':11, 'line-blur':9, 'line-opacity':0, 'line-opacity-transition':{duration:1000, delay:250} } });
+  map.addLayer({ id:'donegal-glow', type:'line', source:'donegal', paint:{ 'line-color':HC, 'line-width':7, 'line-blur':4, 'line-opacity':0, 'line-opacity-transition':{duration:850, delay:150} } });
+  map.addLayer({ id:'donegal-line', type:'line', source:'donegal', paint:{ 'line-color':'#fff7df', 'line-width':3, 'line-opacity':0, 'line-opacity-transition':{duration:550, delay:0} } });
+
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    if(map.getLayer('donegal-line')) map.setPaintProperty('donegal-line','line-opacity',1);
+    if(map.getLayer('donegal-glow')) map.setPaintProperty('donegal-glow','line-opacity',0.9);
+    if(map.getLayer('donegal-halo')) map.setPaintProperty('donegal-halo','line-opacity',0.34);
+    if(map.getLayer('donegal-fill')) map.setPaintProperty('donegal-fill','fill-opacity',0.09);
+  }));
+
+  addWAW();
+  setupPoints();
+}
+
+function loadDonegal() {
+  fetch('https://raw.githubusercontent.com/codeforgermany/click_that_hood/main/public/data/ireland-counties.geojson')
+    .then(r => r.json())
+    .then(gj => {
+      const f = (gj.features||[]).find(x => ((x.properties && (x.properties.name || x.properties.NAME))||'').toLowerCase().indexOf('donegal') >= 0);
+      if(!f) { setupPoints(); addWAW(); return; }
+      _donF = f;
+      drawSilhouette(f);
+    })
+    .catch(() => { setupPoints(); addWAW(); });
+}
+
+// ---- Intro / replay ------------------------------------------------------
+
+function updatePadding() {
+  if(!map) return;
+  if(isMobile()) {
+    const bs = Math.min((window.innerHeight||700)*0.46, 360);
+    map.setPadding({ top:70, right:20, left:20, bottom:bs+20 });
+  } else {
+    map.setPadding({ top:96, right:300, left:24, bottom:40 });
+  }
+}
+
+function introFly() {
+  if(!map) return;
+  map.flyTo({ center:[-7.95, 54.99], zoom:isMobile()?7.3:8.0, pitch:62, bearing:-14, duration:3600, curve:1.25, essential:true });
+}
+
+function replayIntro() {
+  if(!map || !_donF) return;
+  _replaying = true;
+  cancelAnimationFrame(raf);
+  clearMarkers();
+  _revealed = false;
+  ['donegal-fill','donegal-halo','donegal-glow','donegal-line','draw','draw-glow'].forEach(id => { if(map.getLayer(id)) map.removeLayer(id); });
+  ['donegal','draw'].forEach(id => { if(map.getSource(id)) map.removeSource(id); });
+  map.jumpTo({ center:[-7.74,54.87], zoom:isMobile()?6.7:7.25, pitch:46, bearing:-30 });
+  introFly();
+  map.once('moveend', () => drawSilhouette(_donF));
+}
+
+// ---- Overrides -----------------------------------------------------------
+
+function loadOverrides() {
+  try {
+    const o = JSON.parse(localStorage.getItem(OV_KEY)||'{}');
+    Object.keys(o).forEach(n => { const p = byName[n]; if(p && Array.isArray(o[n])){ p.lng=o[n][0]; p.lat=o[n][1]; } });
+  } catch(e) {}
+}
+
+// ---- Map init ------------------------------------------------------------
+
+function initMap() {
+  const DEM = ['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'];
+  const style = {
+    version:8,
+    glyphs:'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
+    sources:{
+      base:{ type:'raster', tileSize:256, maxzoom:12, tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/NatGeo_World_Map/MapServer/tile/{z}/{y}/{x}'], attribution:'© Esri · National Geographic' },
+      hs:{ type:'raster-dem', tiles:DEM, encoding:'terrarium', tileSize:256, maxzoom:13 },
+    },
+    layers:[
+      { id:'bg',        type:'background', paint:{ 'background-color':'#aecdd6' } },
+      { id:'base',      type:'raster',     source:'base', paint:{ 'raster-saturation':-0.18, 'raster-contrast':0.06, 'raster-brightness-max':0.97 } },
+      { id:'hillshade', type:'hillshade',  source:'hs',   paint:{ 'hillshade-exaggeration':0.6, 'hillshade-shadow-color':'#43381f', 'hillshade-highlight-color':'#fff6df', 'hillshade-accent-color':'#6b5a33' } },
+    ],
+  };
+
+  map = new maplibregl.Map({
+    container:mapEl, style,
+    center:[-7.74, 54.87], zoom:7.25, pitch:46, bearing:-30,
+    maxZoom:11.5, minZoom:5.5, maxPitch:80,
+    maxBounds: [[-12.5, 49.0], [3.5, 62.0]],
+    attributionControl:false, dragRotate:true,
+    scrollZoom:false,
+  });
+  window.__donmap = map;
+
+  updatePadding();
+  window.addEventListener('resize', updatePadding);
+  map.addControl(new maplibregl.NavigationControl({ visualizePitch:true }), 'bottom-right');
+  map.on('rotate', () => {
+    if(needleEl) needleEl.style.transform = 'translateY(-3px) rotate('+(map.getBearing())+'deg)';
+  });
+
+  // Custom: Ctrl+scroll = zoom
+  const canvas = map.getCanvas();
+  let hintCtrlTimeout = null, hintAltTimeout = null;
+
+  canvas.addEventListener('wheel', e => {
+    if(e.ctrlKey) {
+      e.preventDefault();
+      e.stopPropagation();
+      const delta = e.deltaY * (e.deltaMode === 1 ? 20 : 1);
+      const zoom = map.getZoom() - delta * 0.003;
+      map.jumpTo({ zoom: Math.max(map.getMinZoom(), Math.min(map.getMaxZoom(), zoom)) });
+    }
+    if(!e.ctrlKey) {
+      if(hintCtrl) { hintCtrl.classList.add('show'); clearTimeout(hintCtrlTimeout); hintCtrlTimeout = setTimeout(() => hintCtrl.classList.remove('show'), 2600); }
+      if(hintAlt) { hintAlt.classList.add('show'); clearTimeout(hintAltTimeout); hintAltTimeout = setTimeout(() => hintAlt.classList.remove('show'), 2600); }
+    }
+  }, { passive: false });
+
+
+  map.on('load', () => {
+    try {
+      map.setSky({ 'sky-color':'#9cc1d4','sky-horizon-blend':0.6,'horizon-color':'#e9dcc0','horizon-fog-blend':0.55,'fog-color':'#e3ecec','fog-ground-blend':0.42,'atmosphere-blend':0.6 });
+    } catch(e) {}
+    if(loadingEl) loadingEl.style.display = 'none';
+
+    let introStarted = false;
+    function startIntro() {
+      if(introStarted) return;
+      introStarted = true;
+      introFly();
+      // Load county after fly completes; fallback after 5s in case moveend misfires off-screen
+      map.once('moveend', () => {
+        if(_loaded) return;
+        _loaded = true;
+        loadDonegal();
+      });
+      setTimeout(() => { if(!_loaded) { _loaded = true; loadDonegal(); } }, 5000);
+    }
+
+    // Listen for parent page signals
+    window.addEventListener('message', e => {
+      if(e.data && e.data.type === 'don-start-intro') startIntro();
+      if(e.data && e.data.type === 'don-replay-intro') replayIntro();
+      if(e.data && e.data.type === 'don-waw-pause') pauseWAWAnim();
+      if(e.data && e.data.type === 'don-waw-resume') resumeWAWAnim();
+    });
+
+    // Pause WAW when the browser tab is hidden
+    document.addEventListener('visibilitychange', () => {
+      if(document.hidden) pauseWAWAnim(); else resumeWAWAnim();
+    });
+
+
+    // Fallback: auto-start if no message received within 10s (standalone / direct open)
+    setTimeout(startIntro, 10000);
+  });
+}
+
+// A browser never chains an unscrolled wheel gesture from an iframe out to
+// its parent page on its own. So: wheel over the places list scrolls it
+// natively (it's a normal overflow:auto element, no JS needed); wheel
+// anywhere else in the iframe (open map area, margins) is forwarded to the
+// parent so the page keeps scrolling through instead of feeling "stuck".
+document.addEventListener('wheel', e => {
+  if(e.ctrlKey) return; // let the canvas's own ctrl+scroll zoom handler run
+  if(e.target && e.target.closest && e.target.closest('.donrail')) return;
+  e.preventDefault();
+  window.parent.postMessage({ type:'don-scroll-through', deltaY:e.deltaY, deltaMode:e.deltaMode }, '*');
+}, { passive:false });
+
+// ---- Boot ----------------------------------------------------------------
+
+loadOverrides();
+renderPanel();
+
+if(window.maplibregl && mapEl) {
+  initMap();
+} else {
+  const check = setInterval(() => {
+    if(window.maplibregl && mapEl) { clearInterval(check); initMap(); }
+  }, 70);
+}
+
+})();
+</script>
+</body>
+</html>

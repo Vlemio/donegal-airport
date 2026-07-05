@@ -18,6 +18,28 @@ const nav = [
   { key: "contact", href: `${prefix}/contact` },
 ] as const;
 
+// Footer body copy that isn't in the i18n dictionary yet — kept here as a
+// simple locale branch (same pattern as Header.astro's gap-width tweak)
+// rather than expanding en.json/ga.json for a one-off handful of strings.
+const address = locale === "ga"
+  ? { l1: "Carraig Fhinn, Cionn Caslach", l2: "Leitir Ceanainn, Co. Dhún na nGall", l3: "F94 X2RH, Éire" }
+  : { l1: "Carrickfinn, Kincasslagh", l2: "Letterkenny, Co. Donegal", l3: "F94 X2RH, Ireland" };
+
+const routesLabel = locale === "ga" ? "Bealaí" : "Routes";
+const routes = locale === "ga"
+  ? [
+      { name: "Baile Átha Cliath", freq: "Gach lá · 2× fillte" },
+      { name: "Glaschú", freq: "Laethanta roghnaithe" },
+    ]
+  : [
+      { name: "Dublin", freq: "Daily · 2× return" },
+      { name: "Glasgow", freq: "Select days" },
+    ];
+
+const legalLinks = locale === "ga"
+  ? ["Príobháideachas", "Sábháilteacht", "Comhshaol"]
+  : ["Privacy", "Safety", "Environmental"];
+
 const socials = [
   { label: "Facebook", href: "https://www.facebook.com/donegalairport" },
   { label: "Instagram", href: "https://www.instagram.com/donegalairport" },
@@ -76,9 +98,9 @@ const marqueeItems = [
           {t("footer.visit", locale)}
         </p>
         <address class="mt-5 text-sm not-italic leading-relaxed text-mute">
-          Carrickfinn, Kincasslagh<br />
-          Letterkenny, Co. Donegal<br />
-          F94 X2RH, Ireland
+          {address.l1}<br />
+          {address.l2}<br />
+          {address.l3}
         </address>
         <p class="mt-4 text-sm">
           <a
@@ -97,16 +119,14 @@ const marqueeItems = [
           </a>
         </p>
         <div class="mt-6 border-t border-line pt-5">
-          <p class="font-mono text-[0.68rem] uppercase tracking-[0.22em] text-sand">Routes</p>
+          <p class="font-mono text-[0.68rem] uppercase tracking-[0.22em] text-sand">{routesLabel}</p>
           <ul class="mt-3 space-y-2 text-sm text-mute">
-            <li>
-              <span class="text-ink">Dublin</span>
-              <span class="ml-2 font-mono text-[0.64rem] tracking-[0.1em]">Daily · 2× return</span>
-            </li>
-            <li>
-              <span class="text-ink">Glasgow</span>
-              <span class="ml-2 font-mono text-[0.64rem] tracking-[0.1em]">Select days</span>
-            </li>
+            {routes.map((r) => (
+              <li>
+                <span class="text-ink">{r.name}</span>
+                <span class="ml-2 font-mono text-[0.64rem] tracking-[0.1em]">{r.freq}</span>
+              </li>
+            ))}
           </ul>
         </div>
       </div>
@@ -157,9 +177,9 @@ const marqueeItems = [
     >
       <p>© {year} {t("site.name", locale)}. {t("footer.rights", locale)}</p>
       <ul class="flex flex-wrap gap-x-5 gap-y-1">
-        <li><a href="#" class="hover:text-sand">Privacy</a></li>
-        <li><a href="#" class="hover:text-sand">Safety</a></li>
-        <li><a href="#" class="hover:text-sand">Environmental</a></li>
+        {legalLinks.map((label) => (
+          <li><a href="#" class="hover:text-sand">{label}</a></li>
+        ))}
         <li><a href="#" class="hover:text-sand">Ráiteas Beartas Teanga</a></li>
       </ul>
     </div>
