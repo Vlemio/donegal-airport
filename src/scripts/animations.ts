@@ -438,6 +438,137 @@ function setupScrubVideo(): void {
   });
 }
 
+/* ---------- Mobile hero loop (< 768px only, desktop untouched) ----------
+   Below md, setupScrubVideo() above bails out entirely (its own
+   `min-width: 768px` guard) — scroll-tied scrubbing is what felt "stuck"
+   on touch, since mobile momentum-scrolling doesn't feed JS a smooth,
+   continuous stream of scroll positions the way a desktop wheel/trackpad
+   does. This paints the SAME frame sequence instead, driven by a
+   self-running clock (not scroll), so there's nothing for a touch gesture
+   to fight with: play forward to the last frame, then back to the first,
+   forever — a "boomerang" loop, since a real <video> can't play in
+   reverse reliably across browsers. */
+let mobileHeroLoopId = 0;
+function setupMobileHeroLoop(): void {
+  // Cancel whichever page's loop (if any) is still running before
+  // possibly starting a fresh one — same cross-page-leak class of bug as
+  // the hero panel's clock/weather timers.
+  if (mobileHeroLoopId) cancelAnimationFrame(mobileHeroLoopId);
+  if (prefersReducedMotion()) return;
+  if (window.matchMedia("(min-width: 768px)").matches) return;
+
+  const canvases = document.querySelectorAll<HTMLCanvasElement>("[data-scrub-canvas]");
+  if (!canvases.length) return;
+
+  canvases.forEach((canvas) => {
+    const section =
+      canvas.closest<HTMLElement>("[data-scrub-trigger]") ??
+      canvas.closest<HTMLElement>("[data-hero-scroll]");
+
+    const total = parseInt(canvas.dataset.frames ?? "0", 10);
+    const fps = parseFloat(canvas.dataset.fps ?? "24");
+    const prefix = canvas.dataset.framePath ?? "";
+    const pad = parseInt(canvas.dataset.framePad ?? "4", 10);
+    const ctx = canvas.getContext("2d", { alpha: false });
+    if (!total || !ctx) return;
+
+    // Deliberately NOT the same startFrame/endFrame as setupScrubVideo above:
+    // desktop trims to data-video-start/-end (the scroll-scrub's chosen
+    // window), but this loop isn't scroll-gated — it plays on its own, so it
+    // covers the full clip from the first frame to the last.
+    const startFrame = 1;
+    const endFrame = total;
+
+    const frameUrl = (i: number): string => `${prefix}${String(i).padStart(pad, "0")}.webp`;
+    const images: HTMLImageElement[] = new Array(total + 1);
+    let revealed = false;
+
+    const ready = (i: number): HTMLImageElement | undefined => {
+      const img = images[i];
+      if (img?.complete && img.naturalWidth) return img;
+      for (let j = i - 1; j >= startFrame; j--) {
+        const c = images[j];
+        if (c?.complete && c.naturalWidth) return c;
+      }
+      return undefined;
+    };
+
+    const cover = (img: HTMLImageElement): void => {
+      const cw = canvas.width, ch = canvas.height;
+      const scale = Math.max(cw / img.naturalWidth, ch / img.naturalHeight);
+      const dw = img.naturalWidth * scale;
+      const dh = img.naturalHeight * scale;
+      ctx.drawImage(img, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
+    };
+
+    const draw = (pos: number): void => {
+      const f0 = Math.floor(pos);
+      const t = pos - f0;
+      const imgA = ready(f0);
+      if (!imgA) return;
+      ctx.globalAlpha = 1;
+      cover(imgA);
+      if (t > 0.001 && f0 < endFrame) {
+        const imgB = ready(f0 + 1);
+        if (imgB && imgB !== imgA) {
+          ctx.globalAlpha = t;
+          cover(imgB);
+          ctx.globalAlpha = 1;
+        }
+      }
+    };
+
+    const resize = (): void => {
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const r = canvas.getBoundingClientRect();
+      canvas.width = Math.round(r.width * dpr);
+      canvas.height = Math.round(r.height * dpr);
+    };
+    resize();
+    window.addEventListener("resize", resize);
+    document.addEventListener("astro:after-swap", () => window.removeEventListener("resize", resize));
+
+    const load = (i: number): void => {
+      if (images[i]) return;
+      const img = new Image();
+      img.decoding = "async";
+      img.src = frameUrl(i);
+      images[i] = img;
+      if (i === startFrame) {
+        img.onload = (): void => {
+          if (revealed) return;
+          revealed = true;
+          draw(startFrame);
+          canvas.classList.add("is-playing");
+          const kbImg = section?.querySelector<HTMLElement>("[data-ken-burns]");
+          if (kbImg) kbImg.classList.add("is-hidden");
+        };
+      }
+    };
+    for (let i = startFrame; i <= endFrame; i++) load(i);
+
+    // Boomerang clock — advances by real elapsed time (not a fixed
+    // per-frame step), so playback speed stays correct regardless of the
+    // device's screen refresh rate. SPEED < 1 plays slower than the
+    // source footage's native pace (requested: "un poco más lento").
+    const SPEED = 0.6;
+    let pos = startFrame;
+    let dir = 1;
+    let last = 0;
+    const tick = (now: number): void => {
+      if (!last) last = now;
+      const dt = (now - last) / 1000;
+      last = now;
+      pos += dir * fps * SPEED * dt;
+      if (pos >= endFrame) { pos = endFrame; dir = -1; }
+      else if (pos <= startFrame) { pos = startFrame; dir = 1; }
+      draw(pos);
+      mobileHeroLoopId = requestAnimationFrame(tick);
+    };
+    mobileHeroLoopId = requestAnimationFrame(tick);
+  });
+}
+
 /* ---------- Story path — /about curved timeline ----------
    Reads the [data-waypoint] elements inside [data-story-section],
    generates a smooth Catmull-Rom SVG path through their positions,
@@ -798,6 +929,7 @@ function build(): void {
   setupParallax();
   setupKenBurns();
   setupScrubVideo();
+  setupMobileHeroLoop();
   setupStickyHorizontal(); // no-op if [data-horizontal] absent
   setupStoryPath();        // no-op if [data-story-section] absent
   ScrollTrigger.refresh();

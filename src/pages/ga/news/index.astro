@@ -364,7 +364,13 @@ const gridItems = all.slice(5);
     /* ---- Responsive ---- */
     @media (max-width: 960px) {
       .np-top .np-inner { grid-template-columns: 1fr; }
-      .np-feat { aspect-ratio: 4/3; }
+      /* min-height: 22rem (above) is sized for the desktop two-column
+         layout, where .np-feat's height must match the sidebar. Left
+         active here, it fights aspect-ratio: 4/3 — the browser satisfies
+         the height first and derives width from the ratio, overflowing
+         the single mobile column. Clearing it lets the ratio size from
+         the available width instead, like a normal photo card. */
+      .np-feat { aspect-ratio: 4/3; min-height: 0; }
       .np-side { padding-top: 1rem; }
       .np-grid { grid-template-columns: repeat(2, 1fr); }
     }

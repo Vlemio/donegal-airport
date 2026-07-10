@@ -276,8 +276,8 @@ const islands = [
     ferry: "Oileán an Chruite · trasnú 10 nóim.",
     drive: "40 nóim. ó CFN",
     text: "Gan bhóthar. Gan chónaitheoirí buana. Filleann daonra beag samhraidh gach bliain le beocht a choinneáil sna seantithe. Trasnuithe socraithe amháin.",
-    src: "", srcPos: "50% 50%",
-    credit: "", creditUrl: "",
+    src: "/photos/discover-island-owey.jpg", srcPos: "50% 50%",
+    credit: "Iain Miller / Unique Ascent", creditUrl: "",
   },
   {
     name: "Inishbofin",
@@ -294,8 +294,8 @@ const islands = [
     ferry: "Ailt an Chorráin · trasnú 10 nóim.",
     drive: "35 nóim. ó CFN",
     text: "Oileán fraoigh, foscúil sa bhá idir an Clochán Liath agus Ailt an Chorráin. Áit chónaithe feirmeoirí agus iascairí tráth; á thabhairt cuairt air anois dá shíocháin.",
-    src: "", srcPos: "50% 50%",
-    credit: "", creditUrl: "",
+    src: "/photos/discover-island-free.jpg", srcPos: "50% 50%",
+    credit: "Donegal County Council", creditUrl: "",
   },
   {
     name: "Inishirrer",
@@ -312,8 +312,8 @@ const islands = [
     ferry: "Ailt an Chorráin · trasnú gearr",
     drive: "40 nóim. ó CFN",
     text: "Oileán na gCaorach — oileánín beag cothrom i mBá Bhaoigheallach, gan ach 650 m ar fad. Ceann de na cinn is foscúla in oileánra na Rosann.",
-    src: "", srcPos: "50% 50%",
-    credit: "", creditUrl: "",
+    src: "/photos/discover-island-kerragh.jpg", srcPos: "50% 50%",
+    credit: "Donegal County Council", creditUrl: "",
   },
   {
     name: "Inishtrahull",
@@ -809,7 +809,7 @@ const islands = [
                   <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono text-[0.6rem] text-white backdrop-blur-sm">
                     {isl.srcPos}
                   </div>
-                  {isl.credit && (
+                  {isl.credit && isl.creditUrl && (
                     <a
                       href={isl.creditUrl}
                       target="_blank"
@@ -818,6 +818,11 @@ const islands = [
                     >
                       Grianghraf: {isl.credit}
                     </a>
+                  )}
+                  {isl.credit && !isl.creditUrl && (
+                    <span class="absolute bottom-2 right-2 z-10 font-mono text-[0.5rem] uppercase tracking-[0.15em] text-white/40">
+                      Grianghraf: {isl.credit}
+                    </span>
                   )}
                 </figure>
                 <div class="mt-4">

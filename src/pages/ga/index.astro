@@ -19,6 +19,19 @@ const flightsToday: SyncedFlight[] = [];
 
 function statusKey(s: string) { return String(s || "").toLowerCase().replace(/[^a-z]/g, ""); }
 
+// Same palette as the live information display (/flights): grey = check-in,
+// green = on time/landed/boarding, blue = departed, amber = delayed/approach,
+// red = cancelled/diverted/gate closed. One deliberate difference from the
+// info display here: "Scheduled" is green (not grey) on this hero card.
+function toneFor(s: string) {
+  const key = statusKey(s);
+  if (key === "checkin") return "grey";
+  if (key === "departed") return "info";
+  if (key === "onapproach" || key === "finalcall" || key === "delayed") return "warn";
+  if (key === "gateclosed" || key === "cancelled" || key === "diverted") return "bad";
+  return "ok";
+}
+
 // Hero ops-panel — derived from flightsToday so both are always in sync.
 // Capped at the 4 nearest departures; the card shows a fallback line
 // (below) when there are none left today.
@@ -33,7 +46,7 @@ const heroDepartures = flightsToday
     status:
       statusKey(f.status) === "delayed" && f.estTime ? `→ ${f.estTime}` :
       f.status,
-    tone: statusKey(f.status) === "delayed" ? "warn" : "ok",
+    tone: toneFor(f.status),
   }));
 const heroArrivals = flightsToday
   .filter((f) => f.type === "arrival" && f.status !== "Landed")
@@ -45,7 +58,7 @@ const heroArrivals = flightsToday
     status:
       statusKey(f.status) === "delayed" && f.estTime ? `→ ${f.estTime}` :
       f.status,
-    tone: statusKey(f.status) === "delayed" ? "warn" : "ok",
+    tone: toneFor(f.status),
   }));
 
 // Hero weather (static placeholder — wire to Met Éireann or METAR post-firma)
@@ -134,7 +147,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
   <section
     data-scrub-trigger
     data-hero-scroll
-    class="relative isolate h-[300vh] w-full"
+    class="relative isolate h-screen w-full md:h-[300vh]"
   >
 
     {/* ── Layer 1: sticky background ─────────────────────────────── */}
@@ -157,7 +170,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
         data-scrub-end="bottom bottom"
         data-video-start={String(trim.start)}
         data-video-end={String(trim.end)}
-        class="absolute inset-0 hidden h-full w-full md:block"
+        class="absolute inset-0 block h-full w-full"
       ></canvas>
       <div class="absolute inset-x-0 top-0 h-[220px] bg-gradient-to-b from-[rgba(18,22,29,0.60)] to-transparent" />
       <div class="absolute inset-y-0 left-0 w-[65%] bg-gradient-to-r from-[rgba(18,22,29,0.52)] to-transparent" />
@@ -176,10 +189,11 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
           <p
             data-animate="fade-up"
             data-edit="hero-eyebrow"
-            class="font-mono text-[15px] uppercase tracking-[0.26em]"
+            class="font-mono text-[11px] uppercase tracking-[0.16em] md:text-[15px] md:tracking-[0.26em]"
             style="color: var(--hi)"
           >
-            Aerfort Dhún na nGall · Co. Dhún na nGall · CFN
+            <span class="md:hidden">Aerfort Dhún na nGall · CFN</span>
+            <span class="hidden md:inline">Aerfort Dhún na nGall · Co. Dhún na nGall · CFN</span>
           </p>
 
           <h1
@@ -195,7 +209,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
             data-animate="fade-up"
             data-animate-delay="0.35"
             data-edit="hero-lede"
-            class="max-w-[820px] text-[24px] leading-[1.45]"
+            class="max-w-[820px] text-[12px] leading-[1.45] md:text-[24px]"
             style="color: var(--hi)"
           >
             Baile Átha Cliath gach lá. Glaschú ag an deireadh seachtaine — agus
@@ -206,7 +220,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
           <div
             data-animate="fade-up"
             data-animate-delay="0.5"
-            class="flex items-center gap-[34px]"
+            class="flex flex-col items-start gap-4 md:flex-row md:items-center md:gap-[34px]"
           >
             <a href="/ga/flights" class="hero-cta hero-cta--primary" data-edit="cta-primary">
               Eitiltí an lae inniu <span class="arrow">→</span>
@@ -328,8 +342,9 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
         </aside>
       </div>
 
+      {/* Desktop only — see the English page's identical comment. */}
       <div
-        class="flex items-center gap-[10px] font-mono text-[12px] uppercase tracking-[0.22em]"
+        class="hidden items-center gap-[10px] font-mono text-[12px] uppercase tracking-[0.22em] md:flex"
         style="color: var(--hi-faint)"
         aria-hidden="true"
       >
@@ -346,23 +361,38 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
         lookup table instead of trusting Intl to localise them itself. */}
     <script is:inline>
       (function () {
+        // Checked at tick time (not baked in once): Astro's client-side
+        // router doesn't reliably re-run an inline <script> that's
+        // structurally similar to one already executed on a prior page, so
+        // whichever page's copy of this script last actually ran can stay
+        // "in charge" of tick() even after navigating to the other locale.
+        // Reading document.documentElement.lang fresh each tick makes the
+        // output self-correct regardless of which file's script instance
+        // is the one still running.
         const WEEKDAY_GA = { Sun:'Domh', Mon:'Luan', Tue:'Máirt', Wed:'Céad', Thu:'Déar', Fri:'Aoine', Sat:'Sath' };
         const MONTH_GA = { Jan:'Ean', Feb:'Feabh', Mar:'Márta', Apr:'Aib', May:'Beal', Jun:'Meith', Jul:'Iúil', Aug:'Lún', Sep:'MFómh', Oct:'DFómh', Nov:'Samh', Dec:'Noll' };
-        let clockTimer = null;
         function startClock() {
           const el    = document.getElementById('ops-clock');
           const utcEl = document.getElementById('ops-clock-utc');
           if (!el) return;
-          if (clockTimer) clearInterval(clockTimer);
+          // Shared window-level key (not a closure-local variable): the EN
+          // and GA home pages each register this same inline script, and a
+          // client-side nav between them doesn't tear down the previous
+          // page's setInterval — a locally-scoped timer var can never see
+          // (and clear) the other page's stale one. This must clear
+          // whichever page's timer is currently running, regardless of
+          // which page set it.
+          if (window.__cfnClockTimer) clearInterval(window.__cfnClockTimer);
           function tick() {
+            const isGa = document.documentElement.lang === 'ga';
             const d = new Date();
             const parts = new Intl.DateTimeFormat('en-IE', {
               timeZone: 'Europe/Dublin',
               weekday: 'short', day: 'numeric', month: 'short',
               hour: '2-digit', minute: '2-digit', hour12: false
             }).formatToParts(d).reduce(function(acc, p) { acc[p.type] = p.value; return acc; }, {});
-            const wd = WEEKDAY_GA[parts.weekday] || parts.weekday;
-            const mo = MONTH_GA[parts.month] || parts.month;
+            const wd = isGa ? (WEEKDAY_GA[parts.weekday] || parts.weekday) : parts.weekday;
+            const mo = isGa ? (MONTH_GA[parts.month] || parts.month) : parts.month;
             el.textContent = wd + ' ' + parts.day + ' ' + mo + ' · ' + parts.hour + ':' + parts.minute;
             if (utcEl) {
               const uh = String(d.getUTCHours()).padStart(2,'0');
@@ -371,9 +401,19 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
             }
           }
           tick();
-          clockTimer = setInterval(tick, 60_000);
+          window.__cfnClockTimer = setInterval(tick, 60_000);
         }
+        // Listeners also accumulate across client-side navs (each page's
+        // copy of this script calls addEventListener with a NEW function
+        // reference, so old ones are never removed) — whichever locale
+        // registered last then keeps "winning" the synchronous tick() on
+        // every future astro:page-load, even on a page of the other
+        // language. Remove whatever this same shared key points to first,
+        // then register + run this page's own version immediately.
+        if (window.__cfnStartClock) document.removeEventListener('astro:page-load', window.__cfnStartClock);
+        window.__cfnStartClock = startClock;
         document.addEventListener('astro:page-load', startClock);
+        startClock();
       })();
     </script>
 
@@ -382,13 +422,37 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
         international meteorological convention rather than translated. */}
     <script is:inline>
       (function () {
-        let wxTimer = null;
+        // See the clock script's comment above: listeners also accumulate
+        // across client-side navs (each page's copy of this script adds a
+        // NEW function reference), so the other locale's handler can fire
+        // after this one and overwrite this page's just-set text. Remove
+        // whatever this shared key points to first.
+        if (window.__cfnInitWx) document.removeEventListener('astro:page-load', window.__cfnInitWx);
+        window.__cfnInitWx = init;
         document.addEventListener('astro:page-load', init);
+        init();
 
         function init() {
         if (!document.getElementById('wx-temp')) return;
-        if (wxTimer) clearInterval(wxTimer);
-        const WMO = {
+        // Shared window-level key — see the clock script above for why a
+        // closure-local timer var can't clear the other locale page's timer.
+        if (window.__cfnWxTimer) clearInterval(window.__cfnWxTimer);
+        // Both languages' tables live here (see the clock script's comment
+        // on why) — apply() re-checks documentElement.lang on every call,
+        // not just once at init, so this self-corrects even if the other
+        // locale's script instance is the one still running.
+        const WMO_EN = {
+          0:'Clear sky', 1:'Mainly clear', 2:'Partly cloudy', 3:'Overcast',
+          45:'Fog', 48:'Icy fog',
+          51:'Light drizzle', 53:'Drizzle', 55:'Heavy drizzle',
+          61:'Light rain', 63:'Rain', 65:'Heavy rain',
+          71:'Light snow', 73:'Snow', 75:'Heavy snow',
+          77:'Snow grains',
+          80:'Rain showers', 81:'Heavy showers', 82:'Violent showers',
+          85:'Snow showers', 86:'Heavy snow showers',
+          95:'Thunderstorm', 96:'Storm & hail', 99:'Storm & heavy hail',
+        };
+        const WMO_GA = {
           0:'Spéir ghlan', 1:'Den chuid is mó glan', 2:'Scamallach go páirteach', 3:'Ró-scamallach',
           45:'Ceo', 48:'Ceo oighreata',
           51:'Braonta éadroma', 53:'Braonta', 55:'Braonta troma',
@@ -410,6 +474,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
           '&timezone=Europe%2FDublin';
 
         function apply(data) {
+          const isGa = document.documentElement.lang === 'ga';
           const c = data.current;
           const tempEl = document.getElementById('wx-temp');
           const condEl = document.getElementById('wx-cond');
@@ -418,13 +483,13 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
           if (!tempEl) return;
 
           tempEl.textContent = Math.round(c.temperature_2m) + '°C';
-          condEl.textContent = WMO[c.weather_code] ?? 'Athraitheach';
+          condEl.textContent = (isGa ? WMO_GA : WMO_EN)[c.weather_code] ?? (isGa ? 'Athraitheach' : 'Variable');
 
           const kt  = Math.round(c.wind_speed_10m / 1.852);
           windEl.textContent = compassDir(c.wind_direction_10m) + ' ' + kt + ' kt';
 
           const visMetre = c.visibility ?? 10000;
-          visEl.textContent = 'Léargas ' +
+          visEl.textContent = (isGa ? 'Léargas ' : 'Vis ') +
             (visMetre >= 10000 ? '10 km' : (visMetre / 1000).toFixed(1) + ' km');
         }
 
@@ -436,7 +501,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
         }
 
         fetchWx();
-        wxTimer = setInterval(fetchWx, 10 * 60 * 1000);
+        window.__cfnWxTimer = setInterval(fetchWx, 10 * 60 * 1000);
         }
       })();
     </script>
@@ -680,7 +745,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
       <h2
         data-animate="fade-up"
         data-split-link="awards-head"
-        class="mt-3 max-w-4xl font-display text-[clamp(3rem,5.5vw,6rem)] font-normal leading-[0.98] text-[#0f3550]"
+        class="mt-3 max-w-4xl font-display text-[2.125rem] font-normal leading-[0.98] text-[#0f3550] md:text-[clamp(3rem,5.5vw,6rem)]"
       >
         Aerfort beag le seilf fhada&nbsp;dhámhachtainí.
       </h2>
@@ -696,7 +761,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
               {award.year}
             </p>
             <div>
-              <h3 class="font-display text-2xl leading-tight text-ink md:text-3xl">
+              <h3 class="font-display text-[17px] leading-tight text-ink md:text-3xl">
                 {award.title}
               </h3>
               <p class="mt-2 text-base leading-relaxed text-ink">
@@ -779,10 +844,13 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
     .news-sec__title {
       font-family: var(--font-display);
       font-weight: 300;
-      font-size: clamp(2.6rem, 5.2vw, 4.6rem);
+      font-size: 1.25rem;
       line-height: 0.96;
       letter-spacing: -0.025em;
       margin-top: 1.1rem;
+    }
+    @media (min-width: 768px) {
+      .news-sec__title { font-size: clamp(2.6rem, 5.2vw, 4.6rem); }
     }
     .all-news-lnk {
       align-self: end;
@@ -996,7 +1064,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
       </p>
       <h2
         data-split
-        class="mt-4 font-display text-[clamp(2.5rem,6vw,6.5rem)] font-normal leading-[0.98] text-white"
+        class="mt-4 font-display text-[1.875rem] font-normal leading-[0.98] text-white md:text-[clamp(2.5rem,6vw,6.5rem)]"
       >
         Eitil isteach. Tá Bealach Fiáin an Atlantaigh ag fanacht ag an ngeata.
       </h2>
@@ -1023,14 +1091,29 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
 
 <script is:inline define:vars={{ boardFlights: flightsToday }}>
 (function () {
-  var pollTimer = null;
   document.addEventListener('astro:page-load', init);
 
   function init() {
   if (!document.getElementById('hero-deps') && !document.getElementById('hero-arrs')) return;
-  if (pollTimer) clearInterval(pollTimer);
+  // Shared window-level key — see the clock script's comment for why a
+  // closure-local timer var can't clear the other locale page's timer.
+  if (window.__cfnPollTimer) clearInterval(window.__cfnPollTimer);
 
   function statusKey(s) { return String(s || '').toLowerCase().replace(/[^a-z]/g, ''); }
+
+  // Same palette as the live information display (/flights): grey =
+  // check-in, green = on time/landed/boarding, blue = departed, amber =
+  // delayed/approach, red = cancelled/diverted/gate closed. One deliberate
+  // difference from the info display here: "Scheduled" is green (not
+  // grey) on this hero card.
+  function toneFor(s) {
+    var key = statusKey(s);
+    if (key === 'checkin') return 'grey';
+    if (key === 'departed') return 'info';
+    if (key === 'onapproach' || key === 'finalcall' || key === 'delayed') return 'warn';
+    if (key === 'gateclosed' || key === 'cancelled' || key === 'diverted') return 'bad';
+    return 'ok';
+  }
 
   var FLIGHTS = boardFlights;
 
@@ -1049,7 +1132,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
       deps.forEach(function (f) {
         var key = statusKey(f.status);
         var lbl = key === 'delayed' && f.estTime ? '→ ' + f.estTime : f.status;
-        var tone = key === 'delayed' ? 'warn' : 'ok';
+        var tone = toneFor(f.status);
         var li = document.createElement('li');
         li.className = 'ops-board-row';
         var timeSpan = document.createElement('span'); timeSpan.className = 'b-time'; timeSpan.textContent = f.time;
@@ -1075,7 +1158,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
       arrs.forEach(function (f) {
         var key = statusKey(f.status);
         var lbl = key === 'delayed' && f.estTime ? '→ ' + f.estTime : f.status;
-        var tone = key === 'delayed' ? 'warn' : 'ok';
+        var tone = toneFor(f.status);
         var li = document.createElement('li');
         li.className = 'ops-board-row';
         var timeSpan = document.createElement('span'); timeSpan.className = 'b-time'; timeSpan.textContent = f.time;
@@ -1099,7 +1182,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
       })
       .catch(function () {});
   }
-  pollTimer = setInterval(fetchFlights, 60000);
+  window.__cfnPollTimer = setInterval(fetchFlights, 60000);
 
   updateHero();
   fetchFlights();

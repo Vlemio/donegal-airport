@@ -1,6 +1,5 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import StoryEditor from "../components/StoryEditor.astro";
 import { t } from "../i18n";
 
 const locale = "en";
@@ -607,9 +606,5 @@ const airlines: Airline[] = [
       </div>
     </div>
   </section>
-
-  {/* DEV-only in-browser visual tuner. Self-gates on import.meta.env.DEV,
-      so it never ships to production. */}
-  <StoryEditor />
 
 </BaseLayout>

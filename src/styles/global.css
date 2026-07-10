@@ -541,8 +541,15 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
-.b-status.ok   { color: var(--hi-green); }
-.b-status.wknd { color: var(--hi-amber); }
+/* Same palette as the live information display (/flights): grey =
+   check-in, green = on time/landed/boarding (+ scheduled, deliberately, on
+   this hero card only), blue = departed, amber = delayed/approach, red =
+   cancelled/diverted/gate closed. */
+.b-status.ok   { color: #36d07f; }
+.b-status.info { color: #4db8ff; }
+.b-status.warn { color: #ffc31e; }
+.b-status.bad  { color: #ff5b4d; }
+.b-status.grey { color: #8b9897; }
 /* Temperature display in ops panel */
 .ops-temp {
   font-family: "Bricolage Grotesque Variable", "Bricolage Grotesque", system-ui, sans-serif;
@@ -594,12 +601,13 @@
   0%, 100% { transform: translateY(0);   }
   50%      { transform: translateY(4px); }
 }
-/* Hide Ken Burns fallback on desktop once video is playing */
-@media (min-width: 768px) {
-  [data-ken-burns].is-hidden {
-    opacity: 0;
-    transition: opacity 0.8s ease;
-  }
+/* Hide Ken Burns fallback once the frame-sequence canvas is playing —
+   desktop (scroll-scrubbed) and mobile (boomerang-looped) both reveal it
+   via canvas.is-playing / kbImg.is-hidden in animations.ts, so this now
+   applies at every width rather than only >=768px. */
+[data-ken-burns].is-hidden {
+  opacity: 0;
+  transition: opacity 0.8s ease;
 }
 
 /* Footer inversion */

@@ -3,7 +3,6 @@ import "../styles/global.css";
 import { ClientRouter } from "astro:transitions";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
-import DevEditBar from "../components/DevEditBar.astro";
 import { getLocale, altLocalePath, t, type Locale } from "../i18n";
 
 interface Props {
@@ -206,6 +205,5 @@ const localeTag: Record<Locale, string> = {
         sessionStorage.setItem("current-page", location.pathname);
       });
     </script>
-    <DevEditBar />
   </body>
 </html>
