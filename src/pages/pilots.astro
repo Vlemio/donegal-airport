@@ -103,12 +103,10 @@ const cautions = [
 /* Opening hours → timeline (UTC). Bar range 06:00–21:00. */
 const hoursData = {
   Winter: [
-    { day: "Mon–Sat", blocks: [["0740", "1200"], ["1230", "1700"], ["1800", "2010"]] },
-    { day: "Sun", blocks: [["0940", "1130"], ["1200", "1630"], ["1730", "2010"]] },
+    { day: "Mon–Sun", blocks: [["0740", "0830"], ["0900", "1300"], ["1330", "1700"], ["1800", "2010"]] },
   ],
   Summer: [
-    { day: "Mon–Sat", blocks: [["0640", "1100"], ["1130", "1600"], ["1700", "1910"]] },
-    { day: "Sun", blocks: [["0840", "1030"], ["1100", "1530"], ["1630", "1910"]] },
+    { day: "Mon–Sun", blocks: [["0640", "0730"], ["0800", "1200"], ["1230", "1600"], ["1700", "1910"]] },
   ],
 };
 const START = 360, SPAN = 900; // 06:00 → 21:00
@@ -322,6 +320,13 @@ const droneZones = [
           </div>
         </div>
         <script type="application/json" id="tower-hours-data" is:inline set:html={JSON.stringify(hoursData)} />
+      </div>
+
+      {/* Live weather — METAR / TAF, auto-refreshing; JS-enhanced with a static fallback for no-JS */}
+      <div data-animate="fade-up" class="mt-6 rounded-2xl border border-line bg-[color-mix(in_srgb,var(--color-atlantic)_4%,var(--color-surface))] p-6 sm:p-8">
+        <div id="eidl-weather">
+          <p class="font-mono text-[0.72rem] text-mute">Loading latest report…</p>
+        </div>
       </div>
 
       {/* Detail — accordions */}
@@ -624,6 +629,9 @@ const droneZones = [
       // Tower opening-hours interactive widget
       initTowerHours();
 
+      // Live METAR/TAF widget
+      initEidlWeather();
+
       // Map label editor — authoring only. On automatically in local dev,
       // or with ?edit in the URL. Never ships to production visitors.
       if (new URLSearchParams(location.search).has("edit")) initMapEditor();
@@ -668,7 +676,7 @@ const droneZones = [
           const t = d.getTime(); return t >= start && t < end;
         };
         const matches = (day: string, dow: number) =>
-          day === "Sun" ? dow === 0 : day === "Sat" ? dow === 6 : day === "Mon–Fri" ? dow >= 1 && dow <= 5 : dow >= 1 && dow <= 6;
+          day === "Sun" ? dow === 0 : day === "Sat" ? dow === 6 : day === "Mon–Fri" ? dow >= 1 && dow <= 5 : day === "Mon–Sun" ? true : dow >= 1 && dow <= 6;
 
         let view: string | null = null;
         const render = () => {
@@ -748,6 +756,80 @@ const droneZones = [
         };
         render();
         setInterval(render, 60000);
+      }
+
+      let eidlWeatherTimer: ReturnType<typeof setInterval> | undefined;
+      function initEidlWeather() {
+        const host = document.getElementById("eidl-weather");
+        if (!host) return;
+        if (eidlWeatherTimer) clearInterval(eidlWeatherTimer);
+
+        const CAT_COLOR: Record<string, string> = { VFR: "#36d07f", MVFR: "#4db8ff", IFR: "#ff5b4d", LIFR: "#ff5b4d" };
+        const pad2 = (n: number) => ("0" + n).slice(-2);
+        const fmtZ = (unixSeconds: number) => {
+          const d = new Date(unixSeconds * 1000);
+          return `${pad2(d.getUTCDate())}/${pad2(d.getUTCHours())}${pad2(d.getUTCMinutes())}Z`;
+        };
+        const windText = (wdir: number | string | null, wspd: number | null, wgst: number | null) => {
+          if (wdir == null && !wspd) return "—";
+          const dir = typeof wdir === "number" ? String(wdir).padStart(3, "0") + "°" : (wdir || "VRB");
+          return `${dir} ${wspd ?? 0}${wgst ? "G" + wgst : ""} kt`;
+        };
+        const cloudsText = (clouds: { cover: string; base: number | null }[] | null) => {
+          if (!clouds || !clouds.length) return "CLR";
+          return clouds.map((c) => c.cover + (c.base != null ? " " + c.base + " ft" : "")).join(" · ");
+        };
+
+        async function load() {
+          try {
+            const res = await fetch("/api/weather.json?_=" + Date.now());
+            const data = await res.json();
+            render(data.metar, data.taf);
+          } catch {
+            host!.innerHTML = `<p style="font-family:var(--font-mono);font-size:12px;color:var(--color-mute)">Live report unavailable right now — check the current METAR/TAF and NOTAMs directly.</p>`;
+          }
+        }
+
+        function render(metar: any, taf: any) {
+          if (!metar && !taf) {
+            host!.innerHTML = `<p style="font-family:var(--font-mono);font-size:12px;color:var(--color-mute)">Live report unavailable right now — check the current METAR/TAF and NOTAMs directly.</p>`;
+            return;
+          }
+
+          const catColor = metar?.fltCat ? (CAT_COLOR[metar.fltCat] || "var(--color-mute)") : "var(--color-mute)";
+
+          const metarHtml = metar
+            ? `<div>
+                <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
+                  ${metar.fltCat ? `<span style="background:${catColor};color:#0c1210;border-radius:999px;padding:3px 11px;font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.1em">${metar.fltCat}</span>` : ""}
+                  <span style="font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-mute)">METAR · ${fmtZ(metar.obsTime)}</span>
+                </div>
+                <p style="margin:12px 0 0;font-family:var(--font-mono);font-size:13px;line-height:1.6;color:var(--color-ink);word-break:break-word">${metar.rawOb ?? "—"}</p>
+                <div style="margin-top:14px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px 24px;font-family:var(--font-mono);font-size:11.5px;color:var(--color-mute)">
+                  <div><span style="color:var(--color-ink)">Wind</span> ${windText(metar.wdir, metar.wspd, metar.wgst)}</div>
+                  <div><span style="color:var(--color-ink)">Vis</span> ${metar.visib ?? "—"}</div>
+                  <div><span style="color:var(--color-ink)">Cloud</span> ${cloudsText(metar.clouds)}</div>
+                  <div><span style="color:var(--color-ink)">Temp / QNH</span> ${metar.temp ?? "—"}/${metar.dewp ?? "—"}°C · Q${metar.altim ?? "—"}</div>
+                </div>
+              </div>`
+            : "";
+
+          const tafHtml = taf
+            ? `<div style="margin-top:${metar ? "22px" : "0"};padding-top:${metar ? "20px" : "0"};border-top:${metar ? "1px solid var(--color-line)" : "none"}">
+                <p style="margin:0;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-mute)">TAF · valid ${fmtZ(taf.validTimeFrom)} – ${fmtZ(taf.validTimeTo)}</p>
+                <p style="margin:12px 0 0;font-family:var(--font-mono);font-size:13px;line-height:1.6;color:var(--color-ink);word-break:break-word">${taf.rawTAF ?? "—"}</p>
+              </div>`
+            : "";
+
+          host!.innerHTML =
+            `<div style="display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:20px">`
+            + `<p style="margin:0;font-family:var(--font-mono);font-size:13px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--color-atlantic)">Live weather · METAR / TAF</p>`
+            + `<p style="margin:0;font-family:var(--font-mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-mute)">EIDL · auto-updates</p>`
+            + `</div>${metarHtml}${tafHtml}`;
+        }
+
+        load();
+        eidlWeatherTimer = setInterval(load, 300000);
       }
 
       function initMapEditor() {
