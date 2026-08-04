@@ -579,32 +579,149 @@ const airlines: Airline[] = [
         Every airline that has flown to Donegal.
       </h2>
 
-      <div data-animate="fade-up" class="airline-grid mt-14">
-        {
-          airlines.map((a) => (
-            <div class="airline-pass">
-              {a.code && <span class="pass-code">{a.code}</span>}
-              <div class="pass-logo">
-                {a.logo ? (
-                  <img src={a.logo} alt={`${a.name} logo`} loading="lazy" />
-                ) : (
-                  <svg viewBox="0 0 64 64" aria-hidden="true">
-                    {/* Original, generic swept tail-fin — NOT a real livery. */}
-                    <path d="M14,55 L41,9 L53,9 L47,55 Z" fill={a.color} />
-                    <path d="M14,55 L41,9 L46,26 L25,55 Z" fill="rgba(255,255,255,0.28)" />
-                  </svg>
-                )}
+      {/* Desktop: unchanged CSS-grid layout (.airline-grid in global.css).
+          Mobile: 16 cards in one column ran very long, so below the grid
+          becomes a native swipe-scrollable, snapping row (cards keep full
+          size, the next one peeks in on the right) — see the
+          @media (max-width: 639px) override on .airline-grid. */}
+      <div data-animate="fade-up" class="mt-14">
+        <div id="op-track" class="airline-grid">
+          {
+            airlines.map((a) => (
+              <div class="airline-pass" data-op-card>
+                {a.code && <span class="pass-code">{a.code}</span>}
+                <div class="pass-logo">
+                  {a.logo ? (
+                    <img src={a.logo} alt={`${a.name} logo`} loading="lazy" />
+                  ) : (
+                    <svg viewBox="0 0 64 64" aria-hidden="true">
+                      {/* Original, generic swept tail-fin — NOT a real livery. */}
+                      <path d="M14,55 L41,9 L53,9 L47,55 Z" fill={a.color} />
+                      <path d="M14,55 L41,9 L46,26 L25,55 Z" fill="rgba(255,255,255,0.28)" />
+                    </svg>
+                  )}
+                </div>
+                <div class="pass-body">
+                  <div class="pass-name">{a.name}</div>
+                  <div class="pass-route">{a.route}</div>
+                  <div class="pass-years">{a.years}</div>
+                </div>
               </div>
-              <div class="pass-body">
-                <div class="pass-name">{a.name}</div>
-                <div class="pass-route">{a.route}</div>
-                <div class="pass-years">{a.years}</div>
-              </div>
-            </div>
-          ))
-        }
+            ))
+          }
+        </div>
+        <span id="op-counter" class="mt-3 block text-center font-mono text-[0.62rem] text-white/50 tabular-nums sm:hidden"></span>
       </div>
     </div>
   </section>
 
 </BaseLayout>
+
+<script>
+  function initOperatorsCarousel(): void {
+    const track = document.getElementById("op-track") as HTMLElement | null;
+    const counter = document.getElementById("op-counter");
+    if (!track || !counter) return;
+
+    const cards = Array.from(track.querySelectorAll<HTMLElement>("[data-op-card]"));
+    if (!cards.length) return;
+
+    // Cards are a native CSS scroll-snap row on mobile (no JS-driven
+    // width/transform) — just reflect which one is currently snapped
+    // to the counter below, in sync with the user's swipe.
+    const updateCounter = () => {
+      if (window.innerWidth >= 640) return;
+      const trackLeft = track.getBoundingClientRect().left;
+      let nearest = 0;
+      let smallestGap = Infinity;
+      cards.forEach((card, i) => {
+        const gap = Math.abs(card.getBoundingClientRect().left - trackLeft);
+        if (gap < smallestGap) {
+          smallestGap = gap;
+          nearest = i;
+        }
+      });
+      counter.textContent = `${nearest + 1} / ${cards.length}`;
+    };
+
+    updateCounter();
+    // Cheap enough (16 cards) to run straight off the scroll event —
+    // no rAF-throttling needed.
+    track.addEventListener("scroll", updateCounter, { passive: true });
+    window.addEventListener("resize", updateCounter);
+  }
+
+  // Dev-only: drag to pan / scroll-wheel to zoom the Operators section's
+  // background photo, with a live readout of background-position and
+  // background-size to copy into the .cfn-operators rule in global.css.
+  // Never live for ordinary visitors — gated behind ?edit.
+  function initOperatorsBgEditor(): void {
+    if (!new URLSearchParams(location.search).has("edit")) return;
+    const section = document.querySelector<HTMLElement>(".cfn-operators");
+    if (!section) return;
+
+    const overlay = document.createElement("div");
+    overlay.style.cssText =
+      "position:absolute;inset:0;z-index:40;cursor:grab;";
+    section.appendChild(overlay);
+
+    const readout = document.createElement("div");
+    readout.style.cssText =
+      "position:absolute;left:12px;top:12px;z-index:41;background:rgba(0,0,0,.72);color:#fff;font:11px/1.6 monospace;padding:8px 12px;border-radius:6px;pointer-events:none;white-space:pre;";
+    section.appendChild(readout);
+
+    let posX = 50;
+    let posY = 50;
+    let size = 100; // % — starting point only; cover's actual scale varies with the photo, so this may jump slightly when edit mode opens. Wheel from there.
+    let dragging = false;
+    let startX = 0;
+    let startY = 0;
+
+    const apply = () => {
+      section.style.setProperty("--op-bg-pos", `${posX.toFixed(1)}% ${posY.toFixed(1)}%`);
+      section.style.setProperty("--op-bg-size", `${size.toFixed(0)}%`);
+      readout.textContent =
+        `background-position: ${posX.toFixed(1)}% ${posY.toFixed(1)}%\n` +
+        `background-size: ${size.toFixed(0)}%`;
+    };
+
+    overlay.addEventListener(
+      "wheel",
+      (e) => {
+        e.preventDefault();
+        size = Math.max(100, Math.min(400, size - e.deltaY * 0.15));
+        apply();
+      },
+      { passive: false },
+    );
+
+    overlay.addEventListener("mousedown", (e) => {
+      dragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      overlay.style.cursor = "grabbing";
+    });
+    window.addEventListener("mousemove", (e) => {
+      if (!dragging) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      startX = e.clientX;
+      startY = e.clientY;
+      const rect = section.getBoundingClientRect();
+      posX = Math.max(0, Math.min(100, posX - (dx / rect.width) * 100));
+      posY = Math.max(0, Math.min(100, posY - (dy / rect.height) * 100));
+      apply();
+    });
+    window.addEventListener("mouseup", () => {
+      dragging = false;
+      overlay.style.cursor = "grab";
+    });
+
+    apply();
+  }
+
+  document.addEventListener("astro:page-load", () => {
+    initOperatorsCarousel();
+    initOperatorsBgEditor();
+  });
+</script>

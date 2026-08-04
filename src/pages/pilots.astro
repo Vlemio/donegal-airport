@@ -185,7 +185,7 @@ const droneZones = [
         {stats.map((s, i) => (
           <div class={`group bg-surface px-5 py-6 transition-colors duration-300 ${i % 2 === 0 ? "hover:bg-[var(--color-atlantic)]" : "hover:bg-[var(--color-sand)]"}`}>
             <p class="inline-block origin-left font-display text-[clamp(1.5rem,2.4vw,2rem)] leading-none text-ink transition-all duration-300 group-hover:scale-110 group-hover:text-white">{s.big}{s.unit && <span class="ml-0.5 font-mono text-[0.5em] font-medium tracking-tight">{s.unit}</span>}</p>
-            <p class="mt-2.5 whitespace-nowrap font-mono text-[0.72rem] uppercase tracking-[0.14em] text-mute transition-colors duration-300 group-hover:text-white/80">{s.small}</p>
+            <p class="mt-2.5 whitespace-nowrap font-mono text-[0.72rem] uppercase tracking-[-0.02em] text-mute transition-colors duration-300 group-hover:text-white/80 sm:tracking-[0.14em]">{s.small}</p>
           </div>
         ))}
       </div>
@@ -194,8 +194,14 @@ const droneZones = [
       <div data-animate="fade-up" class="mt-12">
         <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-sand">Runway 02 / 20</p>
         <div class="mt-4 rounded-2xl border border-line bg-[color-mix(in_srgb,var(--color-atlantic)_4%,var(--color-surface))] px-10 py-6 sm:px-20 sm:py-8">
-          {/* Aerodrome chart (Photoshop-edited AIP figure), rotated to read left-to-right.
-             Runway-end bearings are overlaid as crisp text rather than baked into the image. */}
+          {/* Aerodrome chart (Photoshop-edited AIP figure), rotated to read left-to-right
+             on desktop. On mobile it's rotated again, in the browser, to a portrait
+             view with RWY 02 (023°) at the bottom pointing up — see
+             initRunwayDiagramMobile() below. Runway-end bearings are overlaid as crisp
+             text rather than baked into the image; each label's own .map-txt/wrapper
+             carries a counter-rotation so the numbers stay upright even though the
+             canvas around them is rotated 90°. */}
+          <div class="relative overflow-visible" id="map-canvas-wrap">
           <div class="relative" id="map-canvas">
             <img
               src="/photos/pilots/aerodrome-chart.png?v=5"
@@ -206,13 +212,13 @@ const droneZones = [
               class="w-full"
             />
             {/* bearing + direction of travel, pinned just above each threshold */}
-            <span class="map-item absolute left-[18.3%] top-[28.3%] flex -translate-x-1/2 items-center gap-1 font-mono text-[0.62rem] font-bold uppercase tracking-[0.1em] text-atlantic sm:text-[0.74rem]">
-              023°
+            <span class="map-item absolute left-[19.06%] top-[61.36%] flex -translate-x-1/2 items-center gap-1 font-mono text-[0.62rem] font-bold uppercase tracking-[0.1em] text-atlantic sm:left-[18.3%] sm:top-[28.3%] sm:text-[0.74rem]">
+              <span class="map-counter-rotate rotate-[90deg] inline-block sm:rotate-0">023°</span>
               <svg viewBox="0 0 24 10" class="h-2 w-6" aria-hidden="true"><line x1="1" y1="5" x2="21" y2="5" stroke="currentColor" stroke-width="1.6" /><polyline points="16,1 22,5 16,9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
             </span>
-            <span class="map-item absolute left-[79.2%] top-[28.3%] flex -translate-x-1/2 items-center gap-1 font-mono text-[0.62rem] font-bold uppercase tracking-[0.1em] text-atlantic sm:text-[0.74rem]">
+            <span class="map-item absolute left-[77.67%] top-[20.56%] flex -translate-x-1/2 items-center gap-1 font-mono text-[0.62rem] font-bold uppercase tracking-[0.1em] text-atlantic sm:left-[79.2%] sm:top-[28.3%] sm:text-[0.74rem]">
               <svg viewBox="0 0 24 10" class="h-2 w-6" aria-hidden="true"><line x1="3" y1="5" x2="23" y2="5" stroke="currentColor" stroke-width="1.6" /><polyline points="8,1 2,5 8,9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
-              203°
+              <span class="map-counter-rotate rotate-[90deg] inline-block sm:rotate-0">203°</span>
             </span>
             {/* displaced-threshold dimension arrows — to scale, draggable as a unit */}
             <span class="map-item absolute left-[8.8%] top-[81.9%] flex -translate-x-1/2 flex-col items-center gap-0.5" style="width:12.1%">
@@ -223,9 +229,9 @@ const droneZones = [
                   <polyline points="12,6 2,12 12,18" /><polyline points="188,6 198,12 188,18" />
                 </g>
               </svg>
-              <span class="map-txt font-mono text-[0.58rem] font-bold uppercase tracking-[0.06em] text-atlantic sm:text-[0.7rem]">209 m</span>
+              <span class="map-txt map-counter-rotate rotate-[90deg] font-mono text-[0.58rem] font-bold uppercase tracking-[0.06em] text-atlantic sm:rotate-0 sm:text-[0.7rem]">209 m</span>
             </span>
-            <span class="map-item absolute left-[86.2%] top-[60.3%] flex -translate-x-1/2 flex-col items-center gap-0.5" style="width:7.5%">
+            <span class="map-item absolute left-[86.1%] top-[87.04%] flex -translate-x-1/2 flex-col items-center gap-0.5 sm:left-[86.2%] sm:top-[60.3%]" style="width:7.5%">
               <svg class="w-full" viewBox="0 0 200 24" preserveAspectRatio="none" style="height:11px" fill="none" aria-hidden="true">
                 <g stroke="var(--color-atlantic)" stroke-width="1.6" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="2" y1="2" x2="2" y2="22" /><line x1="198" y1="2" x2="198" y2="22" />
@@ -233,11 +239,12 @@ const droneZones = [
                   <polyline points="12,6 2,12 12,18" /><polyline points="188,6 198,12 188,18" />
                 </g>
               </svg>
-              <span class="map-txt font-mono text-[0.58rem] font-bold uppercase tracking-[0.06em] text-atlantic sm:text-[0.7rem]">129 m</span>
+              <span class="map-txt map-counter-rotate rotate-[90deg] font-mono text-[0.58rem] font-bold uppercase tracking-[0.06em] text-atlantic sm:rotate-0 sm:text-[0.7rem]">129 m</span>
             </span>
             {/* clearways */}
-            <span class="map-item absolute left-[90.6%] top-[5.3%] -translate-x-1/2 font-mono text-[0.58rem] font-bold uppercase tracking-[0.08em] text-atlantic sm:text-[0.68rem]"><span class="map-txt">CWY 279 m × 150 m</span></span>
-            <span class="map-item absolute left-[10.5%] top-[2.4%] -translate-x-1/2 font-mono text-[0.58rem] font-bold uppercase tracking-[0.08em] text-atlantic sm:text-[0.68rem]"><span class="map-txt">CWY 74 m × 150 m</span></span>
+            <span class="map-item absolute left-[90.13%] top-[-50.99%] -translate-x-1/2 font-mono text-[0.58rem] font-bold uppercase tracking-[0.08em] text-atlantic sm:left-[90.6%] sm:top-[5.3%] sm:text-[0.68rem]"><span class="map-txt map-counter-rotate rotate-[90deg] inline-block sm:rotate-0">CWY 279 m × 150 m</span></span>
+            <span class="map-item absolute left-[10.22%] top-[-51.08%] -translate-x-1/2 font-mono text-[0.58rem] font-bold uppercase tracking-[0.08em] text-atlantic sm:left-[10.5%] sm:top-[2.4%] sm:text-[0.68rem]"><span class="map-txt map-counter-rotate rotate-[90deg] inline-block sm:rotate-0">CWY 74 m × 150 m</span></span>
+          </div>
           </div>
 
           {/* Legend */}
@@ -525,6 +532,13 @@ const droneZones = [
 
   <script>
     document.addEventListener("astro:page-load", () => {
+      // Declared here (not next to initEidlWeather() below) because that
+      // function is called earlier in this listener (initEidlWeather();)
+      // than its own body appears in the file — a plain `let` down there
+      // would still be in its temporal dead zone at call time and throw,
+      // silently aborting the rest of this listener (initMapEditor()
+      // included) on every run.
+      let eidlWeatherTimer: ReturnType<typeof setInterval> | undefined;
       const links = [...document.querySelectorAll<HTMLElement>("[data-nav-link]")];
       if (!links.length) return;
       const setActive = (id: string) => links.forEach((l) => l.classList.toggle("is-active", l.dataset.navLink === id));
@@ -758,7 +772,6 @@ const droneZones = [
         setInterval(render, 60000);
       }
 
-      let eidlWeatherTimer: ReturnType<typeof setInterval> | undefined;
       function initEidlWeather() {
         const host = document.getElementById("eidl-weather");
         if (!host) return;
@@ -837,6 +850,10 @@ const droneZones = [
         if (!canvas || canvas.dataset.editorReady) return;
         canvas.dataset.editorReady = "1";
         canvas.style.touchAction = "none";
+        // The toolbar lives on the wrap (not the canvas) so the mobile
+        // preview's rotation — applied to #map-canvas — doesn't drag the
+        // toolbar diagonally along with it.
+        const wrap = document.getElementById("map-canvas-wrap") || canvas;
 
         const labelCls = "map-item map-user absolute flex -translate-x-1/2 items-center gap-1 font-mono text-[0.62rem] font-bold uppercase tracking-[0.1em] text-atlantic sm:text-[0.74rem]";
         const arrowRight = '<svg viewBox="0 0 24 10" class="h-2 w-6" aria-hidden="true"><line x1="1" y1="5" x2="21" y2="5" stroke="currentColor" stroke-width="1.6"/><polyline points="16,1 22,5 16,9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -850,7 +867,7 @@ const droneZones = [
           + '<button data-act="del" style="cursor:pointer;background:#9c3d54;color:#fff;border:0;padding:5px 8px;border-radius:5px;font:inherit">Delete</button>'
           + '<button data-act="copy" style="cursor:pointer;background:#2e7d5b;color:#fff;border:0;padding:5px 8px;border-radius:5px;font:inherit">Copy layout</button>'
           + '<span data-read style="opacity:.85;min-width:96px"></span>';
-        canvas.appendChild(bar);
+        wrap.appendChild(bar);
         const read = bar.querySelector("[data-read]") as HTMLElement;
         let selected: HTMLElement | null = null;
 
@@ -858,7 +875,7 @@ const droneZones = [
         const handle = bar.querySelector("[data-handle]") as HTMLElement;
         handle.addEventListener("pointerdown", (ev: PointerEvent) => {
           ev.preventDefault();
-          const c = canvas.getBoundingClientRect(), r = bar.getBoundingClientRect();
+          const c = wrap.getBoundingClientRect(), r = bar.getBoundingClientRect();
           const gx = ev.clientX - r.left, gy = ev.clientY - r.top;
           bar.style.right = "auto";
           const move = (e: PointerEvent) => {
@@ -870,9 +887,57 @@ const droneZones = [
           document.addEventListener("pointerup", up);
         });
 
+        // Labels are positioned via left/top % on #map-canvas, which the
+        // mobile preview below can rotate as one rigid unit (canvas +
+        // every label together) to stand the runway upright. Plain
+        // bounding-rect math (mouse px ÷ canvas px) only holds when
+        // there's no rotation — once rotated, screen-space deltas point in
+        // the wrong direction relative to the canvas's own left/top axes,
+        // which read as "backwards" dragging. Rather than hand-derive the
+        // rotation trig (error-prone, and it'd need to match whatever
+        // angle the other script currently has applied), three invisible
+        // 0×0 markers are positioned at local (0%,0%)/(100%,0%)/(0%,100%)
+        // — exactly like a real label would be — so their on-screen
+        // position after the SAME transform gives the canvas's true local
+        // axes empirically, whatever the current rotation happens to be.
+        const axisOrigin = document.createElement("span");
+        const axisX = document.createElement("span");
+        const axisY = document.createElement("span");
+        [[axisOrigin, 0, 0], [axisX, 100, 0], [axisY, 0, 100]].forEach(([el, l, t]) => {
+          (el as HTMLElement).style.cssText = `position:absolute;left:${l}%;top:${t}%;width:0;height:0;pointer-events:none;`;
+          canvas.appendChild(el as HTMLElement);
+        });
+
+        const screenToLocalPct = (clientX: number, clientY: number) => {
+          const o = axisOrigin.getBoundingClientRect();
+          const xr = axisX.getBoundingClientRect();
+          const yr = axisY.getBoundingClientRect();
+          const ax = xr.left - o.left, ay = xr.top - o.top; // screen vector for +100% left
+          const bx = yr.left - o.left, by = yr.top - o.top; // screen vector for +100% top
+          const px = clientX - o.left, py = clientY - o.top;
+          const det = ax * by - bx * ay || 1;
+          return {
+            l: +(((px * by - bx * py) / det) * 100).toFixed(2),
+            t: +(((ax * py - px * ay) / det) * 100).toFixed(2),
+          };
+        };
+
+        // Ground-truth current position: labels start out positioned via
+        // Tailwind classes (left-[18.3%] etc.), not inline style, so
+        // el.style.left is empty until the very first drag ever sets it.
+        // Trying to reverse-engineer a rotated element's local % from its
+        // (axis-aligned) bounding box turned out fragile — which corner/
+        // edge "top" or "left" corresponds to shifts with the rotation
+        // angle. Reading the number straight out of the inline style or
+        // the class text sidesteps that entirely; only mouse movement
+        // itself needs the rotation-aware conversion (screenToLocalPct).
         const posPct = (el: HTMLElement) => {
-          const c = canvas.getBoundingClientRect(), r = el.getBoundingClientRect();
-          return { l: +(((r.left + r.width / 2 - c.left) / c.width) * 100).toFixed(1), t: +(((r.top - c.top) / c.height) * 100).toFixed(1) };
+          const inlineL = parseFloat(el.style.left);
+          const inlineT = parseFloat(el.style.top);
+          if (!Number.isNaN(inlineL) && !Number.isNaN(inlineT)) return { l: inlineL, t: inlineT };
+          const lMatch = el.className.match(/left-\[([\d.]+)%\]/);
+          const tMatch = el.className.match(/top-\[([\d.]+)%\]/);
+          return { l: lMatch ? parseFloat(lMatch[1]) : 50, t: tMatch ? parseFloat(tMatch[1]) : 50 };
         };
         const select = (el: HTMLElement | null) => {
           if (selected) selected.style.outline = "";
@@ -886,14 +951,23 @@ const droneZones = [
             if ((ev.target as HTMLElement).isContentEditable) return;
             ev.preventDefault();
             select(el);
-            const c = canvas.getBoundingClientRect(), r = el.getBoundingClientRect();
-            const gx = ev.clientX - (r.left + r.width / 2), gy = ev.clientY - r.top;
+            const prevZ = el.style.zIndex;
+            el.style.zIndex = "70"; // above the toolbar (30) and preview panel (60) — dragging near either used to hide the label underneath it
+            const startPtr = screenToLocalPct(ev.clientX, ev.clientY);
+            const startElPos = posPct(el);
+            const grabL = startPtr.l - startElPos.l;
+            const grabT = startPtr.t - startElPos.t;
             const move = (e: PointerEvent) => {
-              el.style.left = (((e.clientX - gx - c.left) / c.width) * 100).toFixed(2) + "%";
-              el.style.top = (((e.clientY - gy - c.top) / c.height) * 100).toFixed(2) + "%";
-              const p = posPct(el); read.textContent = p.l + "% , " + p.t + "%";
+              const p = screenToLocalPct(e.clientX, e.clientY);
+              el.style.left = (p.l - grabL).toFixed(2) + "%";
+              el.style.top = (p.t - grabT).toFixed(2) + "%";
+              const pp = posPct(el); read.textContent = pp.l + "% , " + pp.t + "%";
             };
-            const up = () => { document.removeEventListener("pointermove", move); document.removeEventListener("pointerup", up); };
+            const up = () => {
+              document.removeEventListener("pointermove", move);
+              document.removeEventListener("pointerup", up);
+              el.style.zIndex = prevZ;
+            };
             document.addEventListener("pointermove", move);
             document.addEventListener("pointerup", up);
           });
@@ -938,6 +1012,116 @@ const droneZones = [
         });
       }
     });
+
+    // Runway diagram — mobile only: rotate the (landscape) chart -90° into a
+    // straight portrait view, RWY 02/023° at the bottom pointing straight
+    // up. Sized to fit the whole drawing within one screen height (no
+    // scrolling needed to see the runway shape itself) — at this image's
+    // aspect ratio (2896:392) that makes it fairly narrow, so labels near
+    // the edges may run close together or extend slightly; the drawing
+    // itself staying fully visible was the priority here. The angle is
+    // adjustable (see the ?edit panel below) if a tilted, wider-but-off-
+    // vertical layout is wanted again later. The canvas keeps its native
+    // aspect ratio, just reoriented — its own width is set in JS so the rotated
+    // bounding box matches the target height, since a plain CSS transform
+    // doesn't resize the element's box. Each label carries the matching
+    // counter-rotation (.map-counter-rotate, rotate-[90deg] in the markup)
+    // so the numbers stay upright; direction arrows/ruler bars are left
+    // un-countered so they end up pointing along the runway's new axis.
+    // Desktop is untouched — sm: classes disable all of this and the chart
+    // renders exactly as before.
+    //
+    // Under ?edit, a small angle/height panel lets you tune the rotated,
+    // sized result live and read off the values to bake in here as the new
+    // defaults. Preview starts on by default (same as real mobile
+    // visitors see) — the label-drag editor above measures the canvas's
+    // actual current axes on every move, so dragging works correctly
+    // whether this is rotated or flattened via the panel's toggle.
+    document.addEventListener("astro:page-load", () => {
+      const wrap = document.getElementById("map-canvas-wrap");
+      const canvas = document.getElementById("map-canvas");
+      if (!wrap || !canvas) return;
+      const ASPECT = 2896 / 392; // original landscape width/height
+      const isEdit = new URLSearchParams(location.search).has("edit");
+
+      let angle = 90; // degrees off vertical — straight portrait orientation
+      let heightFrac = 0.72; // fraction of viewport height, capped below
+      // Always on by default, edit mode included — the label editor's drag
+      // math (in initMapEditor() above) measures the canvas's actual
+      // current axes on every move, so it stays correct whether rotated or
+      // flat. No more need to flatten the view just to drag labels.
+      let previewOn = true;
+
+      const counterRotated = () => Array.from(canvas.querySelectorAll<HTMLElement>(".map-counter-rotate"));
+
+      const reset = () => {
+        wrap.style.height = "";
+        wrap.style.width = "";
+        wrap.style.marginInline = "";
+        canvas.style.position = "";
+        canvas.style.top = "";
+        canvas.style.left = "";
+        canvas.style.width = "";
+        canvas.style.transform = "";
+        counterRotated().forEach((el) => { el.style.rotate = ""; });
+      };
+
+      const apply = () => {
+        if (window.innerWidth >= 640 || !previewOn) { reset(); return; }
+        const rad = (angle * Math.PI) / 180;
+        const s = Math.abs(Math.sin(rad));
+        const c = Math.abs(Math.cos(rad));
+        // Leave room above for the "Runway 02 / 20" heading and the box's
+        // own padding so the whole drawing — not just part of it — lands
+        // inside one viewport.
+        const targetH = Math.min(window.innerHeight * heightFrac, 700);
+        // bbox height = Cw*s + (Cw/ASPECT)*c → solve for the canvas's own
+        // (pre-rotation) width Cw, then derive the bbox width to match.
+        const cw = targetH / (s + c / ASPECT);
+        const bboxWidth = cw * c + (cw / ASPECT) * s;
+        wrap.style.height = `${targetH}px`;
+        wrap.style.width = `${bboxWidth}px`;
+        wrap.style.marginInline = "auto";
+        canvas.style.position = "absolute";
+        canvas.style.top = "50%";
+        canvas.style.left = "50%";
+        canvas.style.width = `${cw}px`;
+        canvas.style.transform = `translate(-50%, -50%) rotate(-${angle}deg)`;
+        counterRotated().forEach((el) => { el.style.rotate = `${angle}deg`; });
+      };
+
+      apply();
+      window.addEventListener("resize", apply);
+
+      if (isEdit) {
+        const panel = document.createElement("div");
+        panel.contentEditable = "false";
+        panel.style.cssText = "position:fixed;left:8px;bottom:8px;z-index:60;display:flex;flex-direction:column;gap:7px;background:rgba(24,29,22,.88);color:#fff;padding:10px 12px;border-radius:10px;font:600 11px/1.4 ui-monospace,monospace;max-width:220px";
+        panel.innerHTML =
+          '<strong style="font-size:11px;opacity:.85">Runway mobile preview</strong>' +
+          '<label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" data-rp-toggle> Preview rotated</label>' +
+          '<label>Angle <input type="range" data-rp-angle min="0" max="90" step="1" value="90" style="width:100%;vertical-align:middle"></label>' +
+          '<label>Height <input type="range" data-rp-height min="30" max="100" step="1" value="72" style="width:100%;vertical-align:middle"></label>' +
+          '<span data-rp-read style="opacity:.85"></span>' +
+          '<span style="opacity:.6;font-weight:400">Drag labels directly, rotated or flat — angle/height only change the frame.</span>';
+        document.body.appendChild(panel);
+
+        const read = panel.querySelector("[data-rp-read]") as HTMLElement;
+        const toggleEl = panel.querySelector("[data-rp-toggle]") as HTMLInputElement;
+        const angleEl = panel.querySelector("[data-rp-angle]") as HTMLInputElement;
+        const heightEl = panel.querySelector("[data-rp-height]") as HTMLInputElement;
+        toggleEl.checked = previewOn;
+
+        const updateRead = () => {
+          read.textContent = `rotate(-${angle}deg) · ${Math.round(heightFrac * 100)}vh`;
+        };
+        updateRead();
+
+        toggleEl.addEventListener("change", () => { previewOn = toggleEl.checked; apply(); });
+        angleEl.addEventListener("input", () => { angle = +angleEl.value; updateRead(); apply(); });
+        heightEl.addEventListener("input", () => { heightFrac = +heightEl.value / 100; updateRead(); apply(); });
+      }
+    });
   </script>
 
   <style>
@@ -947,7 +1131,7 @@ const droneZones = [
        keeps this scoped to the pilots hero (the homepage "Aerfort" F is safe). */
     .hero-display :global(.f-fix) { font-size: 0.91em; }
     [data-nav-link].is-active { border-color: var(--color-atlantic); color: var(--color-ink); }
-    .map-item { white-space: nowrap; }
+    .map-item { white-space: nowrap; z-index: 20; }
     .uas-ring { transition: fill-opacity .2s ease, stroke-width .2s ease; cursor: pointer; }
     .uas-ring.is-hot { fill-opacity: .4; stroke-width: 4; }
     .uas-card { transition: background-color .2s ease, border-color .2s ease; outline: none; }

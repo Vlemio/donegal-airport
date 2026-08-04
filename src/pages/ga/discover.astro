@@ -239,7 +239,7 @@ const golfClubs = [
   { name: "Gweedore Golf Club",        location: "Gaoth Dobhair",    contact: "gweedoregc@gmail.com",         phone: "+353 74 9531140",   website: "https://www.gweedoregolfclub.com",     photo: "https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_03.png" },
   { name: "Donegal Golf Club",         location: "Murbhach",     contact: "info@donegalgolfclub.ie",      phone: "+353 74 97 34054",  website: "https://www.donegalgolfclub.ie",       photo: "https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_06.png" },
   { name: "Bundoran Golf Club",        location: "Bun Dobhráin",    contact: "info@bundorangolfclub.com",    phone: "+353 71 984 1302",  website: "https://www.bundorangolfclub.com",     photo: "/photos/golf/bundoran.jpg" },
-  { name: "North West Golf Club",      location: "Bun Cranncha",    contact: "booking@northwestgolfclub.com",phone: "+353 74 936 1715",  website: "https://www.northwestgolfclub.com",    photo: "https://donegalairport.ie/wp-content/uploads/2024/12/buncrana.jpg" },
+  { name: "North West Golf Club",      location: "Bun Cranncha",    contact: "booking@northwestgolfclub.com",phone: "+353 74 936 1715",  website: "https://www.northwestgolfclub.com",    photo: "/photos/golf/north-west.png" },
 ] as const;
 
 const islands = [
@@ -354,7 +354,7 @@ const islands = [
     <div class="absolute inset-0 flex flex-col items-center justify-center px-6 text-center">
       <p
         data-animate="fade-up"
-        class="font-mono text-[0.68rem] uppercase tracking-[0.34em] text-white"
+        class="font-mono text-[0.6rem] uppercase tracking-[0.1em] text-white sm:text-[0.68rem] sm:tracking-[0.34em]"
         style="text-shadow: 0 1px 10px rgba(0,0,0,0.8)"
       >
         Dún na nGall · Éire · Bealach Fiáin an Atlantaigh
@@ -557,36 +557,63 @@ const islands = [
             data-animate="fade-up"
             data-animate-delay={`${0.05 * i}`}
             data-tilt
-            class={`group flex flex-col${a.code === "01" ? " cursor-pointer select-none" : ""}`}
-            role={a.code === "01" ? "button" : undefined}
-            aria-expanded={a.code === "01" ? "false" : undefined}
-            aria-controls={a.code === "01" ? "golf-panel" : undefined}
+            class="group flex flex-col"
           >
-            <figure
-              data-drag-fig
-              class="relative aspect-[4/5] w-full overflow-hidden bg-surface-lo"
-            >
-              {a.src && (
-                <img
-                  data-drag-img
-                  src={a.src}
-                  alt={a.label}
-                  class="absolute inset-0 h-full w-full object-cover"
-                  style={`object-position: ${a.srcPos}`}
-                  loading="lazy"
-                  decoding="async"
-                />
-              )}
-              <div
-                class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-                aria-hidden="true"
-              ></div>
-              <p class="pointer-events-none absolute bottom-4 left-5 right-4 font-display text-[clamp(1.1rem,2.2vw,1.55rem)] font-normal leading-tight text-[#f0eee6] opacity-0 transition-opacity duration-500 group-hover:opacity-100">
-                {a.tagline}
-              </p>
-              <div data-drag-overlay class="pointer-events-none absolute inset-0"></div>
-              <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono text-[0.6rem] text-white backdrop-blur-sm"></div>
-            </figure>
+            {a.code === "01" ? (
+              <a href="#golf-panel" aria-label="Léim go dtí na galfchlubanna" class="contents">
+                <figure
+                  data-drag-fig
+                  class="relative aspect-[4/5] w-full overflow-hidden bg-surface-lo"
+                >
+                  {a.src && (
+                    <img
+                      data-drag-img
+                      src={a.src}
+                      alt={a.label}
+                      class="absolute inset-0 h-full w-full object-cover"
+                      style={`object-position: ${a.srcPos}`}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  )}
+                  <div
+                    class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                    aria-hidden="true"
+                  ></div>
+                  <p class="pointer-events-none absolute bottom-4 left-5 right-4 font-display text-[clamp(1.1rem,2.2vw,1.55rem)] font-normal leading-tight text-[#f0eee6] opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+                    {a.tagline}
+                  </p>
+                  <div data-drag-overlay class="pointer-events-none absolute inset-0"></div>
+                  <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono text-[0.6rem] text-white backdrop-blur-sm"></div>
+                </figure>
+              </a>
+            ) : (
+              <figure
+                data-drag-fig
+                class="relative aspect-[4/5] w-full overflow-hidden bg-surface-lo"
+              >
+                {a.src && (
+                  <img
+                    data-drag-img
+                    src={a.src}
+                    alt={a.label}
+                    class="absolute inset-0 h-full w-full object-cover"
+                    style={`object-position: ${a.srcPos}`}
+                    loading="lazy"
+                    decoding="async"
+                  />
+                )}
+                <div
+                  class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/70 via-transparent to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                  aria-hidden="true"
+                ></div>
+                <p class="pointer-events-none absolute bottom-4 left-5 right-4 font-display text-[clamp(1.1rem,2.2vw,1.55rem)] font-normal leading-tight text-[#f0eee6] opacity-0 transition-opacity duration-500 group-hover:opacity-100">
+                  {a.tagline}
+                </p>
+                <div data-drag-overlay class="pointer-events-none absolute inset-0"></div>
+                <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono text-[0.6rem] text-white backdrop-blur-sm"></div>
+              </figure>
+            )}
 
             <div class="mt-4 flex flex-1 flex-col">
               <div class="flex items-start justify-between gap-3">
@@ -600,18 +627,16 @@ const islands = [
                     )}
                   </h3>
                 </div>
-                {a.code === "01" && (
-                  <span id="golf-toggle-arrow" class="mt-2 shrink-0 font-mono text-[0.7rem] text-atlantic transition-transform duration-300 group-hover:translate-y-1">
-                    ↓
-                  </span>
-                )}
               </div>
 
               <div class="mt-auto border-t border-line pt-3 min-h-[4rem] space-y-2.5">
                 {a.code === "01" ? (
-                  <span class="block font-mono text-[0.72rem] tracking-[0.04em] text-ink/40">
-                    10 gcúrsa craobhchomórtais · tapáil chun iniúchadh
-                  </span>
+                  <a href="#golf-panel" class="group/golf flex items-center justify-between gap-2">
+                    <span class="font-mono text-[0.72rem] tracking-[0.04em] text-ink/55 transition-colors group-hover/golf:text-atlantic">
+                      10 gcúrsa craobhchomórtais
+                    </span>
+                    <span class="shrink-0 font-mono text-[0.7rem] text-atlantic/70">↓</span>
+                  </a>
                 ) : a.providers.length > 0 ? (
                   a.providers.map((p) => (
                     <div>
@@ -665,25 +690,20 @@ const islands = [
         ))}
       </ul>
 
-      <div
-        id="golf-panel"
-        aria-hidden="true"
-        class="mt-14 overflow-hidden border-t border-line"
-        style="max-height: 0; transition: max-height 0.55s cubic-bezier(0.4,0,0.2,1);"
-      >
+      <div id="golf-panel" class="mt-14 scroll-mt-[calc(var(--header-h)+1rem)] border-t border-line">
         <div class="pt-12 pb-2 flex items-end justify-between gap-6">
           <div>
-            <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.26em] text-atlantic">
+            <p data-animate="fade-up" class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.26em] text-atlantic">
               Galf · 10 gcúrsa craobhchomórtais
             </p>
-            <h3 class="mt-3 font-display text-[clamp(1.6rem,3vw,2.6rem)] font-normal leading-[1.02]">
+            <h3 data-animate="fade-up" data-animate-delay="0.1" class="mt-3 font-display text-[clamp(1.6rem,3vw,2.6rem)] font-normal leading-[1.02]">
               Deich gcúrsa. Aon chontae amháin.
             </h3>
           </div>
           <span id="golf-counter" class="font-mono text-[0.62rem] text-mute tabular-nums shrink-0">3 / {golfClubs.length}</span>
         </div>
 
-        <div class="mt-8 flex items-center gap-6">
+        <div data-animate="fade-up" data-animate-delay="0.22" class="mt-8 flex items-center gap-6">
           <button
             id="golf-prev"
             aria-label="Roimhe seo"
@@ -875,11 +895,6 @@ const islands = [
 
   #isl-prev:disabled,
   #isl-next:disabled { opacity: 0.2; pointer-events: none; }
-
-  #golf-toggle-arrow { transition: transform 0.35s ease; }
-  #golf-card:hover #golf-toggle-arrow { transform: translateY(3px); }
-  #golf-panel.is-open ~ * #golf-toggle-arrow,
-  #golf-card[aria-expanded="true"] #golf-toggle-arrow { transform: rotate(180deg); }
 </style>
 
 <script>
@@ -972,11 +987,15 @@ const islands = [
     const cards = Array.from(track.querySelectorAll<HTMLElement>("[data-golf-card]"));
     const gap = 24;
     let idx = 0;
-    const perView = 3;
-    const maxIdx = cards.length - perView;
+
+    // Desktop keeps its original fixed 3-per-view; mobile/tablet scale down
+    // like the islands carousel (same 1024/640 breakpoints), instead of
+    // squeezing 3 cards into a phone-width track.
+    const getPerView = () => window.innerWidth >= 1024 ? 3 : window.innerWidth >= 640 ? 2 : 1;
 
     const setWidths = () => {
-      const w = Math.floor((wrap.offsetWidth - gap * (perView - 1)) / perView);
+      const pv = getPerView();
+      const w = Math.floor((wrap.offsetWidth - gap * (pv - 1)) / pv);
       cards.forEach((c) => (c.style.width = `${w}px`));
     };
 
@@ -985,10 +1004,12 @@ const islands = [
     });
 
     const go = (i: number) => {
+      const pv = getPerView();
+      const maxIdx = Math.max(0, cards.length - pv);
       idx = Math.max(0, Math.min(maxIdx, i));
       const step = cards[0].offsetWidth + gap;
       track.style.transform = `translateX(-${idx * step}px)`;
-      if (counter) counter.textContent = `${Math.min(idx + perView, cards.length)} / ${cards.length}`;
+      if (counter) counter.textContent = `${Math.min(idx + pv, cards.length)} / ${cards.length}`;
       prevBtn.disabled = idx === 0;
       nextBtn.disabled = idx >= maxIdx;
     };
@@ -999,31 +1020,6 @@ const islands = [
     prevBtn.addEventListener("click", () => go(idx - 1));
     nextBtn.addEventListener("click", () => go(idx + 1));
     window.addEventListener("resize", () => { setWidths(); go(idx); });
-  }
-
-  function initGolfPanel() {
-    const card  = document.getElementById("golf-card");
-    const panel = document.getElementById("golf-panel");
-    const arrow = document.getElementById("golf-toggle-arrow");
-    if (!card || !panel) return;
-
-    let open = false;
-    let carouselReady = false;
-
-    card.addEventListener("click", () => {
-      open = !open;
-      card.setAttribute("aria-expanded", String(open));
-      panel.setAttribute("aria-hidden", String(!open));
-      panel.classList.toggle("is-open", open);
-      panel.style.maxHeight = open ? panel.scrollHeight + 600 + "px" : "0";
-      if (arrow) arrow.style.transform = open ? "rotate(180deg)" : "";
-      if (open) {
-        setTimeout(() => {
-          panel.scrollIntoView({ behavior: "smooth", block: "start" });
-          if (!carouselReady) { initGolfCarousel(); carouselReady = true; }
-        }, 80);
-      }
-    });
   }
 
   function initGrain() {
@@ -1201,7 +1197,7 @@ const islands = [
 
   document.addEventListener("astro:page-load", () => {
     initPhotoDrag();
-    initGolfPanel();
+    initGolfCarousel();
     initIslandCarousel();
     initGrain();
     initCardTilt();

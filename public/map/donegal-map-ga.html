@@ -13,7 +13,8 @@
   *{box-sizing:border-box;}
   .maplibregl-popup-content{border-radius:12px!important;padding:12px!important;box-shadow:0 18px 50px rgba(8,20,15,.45)!important;background:#fbf6ea!important;border:1px solid #e7dcc2!important;}
   .maplibregl-popup-tip{border-top-color:#fbf6ea!important;border-bottom-color:#fbf6ea!important;}
-  .maplibregl-popup-close-button{font-size:18px!important;color:#7c8a7e!important;padding:2px 8px!important;}
+  .maplibregl-popup-close-button{font-size:17px!important;line-height:1!important;color:#fff!important;background:rgba(20,30,20,.55)!important;width:24px!important;height:24px!important;top:6px!important;right:6px!important;border-radius:50%!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:0!important;}
+  .maplibregl-popup-close-button:hover{background:rgba(20,30,20,.78)!important;}
   .maplibregl-ctrl-attrib{display:none!important;}
   .maplibregl-marker{transition:opacity .25s ease;}
   .donrail::-webkit-scrollbar{width:7px;}
@@ -121,12 +122,12 @@ const PLACES = [
   { cat:'islands', name:'Árainn Mhór', sub:'Arranmore',      lng:-8.52591, lat:54.98914, desc:'Oileán áitrithe is mó Dhún na nGall, pobal Gaeltachta.', photo:'/photos/map/arranmore.jpg' },
   { cat:'islands', name:'Toraigh', sub:'Tory Island',                    lng:-8.2333,  lat:55.2667,  desc:'Oileán iargúlta lena rí féin agus pobal ealaíontóirí.', photo:'/photos/map/tory-island.jpg' },
   { cat:'islands', name:'Oileán Ghabhla', sub:'Gola Island',        lng:-8.36369, lat:55.09094, desc:'Aillte agus tránna; tóir ag dreapadóirí carraige air.', photo:'/photos/map/gola-island.jpg' },
-  { cat:'islands', name:'Inis Bó Finne', sub:'Inishbofin',         lng:-8.16954, lat:55.17661, desc:'Oileán beag Gaeltachta amach ó Mhachaire Rabhartaigh.' },
+  { cat:'islands', name:'Inis Bó Finne', sub:'Inishbofin',         lng:-8.16954, lat:55.17661, desc:'Oileán beag Gaeltachta amach ó Mhachaire Rabhartaigh.', photo:'/photos/discover-island-bofin.jpg' },
   { cat:'islands', name:'Inis Fraoigh', sub:'Inishfree',               lng:-8.4411,  lat:54.94479, desc:'Oileánín amach ó chósta na Rosann.', photo:'/photos/map/inishfree.jpg' },
   { cat:'islands', name:'Inis Oirthir', sub:'Inishirrer',               lng:-8.3357,  lat:55.12433, desc:'In aice le hOileán Ghabhla, le huisce gléghlan.', photo:'/photos/map/inishirrer.jpg' },
   { cat:'islands', name:'Inis Caorach', sub:'Inishkerragh',               lng:-8.49415, lat:54.96017, desc:'Oileánín neamháitrithe d\'oileánra na Rosann.', photo:'/photos/map/inishkerragh.jpg' },
   { cat:'islands', name:'Inis Trá Thoill', sub:'Inishtrahull',          lng:-7.2333,  lat:55.4333,  desc:'Oileán is faide ó thuaidh na hÉireann, amach ó Chionn Mhálanna.', photo:'/photos/map/inishtrahull.jpg' },
-  { cat:'islands', name:'Oileán Ruaidh', sub:'Island Roy',         lng:-7.79068, lat:55.1922,  desc:'Oileánín i gCuan Mhaoil Ruaidh, in aice le Na Dúnaibh.' },
+  { cat:'islands', name:'Oileán Ruaidh', sub:'Island Roy',         lng:-7.79068, lat:55.1922,  desc:'Oileánín i gCuan Mhaoil Ruaidh, in aice le Na Dúnaibh.', photo:'/photos/discover-island-roy.jpg' },
   { cat:'golf',    name:'Rosapenna Golf Resort', sub:'Na Dúnaibh',                   lng:-7.82604, lat:55.18671, photo:'https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_05.png' },
   { cat:'golf',    name:'Ballyliffin Golf Club', sub:'Baile Uí Fhloinn (Inis Eoghain)',    lng:-7.3708,  lat:55.30551, photo:'https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_08.png' },
   { cat:'golf',    name:'Portsalon Golf Club', sub:'Port Salann',                  lng:-7.6217,  lat:55.2056, photo:'https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_07.png' },
@@ -136,7 +137,7 @@ const PLACES = [
   { cat:'golf',    name:'Gweedore Golf Club', sub:'Gaoth Dobhair',                  lng:-8.31614, lat:55.08554, photo:'https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_03.png' },
   { cat:'golf',    name:'Donegal Golf Club', sub:'Murbhach',                   lng:-8.15838, lat:54.61403, photo:'https://donegalairport.ie/wp-content/uploads/2020/09/GOLF_06.png' },
   { cat:'golf',    name:'Bundoran Golf Club', sub:'Bun Dobhráin',                  lng:-8.27408, lat:54.48739, photo:'/photos/map/bundoran-golf-club.jpg' },
-  { cat:'golf',    name:'North West Golf Club', sub:'Bun Cranncha',                  lng:-7.45422, lat:55.11766, photo:'https://donegalairport.ie/wp-content/uploads/2024/12/buncrana.jpg' },
+  { cat:'golf',    name:'North West Golf Club', sub:'Bun Cranncha',                  lng:-7.45422, lat:55.11766, photo:'/photos/golf/north-west.png' },
 ];
 
 const WAW = [
@@ -246,17 +247,26 @@ function infoRow(name) {
 
 function cardHTML(pr) {
   const c = catMap[pr.cat] || {label:'',color:'#888'};
+  // Mobile's card is a fixed-position overlay (see showMobileCard) rather
+  // than a map-anchored popup, sized down a little so it comfortably clears
+  // both the decorative header above and the places sheet below. Desktop
+  // keeps its original numbers untouched.
+  const m = isMobile();
+  const cardW = m ? 208 : 236;
+  const photoH = m ? 92 : 116;
+  const titleFS = m ? 16 : 18;
+  const descFS = m ? 11.5 : 12.5;
   const photoEl = pr.photo
     ? '<img src="'+pr.photo+'" alt="'+pr.name+'" style="width:100%;height:100%;object-fit:cover;object-position:'+(pr.photoPos||'center')+';display:block;" loading="lazy">'
     : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#8a7f63;font:10.5px/1.5 monospace;text-align:center;letter-spacing:.05em;text-transform:uppercase;padding:8px;">'+pr.name+'</div>';
-  return '<div style="font-family:Karla,sans-serif;width:236px;">'
-    +'<div style="height:116px;border-radius:9px;overflow:hidden;background:'+(pr.photo?'#111b14':'repeating-linear-gradient(45deg,#e9e1cd,#e9e1cd 9px,#ded5bd 9px,#ded5bd 18px)')+';">'+photoEl+'</div>'
+  return '<div style="font-family:Karla,sans-serif;width:'+cardW+'px;">'
+    +'<div style="height:'+photoH+'px;border-radius:9px;overflow:hidden;background:'+(pr.photo?'#111b14':'repeating-linear-gradient(45deg,#e9e1cd,#e9e1cd 9px,#ded5bd 9px,#ded5bd 18px)')+';">'+photoEl+'</div>'
     +'<div style="display:flex;align-items:center;gap:7px;margin:9px 0 2px;">'
       +'<span style="width:9px;height:9px;border-radius:50%;background:'+c.color+';"></span>'
       +'<span style="font:700 9.5px/1 Karla,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:'+c.color+';">'+c.label+'</span>'
     +'</div>'
-    +'<div style="font-family:Marcellus,serif;font-size:18px;color:#1f3a2e;">'+pr.name+'</div>'
-    +(pr.desc?'<div style="font-size:12.5px;color:#4a5a4f;line-height:1.5;margin-top:3px;">'+pr.desc+'</div>':'')
+    +'<div style="font-family:Marcellus,serif;font-size:'+titleFS+'px;color:#1f3a2e;">'+pr.name+'</div>'
+    +(pr.desc?'<div style="font-size:'+descFS+'px;color:#4a5a4f;line-height:1.5;margin-top:3px;">'+pr.desc+'</div>':'')
     +infoRow(pr.name)
     +'</div>';
 }
@@ -477,7 +487,14 @@ function addPointMarker(p) {
   } else {
     el.addEventListener('click', ev => {
       ev.stopPropagation();
-      openPopup([p.lng, p.lat], { name:p.name, sub:p.sub, cat:p.cat, desc:p.desc||'', photo:p.photo, photoPos:p.photoPos });
+      // On mobile the places panel becomes a bottom sheet covering ~46% of
+      // the screen. A direct pin tap has no re-centering of its own (unlike
+      // list taps, which already go through flyToPlace's padding-aware
+      // easeTo), so a marker sitting in the lower half opened its card right
+      // behind the sheet. Reuse flyToPlace there too; desktop keeps the
+      // original open-in-place behaviour.
+      if(isMobile()) flyToPlace(p.name);
+      else openPopup([p.lng, p.lat], { name:p.name, sub:p.sub, cat:p.cat, desc:p.desc||'', photo:p.photo, photoPos:p.photoPos });
     });
   }
   elByName[p.name] = { el: el.firstElementChild || el };
@@ -521,8 +538,58 @@ function addClusterMarker(center, g) {
 
 function openPopup(coords, pr) {
   if(!map) return;
+  // On mobile the places panel is a bottom sheet and there's a tall
+  // decorative header on top — a map-anchored popup (which tracks the pin's
+  // projected screen position) can end up squeezed behind either one
+  // depending on where the pin lands and how long the description is.
+  // Rather than chase that with padding/anchor math, mobile gets a fixed
+  // overlay card that always sits in the same safe strip between the
+  // header and the sheet. Desktop is untouched — same popup as before.
+  if(isMobile()) { showMobileCard(pr); return; }
   if(popup) popup.remove();
   popup = new maplibregl.Popup({ offset:14, maxWidth:'260px' }).setLngLat(coords).setHTML(cardHTML(pr)).addTo(map);
+}
+
+let mobileCardEl = null;
+
+function showMobileCard(pr) {
+  const section = document.getElementById('don-section');
+  const aside = document.querySelector('.donaside');
+  if(!section) return;
+  const asideTop = aside ? aside.getBoundingClientRect().top : (window.innerHeight - 20);
+  // Measured live rather than hardcoded — the Gaeilge header copy runs
+  // longer and wraps further down than the English one at the same width.
+  const headerP = document.querySelector('.donhead p');
+  const headerBottom = headerP ? headerP.getBoundingClientRect().bottom : 130;
+  const topGap = headerBottom + 15;
+  const bottomGap = 14;
+  const maxH = Math.max(150, asideTop - topGap - bottomGap);
+
+  if(!mobileCardEl) {
+    mobileCardEl = document.createElement('div');
+    mobileCardEl.id = 'don-mobile-card';
+    mobileCardEl.style.cssText = 'position:absolute;left:50%;z-index:25;background:#fbf6ea;border:1px solid #e7dcc2;border-radius:12px;box-shadow:0 18px 50px rgba(8,20,15,.45);padding:12px 12px 10px;overflow-y:auto;-webkit-overflow-scrolling:touch;';
+    const closeBtn = document.createElement('button');
+    closeBtn.type = 'button';
+    closeBtn.setAttribute('aria-label', 'Close');
+    closeBtn.textContent = '×';
+    closeBtn.style.cssText = 'position:absolute;top:8px;right:8px;width:26px;height:26px;border:0;border-radius:50%;background:rgba(20,30,20,.55);display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;color:#fff;cursor:pointer;z-index:2;';
+    closeBtn.addEventListener('click', hideMobileCard);
+    const body = document.createElement('div');
+    body.id = 'don-mobile-card-body';
+    mobileCardEl.appendChild(closeBtn);
+    mobileCardEl.appendChild(body);
+    section.appendChild(mobileCardEl);
+  }
+  document.getElementById('don-mobile-card-body').innerHTML = cardHTML(pr);
+  mobileCardEl.style.top = topGap + 'px';
+  mobileCardEl.style.transform = 'translateX(-50%)';
+  mobileCardEl.style.maxHeight = maxH + 'px';
+  mobileCardEl.style.display = 'block';
+}
+
+function hideMobileCard() {
+  if(mobileCardEl) mobileCardEl.style.display = 'none';
 }
 
 function setupPoints() {
@@ -550,6 +617,12 @@ function setupPoints() {
     map.on('moveend',    onInteractEnd);
     map.on('zoomend',    onInteractEnd);
     map.on('pitchend',   onInteractEnd);
+
+    // Mobile's card is a fixed overlay, not tied to the map's own pan/zoom —
+    // if the user drags the map underneath it, close it instead of leaving
+    // it stranded mid-screen over a now-unrelated view. 'dragstart' only
+    // fires for user-initiated drags, not our own easeTo/flyTo camera moves.
+    map.on('dragstart', hideMobileCard);
 
     // At very high pitch (near maxPitch), distant points project above the
     // horizon into the sky instead of being clipped — fade markers/popup

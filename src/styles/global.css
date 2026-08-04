@@ -866,6 +866,29 @@ figure[data-story-photo] {
   grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr));
   gap: 1rem;
 }
+/* Below 640px the grid only ever fits one column — 16 airlines stacked
+   made for a very long scroll. Below, cards keep their full natural size
+   and become a native swipe-scrollable, snapping row instead — each card
+   at ~84% of the row's width so the next one peeks in on the right,
+   signalling there's more without needing arrow buttons (which had been
+   stealing width from the cards and clipping their text). */
+@media (max-width: 639px) {
+  .airline-grid {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .airline-grid::-webkit-scrollbar {
+    display: none;
+  }
+  .airline-grid .airline-pass {
+    flex: 0 0 84%;
+    scroll-snap-align: start;
+  }
+}
 .airline-pass {
   position: relative;
   display: flex;
@@ -933,8 +956,10 @@ figure[data-story-photo] {
   background-image:
     linear-gradient(to bottom, rgba(8, 22, 38, 0.50) 0%, rgba(8, 20, 33, 0.26) 42%, rgba(8, 20, 33, 0.40) 100%),
     url("/photos/operators-bg.webp");
-  background-size: cover;
-  background-position: center;
+  /* --op-bg-size/--op-bg-pos let the ?edit live editor (story.astro) drag
+     and zoom this photo; defaults match the original fixed placement. */
+  background-size: var(--op-bg-size, cover);
+  background-position: var(--op-bg-pos, center);
   color: #e9f1f8;
 }
 .cfn-operators .op-eyebrow,

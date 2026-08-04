@@ -756,6 +756,49 @@ function setupStoryPath(): void {
   });
 }
 
+/* ---------- Story chapter text reveal — mobile only ----------
+   setupStoryPath() above drives the chapter text's slide-in on desktop as
+   part of its scroll-synced SVG path, but bails out entirely below
+   1024px (the alternating left/right path layout doesn't exist on the
+   single-column mobile view). That left the mobile chapter text with no
+   entrance animation at all — it was just present the moment its section
+   scrolled into place.
+
+   This gives mobile its own reveal, independent of the desktop path
+   system so neither one can double-fire or fight the other — and unlike
+   a single fade on the whole card, each chapter reveals piece by piece in
+   reading order: the range/year line, then the title, then the lead
+   paragraph, then each body paragraph. The big background year (.story-
+   year-bg) is deliberately left out — it's a static 18%-opacity watermark
+   (see global.css), and animating it to opacity:1 turned it into a
+   jarring full-colour flash that buried the actual text animation. */
+function setupStoryMobileReveal(): void {
+  if (prefersReducedMotion()) return;
+  if (window.matchMedia("(min-width: 1024px)").matches) return;
+
+  document.querySelectorAll<HTMLElement>("[data-story-chapter] .story-card").forEach((card) => {
+    // :scope > p, > h2 in one query returns them in DOM order — range/year
+    // line, then title, then the lead paragraph, then each body paragraph.
+    const sequence = Array.from(
+      card.querySelectorAll<HTMLElement>(":scope > p, :scope > h2"),
+    );
+    if (!sequence.length) return;
+
+    gsap.fromTo(
+      sequence,
+      { opacity: 0, y: 28 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.75,
+        ease: "power3.out",
+        stagger: 0.18,
+        scrollTrigger: { trigger: card, start: "top 85%", once: true },
+      },
+    );
+  });
+}
+
 /* ---------- Sticky horizontal scroll ----------
    The wrapper provides vertical scroll distance; the inner .h-track
    translates -X as the user scrolls down. Disabled on small
@@ -923,6 +966,32 @@ function setupCursor(): void {
 }
 
 /* ---------- Lifecycle ---------- */
+// The mobile story chapters stack the photo in normal document flow below
+// the text (unlike desktop's absolutely-positioned photo, which doesn't
+// affect layout height). Those photos are loading="lazy" with no reserved
+// aspect-ratio, so at build() time — before they've loaded — the page is
+// measured shorter than it ends up. ScrollTrigger caches pixel positions
+// from that first measurement, so later chapters' triggers stayed locked
+// to the wrong (too-early, already-passed) spot once every photo above
+// them finished loading and pushed the real layout further down — the
+// deeper the chapter, the more that drift compounds. Refreshing once the
+// story photos load corrects it before any of those triggers have fired.
+function refreshAfterStoryPhotosLoad(): void {
+  const photos = document.querySelectorAll<HTMLImageElement>(
+    "[data-story-chapter] .photo-painted-img",
+  );
+  if (!photos.length) return;
+  let refreshTimer: ReturnType<typeof setTimeout>;
+  const scheduleRefresh = () => {
+    clearTimeout(refreshTimer);
+    refreshTimer = setTimeout(() => ScrollTrigger.refresh(), 120);
+  };
+  photos.forEach((img) => {
+    if (img.complete) return; // already loaded (cached) — no drift to correct
+    img.addEventListener("load", scheduleRefresh, { once: true });
+  });
+}
+
 function build(): void {
   setupReveals();
   setupSplitText();
@@ -932,6 +1001,8 @@ function build(): void {
   setupMobileHeroLoop();
   setupStickyHorizontal(); // no-op if [data-horizontal] absent
   setupStoryPath();        // no-op if [data-story-section] absent
+  setupStoryMobileReveal(); // no-op on desktop / if no story chapters
+  refreshAfterStoryPhotosLoad(); // no-op if no story photos
   ScrollTrigger.refresh();
 }
 
