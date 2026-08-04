@@ -72,7 +72,7 @@ const flightsToday = FALLBACK_FLIGHTS.flights;
   </section>
 
   <section class="eidl-next-wrap">
-    <div class="mx-auto max-w-7xl px-6 py-16">
+    <div class="mx-auto max-w-7xl px-6 py-8 md:py-16">
       <div data-animate="fade-up" class="border-t border-line pt-10">
         <p class="font-mono text-base font-bold uppercase tracking-[0.3em] text-atlantic">Book a flight</p>
         <h2 class="mt-2 font-display text-[clamp(1.6rem,3vw,2.2rem)] leading-snug text-ink">Dublin, daily. Glasgow, on selected week days.</h2>
@@ -167,7 +167,19 @@ const flightsToday = FALLBACK_FLIGHTS.flights;
   .eidl-next-wrap { background: #EDE9DE; }
 
   @media (max-width: 720px) {
-    .eidl-colhead .eidl-col-flight, .eidl-colhead .eidl-col-to { display: none; }
+    /* Rows below become a 3-line card (see .eidl-row override) so a single
+       label bar can no longer line up with the data underneath it —
+       drop the header bar on mobile rather than have it misalign. */
+    .eidl-colhead { display: none; }
+    .eidl-page { padding-bottom: 24px; }
+    .eidl-footnote { margin-top: 28px; }
+
+    /* The big standalone clock read as an orphaned number floating on its
+       own line under the title. tick() (see script below) folds the time
+       into the date line instead on mobile — hide the big clock and
+       left-align what's left so it sits naturally under the title. */
+    .eidl-clock { display: none; }
+    .eidl-clockwrap { text-align: left; }
   }
 </style>
 
@@ -199,7 +211,46 @@ const flightsToday = FALLBACK_FLIGHTS.flights;
   .eidl-flap-static { font-family: 'IBM Plex Mono', monospace; font-weight: 700; padding: 0 1px; }
 
   @media (max-width: 720px) {
-    .eidl-row { grid-template-columns: 76px minmax(120px,1.3fr) minmax(70px,1fr) 96px minmax(100px,0.9fr); gap: 10px; }
+    /* All 5 fields stay (nothing hidden) but a single row of 5 columns
+       never fits a phone width — restack as a small card instead:
+       airline on top, "city · flight" right below it in small matching
+       text, then time at its normal size; status sits beside that whole
+       stack, vertically centred. Cells have no dedicated classes to
+       target (buildRow() appends plain <span>s in source order
+       Time/Airline/City/Flight/Status), so map them to named grid areas
+       by position. Columns 1-2 are auto (fit their own content) so
+       city+flight sit snugly together instead of stretching across a
+       wide track and leaving a gap between them. */
+    .eidl-row {
+      grid-template-columns: auto auto 1fr;
+      grid-template-areas:
+        "airline airline status"
+        "city    flight  status"
+        "time    time    status";
+      gap: 1px 6px;
+      padding: 14px;
+    }
+    .eidl-row > span:nth-child(1) { grid-area: time; }
+    .eidl-row > span:nth-child(2) { grid-area: airline; }
+    .eidl-row > span:nth-child(3) { grid-area: city; }
+    .eidl-row > span:nth-child(4) { grid-area: flight; }
+    .eidl-row > span:nth-child(5) { grid-area: status; align-self: center; justify-self: end; }
+    .eidl-city { font-size: 11px; }
+    .eidl-row > span:nth-child(4)::before { content: "·"; margin-right: 5px; color: #6f6b61; }
+    /* Flight number uses the same animated flip-tile mechanism as the
+       time field (shared with desktop, so it can't change there) — flatten
+       it into plain text here so it reads as one small label with the
+       city instead of a second, mismatched digital display. */
+    .eidl-row > span:nth-child(4) .eidl-flap-tile {
+      background: none !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
+      width: auto !important;
+      height: auto !important;
+      font-size: 11px !important;
+      color: #d8d4c8 !important;
+    }
+    .eidl-row > span:nth-child(4) .seam { display: none !important; }
   }
   @media (prefers-reduced-motion: reduce) {
     .eidl-flap-tile .glyph { animation: none !important; }
@@ -479,7 +530,14 @@ const flightsToday = FALLBACK_FLIGHTS.flights;
       var wd = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Dublin', weekday: 'short' }).format(now);
       var day = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Dublin', day: 'numeric' }).format(now);
       var mon = new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Dublin', month: 'short' }).format(now);
-      dateEl.textContent = (wd + ' ' + day + ' ' + mon).toUpperCase() + ' · Local time';
+      var datePart = (wd + ' ' + day + ' ' + mon).toUpperCase();
+      // Mobile hides the big standalone clock (see CSS) and folds the
+      // time into this line instead — desktop keeps the original
+      // date-only text since its big clock still shows the time.
+      var isMobile = window.matchMedia('(max-width: 720px)').matches;
+      dateEl.textContent = isMobile
+        ? datePart + ' · ' + map.hour + ':' + map.minute + ' · Local time'
+        : datePart + ' · Local time';
     }
   }
   tick(); clockTimer = setInterval(tick, 1000);

@@ -127,32 +127,40 @@ const switchToLabel = t("languageToggle.switchTo", locale);
       </svg>
     </button>
   </div>
-
-  <div
-    id="mobile-nav"
-    data-mobile-nav
-    class="fixed inset-0 z-40 translate-x-full bg-surface transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:hidden"
-  >
-    <nav class="flex h-full flex-col items-center justify-center gap-4">
-      {
-        nav.map((item) => (
-          <a
-            href={item.href}
-            class:list={[
-              "font-display text-4xl transition-colors hover:text-atlantic",
-              isActive(item.href) ? "text-atlantic" : "text-ink",
-            ]}
-          >
-            {t(`nav.${item.key}` as any, locale)}
-          </a>
-        ))
-      }
-      <a
-        href={altPath}
-        class="mt-6 font-mono text-xs uppercase tracking-[0.24em] text-ink/70"
-      >
-        {switchToLabel}
-      </a>
-    </nav>
-  </div>
 </header>
+
+{/* Sibling of <header>, not a child — on at least one page (/flights) a
+    "fixed inset-0" panel nested inside the also-fixed <header> was
+    measuring at the header's own ~76px content height instead of the
+    full viewport (reproduced via getBoundingClientRect; forcing
+    position/inset back with inline !important on the panel itself did
+    not fix it, so something about the nesting itself was the trigger,
+    not an overridable CSS property). Moving it out to a sibling removes
+    that dependency regardless of the exact mechanism. */}
+<div
+  id="mobile-nav"
+  data-mobile-nav
+  class="fixed inset-0 z-40 translate-x-full bg-surface transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:hidden"
+>
+  <nav class="flex h-full flex-col items-center justify-center gap-4">
+    {
+      nav.map((item) => (
+        <a
+          href={item.href}
+          class:list={[
+            "font-display text-4xl transition-colors hover:text-atlantic",
+            isActive(item.href) ? "text-atlantic" : "text-ink",
+          ]}
+        >
+          {t(`nav.${item.key}` as any, locale)}
+        </a>
+      ))
+    }
+    <a
+      href={altPath}
+      class="mt-6 font-mono text-xs uppercase tracking-[0.24em] text-ink/70"
+    >
+      {switchToLabel}
+    </a>
+  </nav>
+</div>
