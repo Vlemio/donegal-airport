@@ -39,7 +39,7 @@
 
 ## Tipografía
 
-- **Display/serif (page):** PP Editorial New → fallback Bricolage Grotesque Variable
+- **Display/serif (page):** Bricolage Grotesque Variable
 - **Display/bold (hero H1):** Bricolage Grotesque Variable 800 — solo en el hero
 - **Sans:** Switzer (Fontshare) — cuerpo, lede, UI
 - **Mono:** Space Mono 400 (Google Fonts) — eyebrows, datos, labels, captions, nav
@@ -48,7 +48,7 @@
 **Jerarquía tipo:**
 1. Eyebrow mono uppercase tracking-[0.26em] color soft/muted
 2. Hero H1: Bricolage Grotesque 800, clamp(2.6rem,5.3vw,76px), leading-[0.96]
-3. Page headings: PP Editorial New/Bricolage, font-weight 300–400, line-height 0.95–1.05
+3. Page headings: Bricolage Grotesque, font-weight 300–400, line-height 0.95–1.05
 4. Body sans 0.94–0.97rem, line-height 1.72, color `--color-mute`
 5. Caption mono 0.6rem uppercase tracking-[0.2em]
 

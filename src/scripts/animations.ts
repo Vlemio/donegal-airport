@@ -799,6 +799,39 @@ function setupStoryMobileReveal(): void {
   });
 }
 
+/* ---------- Grid stagger reveal ----------
+   [data-stagger-reveal] containers reveal their direct children one at a
+   time instead of the whole block moving as a single rigid unit. Animating
+   the item's own opacity would fade out its background too, exposing the
+   grid gap-color underneath as a flash of color in the shape of the cell —
+   so only each item's inner content fades/slides, while the item itself
+   (and its background) stays put and fully opaque throughout. */
+function setupStaggerGrids(): void {
+  if (prefersReducedMotion()) return;
+
+  document.querySelectorAll<HTMLElement>("[data-stagger-reveal]").forEach((grid) => {
+    const items = Array.from(grid.children) as HTMLElement[];
+    if (!items.length) return;
+
+    items.forEach((item, i) => {
+      const content = Array.from(item.children) as HTMLElement[];
+      if (!content.length) return;
+      gsap.fromTo(
+        content,
+        { opacity: 0, y: 18 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.6,
+          delay: i * 0.08,
+          ease: "power3.out",
+          scrollTrigger: { trigger: grid, start: "top 88%", once: true },
+        },
+      );
+    });
+  });
+}
+
 /* ---------- Sticky horizontal scroll ----------
    The wrapper provides vertical scroll distance; the inner .h-track
    translates -X as the user scrolls down. Disabled on small
@@ -994,6 +1027,7 @@ function refreshAfterStoryPhotosLoad(): void {
 
 function build(): void {
   setupReveals();
+  setupStaggerGrids(); // no-op if no [data-stagger-reveal] grids
   setupSplitText();
   setupParallax();
   setupKenBurns();

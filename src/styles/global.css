@@ -21,42 +21,6 @@
 }
 
 /*
-  PP Editorial New — display face. Personal-use free, paid for
-  commercial. Files must be dropped into /public/fonts/ — see the
-  README there. Until they are, the cascade below falls through to
-  Bricolage Grotesque so the site looks finished from the first
-  build.
-*/
-@font-face {
-  font-family: "PP Editorial New";
-  src: url("/fonts/PPEditorialNew-Ultralight.woff2") format("woff2");
-  font-weight: 200;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "PP Editorial New";
-  src: url("/fonts/PPEditorialNew-UltralightItalic.woff2") format("woff2");
-  font-weight: 200;
-  font-style: italic;
-  font-display: swap;
-}
-@font-face {
-  font-family: "PP Editorial New";
-  src: url("/fonts/PPEditorialNew-Regular.woff2") format("woff2");
-  font-weight: 400;
-  font-style: normal;
-  font-display: swap;
-}
-@font-face {
-  font-family: "PP Editorial New";
-  src: url("/fonts/PPEditorialNew-Italic.woff2") format("woff2");
-  font-weight: 400;
-  font-style: italic;
-  font-display: swap;
-}
-
-/*
   ============================================================
   THEME — "Atlantic Daylight" v2
   Donegal Airport (CFN). Editorial-magazine character (Cereal /
@@ -67,10 +31,9 @@
 */
 @theme {
   /* Typefaces — chosen explicitly to look NOTHING like the Errigal
-     site (Fraunces + Inter). PP Editorial New is the editorial
+     site (Fraunces + Inter). Bricolage Grotesque is the editorial
      display face; Switzer is the warm humanist body. */
-  --font-display: "PP Editorial New", "Bricolage Grotesque Variable",
-    ui-serif, Georgia, serif;
+  --font-display: "Bricolage Grotesque Variable", ui-serif, Georgia, serif;
   --font-sans: "Switzer", "Inter Variable", ui-sans-serif, system-ui,
     sans-serif;
   --font-mono: "Space Mono", ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
@@ -108,10 +71,17 @@
 
 @layer base {
   /* Lenis drives smooth scrolling, so native smooth scroll is off.
-     overflow-anchor: none stops scroll-anchoring from fighting Lenis. */
+     overflow-anchor: none stops scroll-anchoring from fighting Lenis.
+     overflow-x: clip (not hidden, so position:sticky still works) is a
+     safety net: any one stray wide element (a long nav label, the footer
+     marquee's off-screen track, etc.) was letting the DOCUMENT itself grow
+     wider than the viewport, and fixed-position elements (the header, the
+     mobile nav drawer) were sizing themselves off that inflated width
+     instead of the real viewport — pushing the hamburger button off-screen. */
   html {
     scroll-behavior: auto;
     overflow-anchor: none;
+    overflow-x: clip;
     background-color: var(--color-surface);
   }
 
@@ -122,11 +92,12 @@
     font-feature-settings: "ss01", "cv01";
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    overflow-x: clip;
   }
 
   /* Display headings use the editorial face. We lean on weight 400
-     (PP Editorial New Regular) for big headlines and weight 200
-     (Ultralight) for hero-scale poetic captions à la Cereal. */
+     for big headlines and weight 200 for hero-scale poetic captions
+     à la Cereal. */
   h1,
   h2,
   h3,
@@ -439,8 +410,8 @@
   --color-line:       var(--hi-line);
 }
 
-/* H1 — Bricolage Grotesque 800 (matches design spec; PP Editorial is
-   the page display face but this hero calls for the bold geometric). */
+/* H1 — Bricolage Grotesque at weight 800, bolder than the 400 the rest
+   of the display headings use — this hero calls for the bold geometric. */
 .cfn-hero-content .hero-display {
   font-family: "Bricolage Grotesque Variable", "Bricolage Grotesque",
                system-ui, sans-serif;

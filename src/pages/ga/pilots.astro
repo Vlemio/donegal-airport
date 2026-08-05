@@ -40,8 +40,28 @@ const runwayFull = [
   ["Tairseach aistrithe", "02 → 209 m · 20 → 129 m"],
   ["Stráice / RESA", "1562 × 150 m / 120 × 60 m"],
   ["PAPI", "3.3° an dá cheann (ar chlé) · MEHT 43 ft"],
-  ["Soilse druidime", "02: LIH 420 m · 20: LIH 455 m · LED"],
+  ["Soilse druidime", "02: LIH 420 m\n20: LIH 455 m · LED"],
 ];
+/* Mobile-only: rows whose value wraps to an extra line in the narrow accordion
+   column — pull letters (and word gaps) tighter, not smaller, just enough per
+   row to read on one line. Desktop is unaffected (sm: resets to normal). */
+const tightRows: Record<string, string> = {
+  // Irish labels/values run longer than English — some rows (marked below)
+  // can't reach one line without crushing word-spacing past legibility, so
+  // they stay at two lines at a safe compression ceiling instead.
+  "Teocht thagartha": "tracking-[-0.075em] [word-spacing:-4px] sm:tracking-normal sm:[word-spacing:normal]", // stays 2 lines
+  "Athraitheas maighnéadach": "tracking-[-0.075em] [word-spacing:-4px] sm:tracking-normal sm:[word-spacing:normal]", // stays 2 lines
+  "Dromchla": "tracking-[-0.06em] [word-spacing:-3px] sm:tracking-normal sm:[word-spacing:normal]",
+  "Cineál aeradróim": "tracking-[-0.075em] [word-spacing:-4px] sm:tracking-normal sm:[word-spacing:normal]", // stays 2 lines
+  "Slí rollta A": "tracking-[-0.06em] [word-spacing:-3px] sm:tracking-normal sm:[word-spacing:normal]",
+  "Tairseach aistrithe": "tracking-[-0.06em] [word-spacing:-3px] sm:tracking-normal sm:[word-spacing:normal]",
+  "Stráice / RESA": "tracking-[-0.045em] [word-spacing:-2px] sm:tracking-normal sm:[word-spacing:normal]",
+  "PAPI": "tracking-[-0.06em] [word-spacing:-3px] sm:tracking-normal sm:[word-spacing:normal]",
+  "Plean eitilte": "tracking-[-0.075em] [word-spacing:-4px] sm:tracking-normal sm:[word-spacing:normal]", // stays 2 lines
+  "AFIS": "tracking-[-0.045em] [word-spacing:-2px] sm:tracking-normal sm:[word-spacing:normal]",
+  "RFFS": "tracking-[-0.045em] [word-spacing:-2px] sm:tracking-normal sm:[word-spacing:normal]", // 3→2 lines
+  "Custaim / Inimirce": "tracking-[-0.045em] [word-spacing:-2px] sm:tracking-normal sm:[word-spacing:normal]", // 3→2 lines
+};
 const declared = [
   { rwy: "02", tora: "1314", toda: "1593", asda: "1314", lda: "1159", thr: "209 m" },
   { rwy: "20", tora: "1332", toda: "1406", asda: "1332", lda: "1203", thr: "129 m" },
@@ -76,11 +96,11 @@ const approaches = [
 ];
 const navaids = [
   ["NDB", "CFN · 361 kHz · H24 · DOC 25 NM"],
-  ["DME", "IFN · 110.3 MHz (Ch 40X) · nialas ag DTHR · DOC 20 NM"],
+  ["DME", "IFN · 110.3 MHz (Ch 40X)\nnialas ag DTHR · DOC 20 NM"],
   ["LOC 20", "IFN · 110.3 MHz · H24"],
 ];
 const comms = [
-  ["Túr / Imréiteach", "Túr Dhún na nGall · 129.805 MHz"],
+  ["Túr", "Túr Dhún na nGall · 129.805 MHz"],
   ["Talamh", "Talamh Dhún na nGall · 129.805 MHz"],
   ["AFIS", "Faisnéis Dhún na nGall · 129.805 MHz"],
   ["ATIS", "ATIS Dhún na nGall · 129.930 MHz"],
@@ -94,7 +114,7 @@ const ops = [
   ["Breosla", "Jet A1 amháin · tancaer 10000 L"],
   ["Slándáil", "H24"],
   ["PPR", "Riachtanach do gach eitilt"],
-  ["Custaim / Inimirce", "24 UAIR fógra neamh-AE · 12 UAIR fógra AE"],
+  ["Custaim / Inimirce", "24 UAIR fógra neamh-AE\n12 UAIR fógra AE"],
 ];
 const cautions = [
   "Fiarshiabadh gaoithe agus suaiteacht faoi choimirce Shliabh na hEaragaile — bí airdeallach ag druidim le RWY 20 i ngaotha 250°–300°.",
@@ -171,7 +191,7 @@ const droneZones = [
 
   {/* ─── ANCHOR NAV ───────────────────────────────────────────── */}
   <nav class="sticky top-[var(--header-h)] z-30 border-y border-line bg-[color-mix(in_srgb,var(--color-surface-lo)_94%,transparent)] shadow-[0_1px_3px_rgba(24,29,22,0.08)] backdrop-blur">
-    <div class="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-6">
+    <div class="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-6 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {nav.map((n) => (
         <a href={`#${n.id}`} data-nav-link={n.id} class="shrink-0 border-b-2 border-transparent px-4 py-5 text-center font-mono text-[0.82rem] font-bold uppercase tracking-[0.14em] text-ink/70 transition-colors hover:text-atlantic">{n.label}</a>
       ))}
@@ -185,7 +205,7 @@ const droneZones = [
       <h2 data-split class="mt-3 font-display text-[clamp(2.2rem,4vw,3.4rem)] font-normal leading-[1.02]">EIDL — an tagairt thapa.</h2>
 
       {/* At a glance */}
-      <div data-animate="fade-up" class="mt-10 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+      <div data-stagger-reveal class="mt-10 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
         {stats.map((s, i) => (
           <div class={`group bg-surface px-5 py-6 transition-colors duration-300 ${i % 2 === 0 ? "hover:bg-[var(--color-atlantic)]" : "hover:bg-[var(--color-sand)]"}`}>
             <p class="inline-block origin-left font-display text-[clamp(1.5rem,2.4vw,2rem)] leading-none text-ink transition-all duration-300 group-hover:scale-110 group-hover:text-white">{s.big}{s.unit && <span class="ml-0.5 font-mono text-[0.5em] font-medium tracking-tight">{s.unit}</span>}</p>
@@ -271,7 +291,7 @@ const droneZones = [
         </div>
 
         {/* Declared distances — both runways, bars animate in on scroll */}
-        <div class="mt-8" id="dd">
+        <div data-animate="fade-up" class="mt-8" id="dd">
           <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-sand">Achair dhearbhaithe</p>
 
           <div class="mt-6 grid gap-x-10 gap-y-8 lg:grid-cols-2">
@@ -356,9 +376,18 @@ const droneZones = [
             </summary>
             <dl class="mt-5 divide-y divide-line">
               {a.rows.map(([k, v]) => (
-                <div class="flex items-baseline justify-between gap-6 py-3">
+                <div class="flex items-baseline justify-between gap-3 py-3 sm:gap-6">
                   <dt class="shrink-0 font-mono text-[0.66rem] font-semibold uppercase tracking-[0.1em] text-[#414942]">{k}</dt>
-                  <dd class="text-right font-mono text-[0.82rem] text-ink">{v}</dd>
+                  <dd class:list={[k === "Soilse druidime" ? "text-left sm:text-right" : "text-right", "font-mono text-[0.82rem] text-ink", tightRows[k]]}>
+                    {v.includes("\n") ? (
+                      <>
+                        {v.split("\n")[0]}
+                        <span class="hidden sm:inline"> · </span>
+                        <br class="sm:hidden" />
+                        {v.split("\n")[1]}
+                      </>
+                    ) : v}
+                  </dd>
                 </div>
               ))}
             </dl>
@@ -391,11 +420,10 @@ const droneZones = [
         <div class="group bg-black/35 p-7 transition-colors duration-300 hover:bg-black/50">
           <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">ATC</p>
           <p class="mt-3 inline-block origin-left font-mono text-lg text-white transition-transform duration-300 group-hover:scale-110">+353 74 9548604</p>
-          <p class="mt-1 font-mono text-sm text-white/70">atc@donegalairport.ie</p>
         </div>
         <div class="group bg-black/35 p-7 transition-colors duration-300 hover:bg-black/50">
-          <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">Facs</p>
-          <p class="mt-3 inline-block origin-left font-mono text-lg text-white transition-transform duration-300 group-hover:scale-110">+353 74 9562916</p>
+          <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">Ríomhphost</p>
+          <a href="mailto:atc@donegalairport.ie" class="mt-3 inline-block origin-left font-mono text-lg text-white transition-transform duration-300 group-hover:scale-110 hover:underline">atc@donegalairport.ie</a>
         </div>
         <div class="group bg-black/35 p-7 transition-colors duration-300 hover:bg-black/50">
           <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">ATIS</p>
@@ -552,7 +580,23 @@ const droneZones = [
       let eidlWeatherTimer: ReturnType<typeof setInterval> | undefined;
       const links = [...document.querySelectorAll<HTMLElement>("[data-nav-link]")];
       if (!links.length) return;
-      const setActive = (id: string) => links.forEach((l) => l.classList.toggle("is-active", l.dataset.navLink === id));
+      const setActive = (id: string) => {
+        links.forEach((l) => l.classList.toggle("is-active", l.dataset.navLink === id));
+        // The nav strip scrolls horizontally on narrow screens, so the active
+        // link can end up off-screen — center it into view alongside the
+        // underline. Scroll the strip's own scrollLeft directly (not
+        // scrollIntoView) so only this row moves — scrollIntoView walks up
+        // to ancestor scroll containers too and was dragging the whole page
+        // sideways along with it.
+        const active = links.find((l) => l.dataset.navLink === id);
+        const scroller = active?.parentElement;
+        if (active && scroller) {
+          scroller.scrollTo({
+            left: active.offsetLeft - (scroller.clientWidth - active.clientWidth) / 2,
+            behavior: "smooth",
+          });
+        }
+      };
       const obs = new IntersectionObserver(
         (entries) => {
           const vis = entries.filter((e) => e.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
@@ -693,7 +737,6 @@ const droneZones = [
         const DATA = JSON.parse(dataEl.textContent || "{}") as Record<string, Row[]>;
         const SEASON_GA: Record<string, string> = { Winter: "Geimhreadh", Summer: "Samhradh" };
         const DAY_GA: Record<string, string> = { "Mon–Sun": "Luan–Domh" };
-        const AX0 = 360, SPAN = 900; // 06:00 → 21:00
         const parseHM = (x: string) => { const n = parseInt(x, 10); return Math.floor(n / 100) * 60 + (n % 100); };
         const pad2 = (n: number) => ("0" + n).slice(-2);
         const isSummer = (d: Date) => {
@@ -713,6 +756,12 @@ const droneZones = [
           const curSeason = isSummer(now) ? "Summer" : "Winter";
           const season = view || curSeason;
           const fill = season === "Winter" ? "var(--color-atlantic)" : "var(--color-sand)";
+          // Mobile: a side-by-side label column left the bar too narrow (blocks show
+          // exact minutes, not just hours) and overlapped. Stack the day label above
+          // its bar instead, giving the bar the full row width.
+          const isMobile = window.matchMedia("(max-width: 1023px)").matches;
+          const gridCols = isMobile ? "1fr" : "112px 1fr";
+          const rowGap = isMobile ? 6 : 16;
 
           let statusText = "Dúnta — sceidealta", statusSub = "", open = false;
           const todayRow = (DATA[curSeason] || []).find((r) => matches(r.day, dow));
@@ -723,6 +772,22 @@ const droneZones = [
             else { const next = blks.find((b) => b.s > nowMin); statusText = "Dúnta — sceidealta"; statusSub = (next ? "osclaíonn ag " + next.s0 + "Z" : "athosclaíonn amárach") + " · deimhnigh le NOTAM"; }
           } else { statusSub = "níl seirbhís sceidealta inniu · deimhnigh le NOTAM"; }
           const statusCol = open ? "#0e7c66" : "var(--color-mute)";
+
+          // Bar axis: fit tightly to the season's actual open blocks with equal
+          // breathing room on both ends, so the empty space at the start of the
+          // bar matches the empty space at the end instead of drifting with the season.
+          const seasonBlocks = (DATA[season] || []).flatMap((r) => r.blocks);
+          const seasonStarts = seasonBlocks.map((b) => parseHM(b[0]));
+          const seasonEnds = seasonBlocks.map((b) => parseHM(b[1]));
+          const PAD = 50;
+          const AX0 = (seasonStarts.length ? Math.min(...seasonStarts) : 360) - PAD;
+          const AX1 = (seasonEnds.length ? Math.max(...seasonEnds) : 1260) + PAD;
+          const SPAN = AX1 - AX0;
+          const TICK_STEP = 3;
+          const firstTickH = Math.ceil(AX0 / 60 / TICK_STEP) * TICK_STEP;
+          const lastTickH = Math.floor(AX1 / 60 / TICK_STEP) * TICK_STEP;
+          const tickHours: number[] = [];
+          for (let h = firstTickH; h <= lastTickH; h += TICK_STEP) tickHours.push(h);
 
           const rowsHtml = (DATA[season] || []).map((r) => {
             const isToday = season === curSeason && matches(r.day, dow);
@@ -737,15 +802,21 @@ const droneZones = [
             const nowHtml = showNow
               ? `<div style="position:absolute;top:2px;height:32px;width:2px;left:${nowPos}%;background:#b4462f;border-radius:2px;z-index:5"><div style="position:absolute;top:-15px;left:50%;transform:translateX(-50%);white-space:nowrap;font-family:var(--font-mono);font-size:9px;font-weight:600;letter-spacing:.06em;color:#b4462f">${pad2(now.getUTCHours()) + pad2(now.getUTCMinutes())}Z</div></div>`
               : "";
-            const todayTag = isToday ? `<div style="font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:#b4462f;margin-top:4px">● INNIU</div>` : "";
+            const todayTagStyle = isMobile
+              ? "font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:#b4462f;white-space:nowrap"
+              : "font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:#b4462f;margin-top:4px";
+            const todayTag = isToday ? `<div style="${todayTagStyle}">● INNIU</div>` : "";
+            const labelWrapStyle = isMobile
+              ? "display:flex;align-items:baseline;justify-content:space-between;gap:10px"
+              : "padding-top:5px";
             return `<div style="padding:13px 12px;margin:0 -12px;border-radius:12px;background:${isToday ? "color-mix(in srgb,var(--color-atlantic) 8%,transparent)" : "transparent"}">`
-              + `<div style="display:grid;grid-template-columns:112px 1fr;gap:16px;align-items:start">`
-              + `<div style="padding-top:5px"><div style="font-size:15px;font-weight:700;letter-spacing:-.01em;color:var(--color-ink)">${DAY_GA[r.day] ?? r.day}</div>${todayTag}</div>`
+              + `<div style="display:grid;grid-template-columns:${gridCols};gap:${rowGap}px;align-items:start">`
+              + `<div style="${labelWrapStyle}"><div style="font-size:15px;font-weight:700;letter-spacing:-.01em;color:var(--color-ink)">${DAY_GA[r.day] ?? r.day}</div>${todayTag}</div>`
               + `<div style="position:relative;height:54px"><div style="position:absolute;top:7px;height:22px;left:0;right:0;background:var(--color-surface-lo);border-radius:8px"></div>${blocksHtml}${nowHtml}</div>`
               + `</div></div>`;
           }).join("");
 
-          const ticksHtml = [6, 9, 12, 15, 18, 21].map((h) => {
+          const ticksHtml = tickHours.map((h) => {
             const left = (h * 60 - AX0) / SPAN * 100;
             return `<div style="position:absolute;top:5px;left:${left}%;transform:translateX(-50%);font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;color:var(--color-mute)">${pad2(h)}</div>`;
           }).join("");
@@ -769,13 +840,14 @@ const droneZones = [
             + `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:26px">`
             + `<div style="display:inline-flex;background:var(--color-surface-lo);border-radius:999px;padding:4px;gap:2px">${btn("Winter", season === "Winter", "var(--color-atlantic)")}${btn("Summer", season === "Summer", "var(--color-sand)")}</div>`
             + `<div style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.04em;color:${noteCol}">${seasonNote}</div></div>`
-            + `<div>${rowsHtml}<div style="display:grid;grid-template-columns:112px 1fr;gap:16px;margin-top:6px"><div></div><div style="position:relative;height:18px;border-top:1px solid var(--color-line)">${ticksHtml}</div></div></div>`
+            + `<div>${rowsHtml}<div style="display:grid;grid-template-columns:${gridCols};gap:${rowGap}px;margin-top:6px"><div></div><div style="position:relative;height:18px;border-top:1px solid var(--color-line)">${ticksHtml}</div></div></div>`
             + `<div style="margin:26px 0 0;padding-top:20px;border-top:1px solid var(--color-line)">`
             + `<p style="font-size:13.5px;line-height:1.6;color:var(--color-mute);margin:0">Tá an túr <strong style="color:var(--color-ink);font-weight:600">dúnta idir na bloic a thaispeántar</strong> (sosanna rialtóra) agus lasmuigh díobh. Is trí shocrú lasmuigh d'uaireanta a dhéantar gluaiseachtaí lasmuigh de na huaireanta foilsithe — fógra 48 uair.</p>`
             + `<div style="display:flex;flex-direction:column;gap:9px;margin-top:16px">`
             + `<div style="display:grid;grid-template-columns:78px 1fr;gap:12px;align-items:baseline"><span style="font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.14em;color:var(--color-sand)">SAMHRADH</span><span style="font-size:13.5px;line-height:1.5;color:var(--color-mute)">I bhfeidhm ón Domhnach deireanach de mhí an Mhárta go dtí an Domhnach deireanach de mhí Dheireadh Fómhair (am sábhála soilse na hÉireann).</span></div>`
             + `<div style="display:grid;grid-template-columns:78px 1fr;gap:12px;align-items:baseline"><span style="font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.14em;color:var(--color-atlantic)">GEIMHREADH</span><span style="font-size:13.5px;line-height:1.5;color:var(--color-mute)">I bhfeidhm ón Domhnach deireanach de mhí Dheireadh Fómhair go dtí an Domhnach deireanach de mhí an Mhárta (gnáth-am).</span></div></div>`
-            + `<p style="font-size:13.5px;font-weight:700;color:var(--color-ink);margin:16px 0 0">Fógraítear athruithe trí NOTAM.</p></div>`;
+            + `<p style="font-size:13.5px;font-weight:700;color:var(--color-ink);margin:16px 0 0">Fógraítear athruithe trí NOTAM.</p>`
+            + `<a href="https://www.airnav.ie/air-traffic-management/notam-notice-to-airmen-24e348473e7b0153452e634c36c72213" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;font-family:var(--font-mono);font-size:11.5px;font-weight:600;letter-spacing:.06em;color:var(--color-atlantic);text-decoration:underline;text-underline-offset:2px">NOTAManna Reatha — AirNav Ireland ↗</a></div>`;
 
           host.querySelectorAll<HTMLElement>("[data-season]").forEach((b) =>
             b.addEventListener("click", () => { view = b.dataset.season || null; render(); }),
@@ -1139,7 +1211,7 @@ const droneZones = [
 
   <style>
     /* Hero "CFN" — the split engine renders F in Inter (.f-fix); at this
-       size it reads larger than the PP Editorial caps, so trim it to match.
+       size it reads larger than the display face's caps, so trim it to match.
        :global reaches the runtime-created span; the cid on .hero-display
        keeps this scoped to the pilots hero (the homepage "Aerfort" F is safe). */
     .hero-display :global(.f-fix) { font-size: 0.91em; }
