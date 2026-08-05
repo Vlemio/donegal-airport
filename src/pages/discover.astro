@@ -718,17 +718,19 @@ const islands = [
           <span id="golf-counter" class="font-mono text-[0.62rem] text-mute tabular-nums shrink-0">3 / {golfClubs.length}</span>
         </div>
 
-        {/* Carousel with side arrows */}
+        {/* Carousel: native swipe-scroll-snap row on mobile (no arrows —
+            they were stealing width from the cards), JS-driven with side
+            arrows from sm: up, same as before. */}
         <div data-animate="fade-up" data-animate-delay="0.22" class="mt-8 flex items-center gap-6">
           <button
             id="golf-prev"
             aria-label="Previous"
-            class="flex-none flex h-11 w-11 items-center justify-center rounded-full border border-ink/25 text-ink/50 text-[0.95rem] transition-all hover:border-ink/60 hover:text-ink disabled:opacity-20"
+            class="hidden sm:flex flex-none h-11 w-11 items-center justify-center rounded-full border border-ink/25 text-ink/50 text-[0.95rem] transition-all hover:border-ink/60 hover:text-ink disabled:opacity-20"
           >←</button>
-          <div id="golf-carousel-wrap" class="flex-1 overflow-hidden">
+          <div id="golf-carousel-wrap" class="flex-1 overflow-x-auto overflow-y-hidden snap-x snap-mandatory [scrollbar-width:none] sm:overflow-hidden sm:snap-none [&::-webkit-scrollbar]:hidden">
           <ul id="golf-track" class="flex" style="gap: 1.5rem; transition: transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94);">
             {golfClubs.map((c) => (
-              <li data-golf-card class="flex-none">
+              <li data-golf-card class="flex-none basis-[84%] shrink-0 snap-start sm:basis-auto">
                 <a href={c.website} target="_blank" rel="noopener noreferrer" class="block group/card">
                   <figure class="relative aspect-[4/3] w-full overflow-hidden bg-surface-lo">
                     {c.photo && (
@@ -771,7 +773,7 @@ const islands = [
           <button
             id="golf-next"
             aria-label="Next"
-            class="flex-none flex h-11 w-11 items-center justify-center rounded-full border border-ink/25 text-ink/50 text-[0.95rem] transition-all hover:border-ink/60 hover:text-ink disabled:opacity-20"
+            class="hidden sm:flex flex-none h-11 w-11 items-center justify-center rounded-full border border-ink/25 text-ink/50 text-[0.95rem] transition-all hover:border-ink/60 hover:text-ink disabled:opacity-20"
           >→</button>
         </div>{/* end carousel row */}
       </div>
@@ -806,18 +808,20 @@ const islands = [
         </span>
       </div>
 
-      {/* Islands carousel */}
+      {/* Islands carousel: native swipe-scroll-snap row on mobile (no arrows —
+          they were stealing width from the cards), JS-driven with side
+          arrows from sm: up, same as before. */}
       <div data-animate="fade-up" data-animate-delay="0.22" class="flex items-center gap-4 sm:gap-6">
         <button
           id="isl-prev"
           aria-label="Previous island"
-          class="flex-none flex h-11 w-11 items-center justify-center rounded-full border border-ink/25 text-ink/50 text-[0.95rem] transition-all hover:border-ink/60 hover:text-ink disabled:opacity-20"
+          class="hidden sm:flex flex-none h-11 w-11 items-center justify-center rounded-full border border-ink/25 text-ink/50 text-[0.95rem] transition-all hover:border-ink/60 hover:text-ink disabled:opacity-20"
         >←</button>
 
-        <div id="isl-carousel-wrap" class="flex-1 overflow-hidden">
+        <div id="isl-carousel-wrap" class="flex-1 overflow-x-auto overflow-y-hidden snap-x snap-mandatory [scrollbar-width:none] sm:overflow-hidden sm:snap-none [&::-webkit-scrollbar]:hidden">
           <ul id="isl-track" class="flex" style="gap:1.5rem;transition:transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94);">
             {islands.map((isl) => (
-              <li data-isl-card data-tilt class="flex-none group">
+              <li data-isl-card data-tilt class="flex-none basis-[84%] shrink-0 snap-start group sm:basis-auto">
                 <figure data-drag-fig class="relative aspect-[3/4] w-full overflow-hidden bg-surface-lo">
                   {isl.src && (
                     <img
@@ -879,7 +883,7 @@ const islands = [
         <button
           id="isl-next"
           aria-label="Next island"
-          class="flex-none flex h-11 w-11 items-center justify-center rounded-full border border-ink/25 text-ink/50 text-[0.95rem] transition-all hover:border-ink/60 hover:text-ink disabled:opacity-20"
+          class="hidden sm:flex flex-none h-11 w-11 items-center justify-center rounded-full border border-ink/25 text-ink/50 text-[0.95rem] transition-all hover:border-ink/60 hover:text-ink disabled:opacity-20"
         >→</button>
       </div>
 
@@ -1015,13 +1019,18 @@ const islands = [
     const cards = Array.from(track.querySelectorAll<HTMLElement>("[data-golf-card]"));
     const gap = 24; // 1.5rem gap-6
     let idx = 0;
+    // Below sm the row is a native swipe-scroll-snap strip (basis-[84%] on
+    // each card, arrows hidden) instead of JS-sized/positioned — matches
+    // the Operators/airlines strip pattern.
+    const isMobile = () => window.innerWidth < 640;
 
-    // Desktop keeps its original fixed 3-per-view; mobile/tablet scale down
+    // Desktop keeps its original fixed 3-per-view; tablet scales down
     // like the islands carousel (same 1024/640 breakpoints), instead of
     // squeezing 3 cards into a phone-width track.
-    const getPerView = () => window.innerWidth >= 1024 ? 3 : window.innerWidth >= 640 ? 2 : 1;
+    const getPerView = () => window.innerWidth >= 1024 ? 3 : 2;
 
     const setWidths = () => {
+      if (isMobile()) return; // sized by the basis-[84%] class instead
       const pv = getPerView();
       const w = Math.floor((wrap.offsetWidth - gap * (pv - 1)) / pv);
       cards.forEach((c) => (c.style.width = `${w}px`));
@@ -1033,6 +1042,12 @@ const islands = [
     });
 
     const go = (i: number) => {
+      if (isMobile()) {
+        // Native scroll drives position on mobile — clear any transform
+        // left over from a resize down from a wider breakpoint.
+        track.style.transform = "";
+        return;
+      }
       const pv = getPerView();
       const maxIdx = Math.max(0, cards.length - pv);
       idx = Math.max(0, Math.min(maxIdx, i));
@@ -1043,12 +1058,27 @@ const islands = [
       nextBtn.disabled = idx >= maxIdx;
     };
 
+    // Mobile: reflect whichever card is nearest the left edge in the
+    // counter, same approach as the Operators strip's swipe counter.
+    const updateMobileCounter = () => {
+      if (!isMobile() || !counter) return;
+      const wrapLeft = wrap.getBoundingClientRect().left;
+      let nearest = 0, smallestGap = Infinity;
+      cards.forEach((card, i) => {
+        const gapPx = Math.abs(card.getBoundingClientRect().left - wrapLeft);
+        if (gapPx < smallestGap) { smallestGap = gapPx; nearest = i; }
+      });
+      counter.textContent = `${nearest + 1} / ${cards.length}`;
+    };
+
     setWidths();
     go(0);
+    updateMobileCounter();
 
     prevBtn.addEventListener("click", () => go(idx - 1));
     nextBtn.addEventListener("click", () => go(idx + 1));
-    window.addEventListener("resize", () => { setWidths(); go(idx); });
+    wrap.addEventListener("scroll", updateMobileCounter, { passive: true });
+    window.addEventListener("resize", () => { setWidths(); go(idx); updateMobileCounter(); });
   }
 
   function initGrain() {
@@ -1198,16 +1228,27 @@ const islands = [
     const cards = Array.from(track.querySelectorAll<HTMLElement>("[data-isl-card]"));
     const gap = 24;
     let idx = 0;
+    // Below sm the row is a native swipe-scroll-snap strip (basis-[84%] on
+    // each card, arrows hidden) instead of JS-sized/positioned — matches
+    // the Operators/airlines strip pattern.
+    const isMobile = () => window.innerWidth < 640;
 
-    const getPerView = () => window.innerWidth >= 1024 ? 4 : window.innerWidth >= 640 ? 2 : 1;
+    const getPerView = () => window.innerWidth >= 1024 ? 4 : 2;
 
     const setWidths = () => {
+      if (isMobile()) return; // sized by the basis-[84%] class instead
       const pv = getPerView();
       const w = Math.floor((wrap.offsetWidth - gap * (pv - 1)) / pv);
       cards.forEach((c) => (c.style.width = `${w}px`));
     };
 
     const go = (i: number) => {
+      if (isMobile()) {
+        // Native scroll drives position on mobile — clear any transform
+        // left over from a resize down from a wider breakpoint.
+        track.style.transform = "";
+        return;
+      }
       const pv = getPerView();
       const maxIdx = Math.max(0, cards.length - pv);
       idx = Math.max(0, Math.min(maxIdx, i));
@@ -1218,12 +1259,27 @@ const islands = [
       nextBtn.disabled = idx >= maxIdx;
     };
 
+    // Mobile: reflect whichever card is nearest the left edge in the
+    // counter, same approach as the Operators strip's swipe counter.
+    const updateMobileCounter = () => {
+      if (!isMobile() || !counter) return;
+      const wrapLeft = wrap.getBoundingClientRect().left;
+      let nearest = 0, smallestGap = Infinity;
+      cards.forEach((card, i) => {
+        const gapPx = Math.abs(card.getBoundingClientRect().left - wrapLeft);
+        if (gapPx < smallestGap) { smallestGap = gapPx; nearest = i; }
+      });
+      counter.textContent = `${nearest + 1} / ${cards.length}`;
+    };
+
     setWidths();
     go(0);
+    updateMobileCounter();
 
     prevBtn.addEventListener("click", () => go(idx - 1));
     nextBtn.addEventListener("click", () => go(idx + 1));
-    window.addEventListener("resize", () => { setWidths(); go(idx); });
+    wrap.addEventListener("scroll", updateMobileCounter, { passive: true });
+    window.addEventListener("resize", () => { setWidths(); go(idx); updateMobileCounter(); });
   }
 
   document.addEventListener("astro:page-load", () => {

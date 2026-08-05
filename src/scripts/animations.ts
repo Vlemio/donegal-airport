@@ -999,27 +999,27 @@ function setupCursor(): void {
 }
 
 /* ---------- Lifecycle ---------- */
-// The mobile story chapters stack the photo in normal document flow below
-// the text (unlike desktop's absolutely-positioned photo, which doesn't
-// affect layout height). Those photos are loading="lazy" with no reserved
-// aspect-ratio, so at build() time — before they've loaded — the page is
-// measured shorter than it ends up. ScrollTrigger caches pixel positions
-// from that first measurement, so later chapters' triggers stayed locked
-// to the wrong (too-early, already-passed) spot once every photo above
-// them finished loading and pushed the real layout further down — the
-// deeper the chapter, the more that drift compounds. Refreshing once the
-// story photos load corrects it before any of those triggers have fired.
-function refreshAfterStoryPhotosLoad(): void {
-  const photos = document.querySelectorAll<HTMLImageElement>(
-    "[data-story-chapter] .photo-painted-img",
-  );
-  if (!photos.length) return;
+// Any lazy-loaded image sitting in normal document flow (not absolutely
+// positioned, so it affects layout height) can push everything below it
+// further down the page once it finishes loading. ScrollTrigger caches
+// pixel positions from the measurement at build() time — before those
+// images have loaded — so a [data-split]/[data-animate] trigger further
+// down the page stays locked to the wrong (too-early, already-passed)
+// spot once the images above it load and shift the real layout down. The
+// deeper down the page, the more that drift compounds, which is why it
+// showed up as headings with seemingly no entrance animation ("Fees &
+// charges", "Drones", ...) rather than the ones near the top. Refreshing
+// once every lazy image on the page has loaded corrects it before any
+// trigger below that point has had a chance to fire.
+function refreshAfterImagesLoad(): void {
+  const imgs = document.querySelectorAll<HTMLImageElement>('img[loading="lazy"]');
+  if (!imgs.length) return;
   let refreshTimer: ReturnType<typeof setTimeout>;
   const scheduleRefresh = () => {
     clearTimeout(refreshTimer);
     refreshTimer = setTimeout(() => ScrollTrigger.refresh(), 120);
   };
-  photos.forEach((img) => {
+  imgs.forEach((img) => {
     if (img.complete) return; // already loaded (cached) — no drift to correct
     img.addEventListener("load", scheduleRefresh, { once: true });
   });
@@ -1036,7 +1036,7 @@ function build(): void {
   setupStickyHorizontal(); // no-op if [data-horizontal] absent
   setupStoryPath();        // no-op if [data-story-section] absent
   setupStoryMobileReveal(); // no-op on desktop / if no story chapters
-  refreshAfterStoryPhotosLoad(); // no-op if no story photos
+  refreshAfterImagesLoad(); // no-op if no lazy images left to load
   ScrollTrigger.refresh();
 }
 

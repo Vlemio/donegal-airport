@@ -191,11 +191,13 @@ const busColumns = [
 
   {/* ─── PARKING ── ────────────────────────────────────── */}
   <section class="relative isolate border-t border-line bg-[#090f1c] sm:bg-transparent">
-    {/* Below sm, pinned to a fixed 88vh at the top instead of stretching the
+    {/* Below sm, pinned to a fixed height at the top instead of stretching the
         full section (inset-0) — otherwise expanding the tariff panel grows
         the section, and object-cover rescales/"zooms" the photo to match.
-        Desktop is unchanged (sm:inset-0 restores it). */}
-    <div class="absolute inset-x-0 top-0 -z-10 h-[88vh] sm:inset-0 sm:h-auto" aria-hidden="true">
+        Desktop is unchanged (sm:inset-0 restores it). initParkingBg() grows
+        this past the 88vh starting guess to match the actual closed-state
+        content height, which can run taller on a real phone. */}
+    <div id="parking-bg" class="absolute inset-x-0 top-0 -z-10 h-[88vh] sm:inset-0 sm:h-auto" aria-hidden="true">
       <img
         src="/photos/plan/plan-parking-aerial.jpg"
         alt="Radharc aeriúil ar theirminéal Aerfort Dhún na nGall agus a charrchlós in aice leis an rúidbhealach"
@@ -205,7 +207,7 @@ const busColumns = [
       />
     </div>
 
-    <div class="cfn-hero-content mx-auto flex min-h-[88vh] max-w-7xl flex-col justify-between gap-y-16 px-6 pb-14 pt-24">
+    <div id="parking-content" class="cfn-hero-content mx-auto flex min-h-[88vh] max-w-7xl flex-col justify-between gap-y-16 px-6 pb-14 pt-24">
       <div>
         <p
           data-animate="fade-up"
@@ -361,7 +363,15 @@ const busColumns = [
                 </div>
                 <div class="flex flex-col items-center">
                   <span class="h-3 w-3 rounded-full bg-ink"></span>
-                  <p class="mt-4 font-display text-[clamp(2.4rem,5vw,3.6rem)] leading-none text-ink">✈</p>
+                  {/* A plain "✈" text glyph renders as a full-colour emoji picture on
+                     iOS (no monochrome glyph for it in the system font) instead of
+                     matching the rest of the icon's flat ink colour — an SVG renders
+                     identically everywhere. */}
+                  <p class="mt-4 flex h-[clamp(2.4rem,5vw,3.6rem)] items-center justify-center text-ink">
+                    <svg viewBox="0 0 24 24" fill="currentColor" class="h-[0.62em] w-[0.62em]" aria-hidden="true">
+                      <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2.5 1.5V22l4-1 4 1v-1.5L13 19v-5.5l8 2.5z" />
+                    </svg>
+                  </p>
                   <p class="mt-2 font-mono text-[0.72rem] font-bold uppercase tracking-[0.18em] text-atlantic">eitilt</p>
                   <p class="mt-1 text-sm text-ink">Imeacht</p>
                 </div>
@@ -678,6 +688,7 @@ const busColumns = [
 
             <div class="relative order-2 mx-auto aspect-[9/16] w-full max-w-[340px] overflow-hidden shadow-[0_34px_64px_-28px_rgba(0,0,0,0.55)] lg:order-none lg:mx-0 lg:aspect-auto lg:h-full lg:max-w-none lg:shadow-none">
               <video
+                id="cafe-video"
                 class="h-full w-full object-cover"
                 autoplay
                 muted
@@ -845,6 +856,28 @@ const busColumns = [
     window.addEventListener("load", measure);
   }
 
+  // Below sm the parking background photo is pinned to a fixed height
+  // (see the JSX comment above #parking-bg) so opening the tariff panel
+  // doesn't rescale it. That fixed height starts as a plain 88vh guess,
+  // which real phones can exceed once the three stacked figure cards wrap
+  // their text — grow the photo to match the actual closed-state content
+  // height (never shrink below the 88vh floor) so it always reaches the
+  // bottom of the last card instead of running out partway down.
+  function initParkingBg() {
+    const bg = document.getElementById("parking-bg");
+    const content = document.getElementById("parking-content");
+    if (!bg || !content) return;
+    if (window.matchMedia("(min-width: 640px)").matches) return;
+
+    const sync = () => {
+      const floorPx = window.innerHeight * 0.88;
+      const neededPx = content.getBoundingClientRect().height;
+      bg.style.height = Math.max(floorPx, neededPx) + "px";
+    };
+    sync();
+    window.addEventListener("resize", sync);
+  }
+
   function initTariffPanel() {
     const panel = document.getElementById("tariff-panel");
     const btn = document.querySelector("[data-tariff-toggle]");
@@ -871,6 +904,23 @@ const busColumns = [
 
     btn.addEventListener("click", () => { open = !open; setState(); });
     window.addEventListener("resize", () => { if (open) panel.style.maxHeight = panel.scrollHeight + "px"; });
+  }
+
+  // The `autoplay` attribute alone silently fails on some mobile browsers
+  // (iOS Low Power Mode, or the page not yet counted as "engaged" at the
+  // moment the video would start) with no error and no visual sign why —
+  // it just sits on the poster frame. Re-attempt .play() once the element
+  // is actually in view; still muted, so it stays within autoplay policy.
+  function initCafeVideo() {
+    const video = document.getElementById("cafe-video");
+    if (!video || !(video instanceof HTMLVideoElement)) return;
+    if (!video.paused) return;
+
+    const tryPlay = () => { video.play().catch(() => {}); };
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach((e) => { if (e.isIntersecting) tryPlay(); });
+    }, { threshold: 0.25 });
+    obs.observe(video);
   }
 
   function initCafeCoffee() {
@@ -1005,8 +1055,10 @@ const busColumns = [
 
   document.addEventListener("astro:page-load", () => {
     initCarHireDrive();
+    initParkingBg();
     initTariffPanel();
     initCafeCoffee();
+    initCafeVideo();
 
     // Car hire card editor — authoring only (?edit). Never ships to
     // production visitors. Text is edited directly in place; height and

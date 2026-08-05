@@ -122,8 +122,9 @@ const switchToLabel = t("languageToggle.switchTo", locale);
         stroke-width="1.4"
         stroke-linecap="round"
       >
-        <line x1="3" y1="8" x2="21" y2="8"></line>
-        <line x1="3" y1="16" x2="21" y2="16"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
       </svg>
     </button>
   </div>
@@ -148,7 +149,11 @@ const switchToLabel = t("languageToggle.switchTo", locale);
         <a
           href={item.href}
           class:list={[
-            "max-w-[85vw] text-center font-display text-4xl transition-colors hover:text-atlantic",
+            // The panel opens by moving focus to this first link (a11y: lands
+            // keyboard/screen-reader users inside it) — outline-none here plus
+            // focus-visible below keeps that tab-accessible while dropping the
+            // focus rectangle iOS Safari otherwise leaves stuck on tap-open.
+            "max-w-[85vw] text-center font-display text-4xl outline-none transition-colors hover:text-atlantic focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-atlantic",
             isActive(item.href) ? "text-atlantic" : "text-ink",
           ]}
         >
