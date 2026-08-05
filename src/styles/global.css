@@ -848,7 +848,12 @@ figure[data-story-photo] {
     display: flex;
     flex-wrap: nowrap;
     overflow-x: auto;
-    scroll-snap-type: x mandatory;
+    /* proximity, not mandatory — mandatory snapping can grab a page
+       scroll gesture that only glances across this horizontal strip,
+       making the whole page's vertical scroll stall until the finger
+       lifts. Proximity only snaps when the scroll genuinely settles
+       near a card, so it doesn't fight page scroll. */
+    scroll-snap-type: x proximity;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
   }

@@ -1,14 +1,22 @@
 ---
+// Server-rendered per request (not the static-site default) so the very
+// first HTML already has today's real flights — statically prerendering
+// this page baked in whatever FALLBACK_FLIGHTS held at build time, so
+// every visitor saw that stale seed data flash on screen for a moment
+// before the client's first live poll silently replaced it a beat later.
+export const prerender = false;
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { FALLBACK_FLIGHTS } from "../lib/flightsStore";
+import { readFlights } from "../lib/flightsStore";
 
 const title = "Flights · Donegal Airport";
 const description = "Live arrivals and departures for Donegal Airport (CFN) — Aer Lingus Regional to Dublin, Loganair to Glasgow.";
 
-// Prerendered seed (build-time fallback); the board below polls the live
-// /api/flights-today.json endpoint every 15 s for the real, current data —
-// see src/pages/api/flights-today.json.ts and src/lib/flightsStore.ts.
-const flightsToday = FALLBACK_FLIGHTS.flights;
+// Same readFlights() the client's own poll (/api/flights-today.json) calls,
+// so the initial render and the first live refresh always agree — nothing
+// to visibly swap. Falls back to FALLBACK_FLIGHTS internally if the gist
+// isn't configured/reachable, same as the API route.
+const { payload: flightsPayload } = await readFlights();
+const flightsToday = flightsPayload.flights;
 ---
 
 <BaseLayout title={title} description={description} pageTheme="ops-theme">

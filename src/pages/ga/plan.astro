@@ -728,12 +728,12 @@ const busColumns = [
             </div>
 
             <div class="order-1 lg:hidden">
-              <p class="font-mono text-[0.8rem] font-bold uppercase tracking-[0.3em] text-[#a06a34]">Ag an aerfort</p>
-              <h2 class="cafe-name mt-2 text-[clamp(1.9rem,8vw,2.6rem)] leading-[1.02] text-[#2b1a10]">Caife an Aerfoirt</h2>
-              <p class="mt-3 font-mono text-[0.72rem] uppercase tracking-[0.16em] text-[#6a5142]">
+              <p data-animate="fade-up" class="font-mono text-[0.8rem] font-bold uppercase tracking-[0.3em] text-[#a06a34]">Ag an aerfort</p>
+              <h2 data-animate="fade-up" data-animate-delay="0.05" class="cafe-name mt-2 text-[clamp(1.9rem,8vw,2.6rem)] leading-[1.02] text-[#2b1a10]">Caife an Aerfoirt</h2>
+              <p data-animate="fade-up" data-animate-delay="0.1" class="mt-3 font-mono text-[0.72rem] uppercase tracking-[0.16em] text-[#6a5142]">
                 Oscailte gach lá · maidineacha go dtí <span class="font-bold text-[#a06a34]">3in</span>
               </p>
-              <div class="mt-8 divide-y divide-line border-y border-line">
+              <div id="cafe-mobile-list" class="mt-8 divide-y divide-line border-y border-line">
                 {coffees.map((c) => (
                   <div class="flex items-center gap-5 py-5">
                     <img src={c.img} alt={`${c.name} ag Caife Aerfort Dhún na nGall`} class="w-20 shrink-0" loading="lazy" />
@@ -744,7 +744,7 @@ const busColumns = [
                   </div>
                 ))}
               </div>
-              <p class="cafe-name mt-8 text-center text-[clamp(1.5rem,6vw,2rem)] leading-tight text-[#a06a34]">
+              <p data-animate="fade-up" class="cafe-name mt-8 text-center text-[clamp(1.5rem,6vw,2rem)] leading-tight text-[#a06a34]">
                 Cupán ceart sula n-eitlíonn tú.
               </p>
             </div>
@@ -763,6 +763,52 @@ const busColumns = [
   import { gsap } from "gsap";
   import { ScrollTrigger } from "gsap/ScrollTrigger";
   gsap.registerPlugin(ScrollTrigger);
+
+  // Mobile: the desktop "cars drive in" animation is gated behind md: (see
+  // the md:opacity-0 class on .ch-card) — below that breakpoint the cards
+  // showed at full opacity immediately, with no entrance of their own.
+  // Give them a simple staggered fade-up instead, matching the rest of the
+  // page's reveals.
+  function initCarHireMobileReveal() {
+    if (window.matchMedia("(min-width: 768px)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const cards = [...document.querySelectorAll("#car-hire-grid .ch-card")];
+    if (!cards.length) return;
+    gsap.fromTo(
+      cards,
+      { opacity: 0, y: 28 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.7,
+        ease: "power3.out",
+        stagger: 0.12,
+        scrollTrigger: { trigger: "#car-hire-grid", start: "top 88%", once: true },
+      },
+    );
+  }
+
+  // Mobile café menu rows had no entrance of their own either — same
+  // staggered fade-up treatment as the car hire cards above.
+  function initCafeMobileListReveal() {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const list = document.getElementById("cafe-mobile-list");
+    if (!list) return;
+    const rows = [...list.children];
+    if (!rows.length) return;
+    gsap.fromTo(
+      rows,
+      { opacity: 0, y: 20 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.6,
+        ease: "power3.out",
+        stagger: 0.1,
+        scrollTrigger: { trigger: list, start: "top 88%", once: true },
+      },
+    );
+  }
 
   // ── Car hire: branded cars drive in from the sides and become their cards ──
   function initCarHireDrive() {
@@ -1055,10 +1101,12 @@ const busColumns = [
 
   document.addEventListener("astro:page-load", () => {
     initCarHireDrive();
+    initCarHireMobileReveal();
     initParkingBg();
     initTariffPanel();
     initCafeCoffee();
     initCafeVideo();
+    initCafeMobileListReveal();
 
     // Car hire card editor — authoring only (?edit). Never ships to
     // production visitors. Text is edited directly in place; height and

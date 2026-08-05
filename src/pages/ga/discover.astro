@@ -709,7 +709,7 @@ const islands = [
             aria-label="Roimhe seo"
             class="hidden sm:flex flex-none h-11 w-11 items-center justify-center rounded-full border border-ink/25 text-ink/50 text-[0.95rem] transition-all hover:border-ink/60 hover:text-ink disabled:opacity-20"
           >←</button>
-          <div id="golf-carousel-wrap" class="flex-1 overflow-x-auto overflow-y-hidden snap-x snap-mandatory [scrollbar-width:none] sm:overflow-hidden sm:snap-none [&::-webkit-scrollbar]:hidden">
+          <div id="golf-carousel-wrap" class="flex-1 overflow-x-auto overflow-y-hidden snap-x snap-proximity [scrollbar-width:none] sm:overflow-hidden sm:snap-none [&::-webkit-scrollbar]:hidden">
           <ul id="golf-track" class="flex" style="gap: 1.5rem; transition: transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94);">
             {golfClubs.map((c) => (
               <li data-golf-card class="flex-none basis-[84%] shrink-0 snap-start sm:basis-auto">
@@ -796,7 +796,7 @@ const islands = [
           class="hidden sm:flex flex-none h-11 w-11 items-center justify-center rounded-full border border-ink/25 text-ink/50 text-[0.95rem] transition-all hover:border-ink/60 hover:text-ink disabled:opacity-20"
         >←</button>
 
-        <div id="isl-carousel-wrap" class="flex-1 overflow-x-auto overflow-y-hidden snap-x snap-mandatory [scrollbar-width:none] sm:overflow-hidden sm:snap-none [&::-webkit-scrollbar]:hidden">
+        <div id="isl-carousel-wrap" class="flex-1 overflow-x-auto overflow-y-hidden snap-x snap-proximity [scrollbar-width:none] sm:overflow-hidden sm:snap-none [&::-webkit-scrollbar]:hidden">
           <ul id="isl-track" class="flex" style="gap:1.5rem;transition:transform 0.5s cubic-bezier(0.25,0.46,0.45,0.94);">
             {islands.map((isl) => (
               <li data-isl-card data-tilt class="flex-none basis-[84%] shrink-0 snap-start group sm:basis-auto">

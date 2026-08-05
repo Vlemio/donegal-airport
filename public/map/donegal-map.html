@@ -256,8 +256,14 @@ function cardHTML(pr) {
   const photoH = m ? 92 : 116;
   const titleFS = m ? 16 : 18;
   const descFS = m ? 11.5 : 12.5;
+  // No loading="lazy" here — this photo is only ever built the instant the
+  // visitor taps a pin, i.e. it's wanted on screen right now, not scrolled
+  // into view later; lazy would just add its own extra delay on top of the
+  // network fetch. opacity fades in on load instead of the image popping
+  // in abruptly over the dark placeholder background below (which is what
+  // was reading as "a black square, then the photo" for about a second).
   const photoEl = pr.photo
-    ? '<img src="'+pr.photo+'" alt="'+pr.name+'" style="width:100%;height:100%;object-fit:cover;object-position:'+(pr.photoPos||'center')+';display:block;" loading="lazy">'
+    ? '<img src="'+pr.photo+'" alt="'+pr.name+'" style="width:100%;height:100%;object-fit:cover;object-position:'+(pr.photoPos||'center')+';display:block;opacity:0;transition:opacity .3s ease;" onload="this.style.opacity=1">'
     : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#8a7f63;font:10.5px/1.5 monospace;text-align:center;letter-spacing:.05em;text-transform:uppercase;padding:8px;">'+pr.name+'</div>';
   return '<div style="font-family:Karla,sans-serif;width:'+cardW+'px;">'
     +'<div style="height:'+photoH+'px;border-radius:9px;overflow:hidden;background:'+(pr.photo?'#111b14':'repeating-linear-gradient(45deg,#e9e1cd,#e9e1cd 9px,#ded5bd 9px,#ded5bd 18px)')+';">'+photoEl+'</div>'
