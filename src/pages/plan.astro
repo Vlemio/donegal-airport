@@ -156,7 +156,6 @@ const busColumns = [
 <BaseLayout title={title} description={description}>
 
   {/* ─── HERO ── foto de la terminal full-bleed, título encima ─────────────── */}
-  {/* Swap src when JM provides the terminal photo                             */}
   <section class="relative isolate flex min-h-[80vh] w-full items-end overflow-hidden border-b border-line">
     <div class="absolute inset-0" aria-hidden="true">
       <img
@@ -253,7 +252,7 @@ const busColumns = [
           id="parking-figures"
           class="grid gap-px overflow-hidden rounded-xl bg-white/15 sm:grid-cols-3"
         >
-          <div class="bg-black/30 p-8 backdrop-blur-sm">
+          <div class="bg-black/30 p-8 backdrop-blur-sm sm:col-start-1 sm:row-start-1">
             <div data-animate="fade-up">
               <p class="font-display text-[3.2rem] leading-none text-white">2 h</p>
               <p class="mt-3 font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">Free</p>
@@ -262,7 +261,7 @@ const busColumns = [
               </p>
             </div>
           </div>
-          <div class="flex flex-col bg-black/30 p-8 backdrop-blur-sm">
+          <div class="flex flex-col bg-black/30 p-8 backdrop-blur-sm sm:col-start-2 sm:row-start-1">
             <div data-animate="fade-up" data-animate-delay="0.08">
               <p class="font-display text-[3.2rem] leading-none text-white">Long Stay</p>
               <p class="mt-3 font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">From €7 / day</p>
@@ -286,10 +285,15 @@ const busColumns = [
               (not after the whole grid) so below sm, where the grid stacks
               to one column, it opens directly under the card that triggered
               it instead of under EV at the bottom. sm:col-span-3 spans the
-              full row again once the grid becomes 3 columns. */}
+              full row again once the grid becomes 3 columns.
+              sm:row-start-2 (+ col-start-1) pins it to its own row EVEN
+              WHILE COLLAPSED — without this, being 3rd in DOM order made it
+              consume the row-2 grid track regardless of its 0-height
+              collapsed state, which pushed EV down to row 3 and broke the
+              "2h / Long Stay / EV" single-row layout on desktop. */}
           <div
             id="tariff-panel"
-            class="overflow-hidden transition-[max-height,opacity] duration-500 ease-out sm:col-span-3"
+            class="overflow-hidden transition-[max-height,opacity] duration-500 ease-out sm:col-start-1 sm:col-span-3 sm:row-start-2"
             style="max-height: 0; opacity: 0;"
           >
             <div class="mt-3 rounded-xl bg-black/45 p-8 backdrop-blur-md">
@@ -326,7 +330,7 @@ const busColumns = [
             </div>
           </div>
 
-          <div class="bg-black/30 p-8 backdrop-blur-sm">
+          <div class="bg-black/30 p-8 backdrop-blur-sm sm:col-start-3 sm:row-start-1">
             <div data-animate="fade-up" data-animate-delay="0.16">
               <p class="font-display text-[3.2rem] leading-none text-white">EV</p>
               <p class="mt-3 font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">4 × 22 kW chargers</p>
@@ -343,7 +347,7 @@ const busColumns = [
   {/* ─── CHECK-IN & BAGGAGE ── light layout, Emerald photo in its box ──────────── */}
   <section id="checkin" class="scroll-mt-[calc(var(--header-h)+2rem)] border-t border-line">
     <div class="mx-auto max-w-7xl px-6 py-20">
-      <div class="grid items-start gap-12 lg:grid-cols-[1.35fr_1fr] lg:gap-16">
+      <div class="grid gap-12 lg:grid-cols-[1.35fr_1fr] lg:gap-16">
 
         {/* Left: content */}
         <div>
@@ -378,14 +382,16 @@ const busColumns = [
                   <p class="mt-1 text-sm text-ink">Security &amp; gate</p>
                 </div>
                 <div class="flex flex-col items-center">
-                  <span class="h-3 w-3 rounded-full bg-ink"></span>
-                  {/* A plain "✈" text glyph renders as a full-colour emoji picture on
-                     iOS (no monochrome glyph for it in the system font) instead of
-                     matching the rest of the icon's flat ink colour — an SVG renders
-                     identically everywhere. */}
-                  <p class="mt-4 flex h-[clamp(2.4rem,5vw,3.6rem)] items-center justify-center text-ink">
-                    <svg viewBox="0 0 24 24" fill="currentColor" class="h-[0.62em] w-[0.62em]" aria-hidden="true">
-                      <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2.5 1.5V22l4-1 4 1v-1.5L13 19v-5.5l8 2.5z" />
+                  <span class="h-3 w-3 rounded-full bg-atlantic"></span>
+                  {/* A plain "✈" text glyph renders as a full-colour emoji picture
+                     (e.g. blue, ignoring text colour) depending on the OS/browser's
+                     emoji font — an SVG (Material Design Icons "airplane-takeoff",
+                     bar removed) renders identically everywhere, in the same
+                     atlantic blue as the "take-off" label and the dot above it.
+                     Size is editable live at ?edit — see mountTakeoffIconEditor(). */}
+                  <p class="mt-4 flex h-[clamp(2.4rem,5vw,3.6rem)] items-center justify-center text-atlantic">
+                    <svg id="takeoff-icon" viewBox="0.8 2.5 21.5 14.5" fill="currentColor" class="h-10 w-auto" aria-hidden="true">
+                      <path d="M22.07 9.64c-.21-.8-1.04-1.28-1.84-1.06L14.92 10L8 3.57l-1.91.51l4.14 7.17l-4.97 1.33l-1.97-1.54l-1.45.39l1.82 3.16l.77 1.33l1.6-.42l5.31-1.43l4.35-1.16L21 11.5c.81-.24 1.28-1.06 1.07-1.86" />
                     </svg>
                   </p>
                   <p class="mt-2 font-mono text-[0.72rem] font-bold uppercase tracking-[0.18em] text-atlantic">take-off</p>
@@ -430,19 +436,33 @@ const busColumns = [
           </div>
         </div>
 
-        {/* Right: Emerald photo in its box — desktop only */}
-        <div
-          data-animate="fade-up"
-          data-animate-delay="0.2"
-          class="relative hidden overflow-hidden rounded-xl lg:sticky lg:top-32 lg:block"
-        >
-          <img
-            src="/photos/plan/plan-emerald.jpg"
-            alt="Aer Lingus Regional ATR 72 operated by Emerald Airlines on the apron at Donegal Airport with the control tower behind"
-            class="aspect-[3/4] w-full object-cover object-center"
-            loading="lazy"
-          />
-          <p class="mt-3 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-mute">
+        {/* Right: Emerald photo — desktop only. Tried position:sticky first
+            (pin the photo near the top while the longer left column scrolls
+            past) — that only works when the photo's own box is noticeably
+            SHORTER than the column beside it (the height difference is the
+            only room sticky has to travel in before it runs out and
+            releases), which meant shrinking the photo to keep it pinned.
+            Traded back for size: the photo now fills the FULL height of the
+            left column exactly (grid stretch, no items-start, + this column
+            as a flex-col with the photo as the flex-1 member so it expands
+            to fill whatever's left after the caption) — no position:sticky
+            at all, so there's nothing to run out of room and "fall". It
+            just scrolls at the same rate as the text beside it, same as it
+            always did before it had any pin behaviour. */}
+        <div class="hidden lg:flex lg:flex-col">
+          <div
+            data-animate="fade-up"
+            data-animate-delay="0.2"
+            class="min-h-0 flex-1 overflow-hidden rounded-xl"
+          >
+            <img
+              src="/photos/plan/plan-emerald.jpg"
+              alt="Aer Lingus Regional ATR 72 operated by Emerald Airlines on the apron at Donegal Airport with the control tower behind"
+              class="h-full w-full object-cover object-center"
+              loading="lazy"
+            />
+          </div>
+          <p class="mt-3 shrink-0 font-mono text-[0.6rem] uppercase tracking-[0.18em] text-mute">
             Aer Lingus Regional at Carrickfinn · daily to Dublin
           </p>
         </div>
@@ -967,9 +987,20 @@ const busColumns = [
     const bg = document.getElementById("parking-bg");
     const content = document.getElementById("parking-content");
     if (!bg || !content) return;
-    if (window.matchMedia("(min-width: 640px)").matches) return;
 
+    // The breakpoint is re-checked INSIDE sync(), on every call — not just
+    // once before attaching the listener. An inline style always wins over
+    // a class-based sm: breakpoint, so if this only ever set bg.style.height
+    // while narrow and never cleared it, a visitor who loaded the page below
+    // 640px and then widened the window (a resized/half-snapped desktop
+    // window, a small-screen laptop, anyone dragging the browser wider) got
+    // stuck with a stale mobile pixel height fighting the desktop layout —
+    // that's what "se ha descolocado en desktop" turned out to be.
     const sync = () => {
+      if (window.matchMedia("(min-width: 640px)").matches) {
+        bg.style.height = ""; // hand back control to the sm:h-auto CSS rule
+        return;
+      }
       const floorPx = window.innerHeight * 0.88;
       const neededPx = content.getBoundingClientRect().height;
       bg.style.height = Math.max(floorPx, neededPx) + "px";
@@ -1181,7 +1212,31 @@ const busColumns = [
     // logo size are per-card sliders with a live px/% readout so the
     // final numbers can be read back and baked into the source.
     if (new URLSearchParams(location.search).has("edit")) initCarHireEditor();
+
+    // Take-off icon size editor — authoring only (?edit).
+    if (new URLSearchParams(location.search).has("edit")) initTakeoffIconEditor();
   });
+
+  function initTakeoffIconEditor() {
+    const icon = document.getElementById("takeoff-icon");
+    if (!icon || icon.dataset.editorReady) return;
+    icon.dataset.editorReady = "1";
+
+    const startPx = icon.getBoundingClientRect().height;
+    const panel = document.createElement("div");
+    panel.style.cssText = "position:fixed;left:14px;bottom:14px;z-index:9999;background:#fff;border:1px solid #1a4a6e;border-radius:10px;padding:10px 12px;box-shadow:0 4px 16px rgba(0,0,0,.18);font:600 12px/1.6 ui-monospace,monospace;color:#1a4a6e;display:flex;gap:10px;align-items:center";
+    panel.innerHTML = 'Take-off icon <input type="range" min="16" max="96" step="1" style="vertical-align:middle"> <span data-read></span>';
+    document.body.appendChild(panel);
+    const range = panel.querySelector("input");
+    const read = panel.querySelector("[data-read]");
+    range.value = String(Math.round(startPx));
+    const apply = () => {
+      icon.style.height = range.value + "px";
+      read.textContent = `${range.value}px · class="h-[${range.value}px]"`;
+    };
+    range.addEventListener("input", apply);
+    apply();
+  }
 
   function initCarHireEditor() {
     const cards = [...document.querySelectorAll(".ch-card")];

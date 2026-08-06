@@ -799,39 +799,6 @@ function setupStoryMobileReveal(): void {
   });
 }
 
-/* ---------- Grid stagger reveal ----------
-   [data-stagger-reveal] containers reveal their direct children one at a
-   time instead of the whole block moving as a single rigid unit. Animating
-   the item's own opacity would fade out its background too, exposing the
-   grid gap-color underneath as a flash of color in the shape of the cell —
-   so only each item's inner content fades/slides, while the item itself
-   (and its background) stays put and fully opaque throughout. */
-function setupStaggerGrids(): void {
-  if (prefersReducedMotion()) return;
-
-  document.querySelectorAll<HTMLElement>("[data-stagger-reveal]").forEach((grid) => {
-    const items = Array.from(grid.children) as HTMLElement[];
-    if (!items.length) return;
-
-    items.forEach((item, i) => {
-      const content = Array.from(item.children) as HTMLElement[];
-      if (!content.length) return;
-      gsap.fromTo(
-        content,
-        { opacity: 0, y: 18 },
-        {
-          opacity: 1,
-          y: 0,
-          duration: 0.6,
-          delay: i * 0.08,
-          ease: "power3.out",
-          scrollTrigger: { trigger: grid, start: "top 88%", once: true },
-        },
-      );
-    });
-  });
-}
-
 /* ---------- Sticky horizontal scroll ----------
    The wrapper provides vertical scroll distance; the inner .h-track
    translates -X as the user scrolls down. Disabled on small
@@ -1012,22 +979,32 @@ function setupCursor(): void {
 // once every lazy image on the page has loaded corrects it before any
 // trigger below that point has had a chance to fire.
 function refreshAfterImagesLoad(): void {
-  const imgs = document.querySelectorAll<HTMLImageElement>('img[loading="lazy"]');
-  if (!imgs.length) return;
-  let refreshTimer: ReturnType<typeof setTimeout>;
-  const scheduleRefresh = () => {
-    clearTimeout(refreshTimer);
-    refreshTimer = setTimeout(() => ScrollTrigger.refresh(), 120);
+  const pending = [...document.querySelectorAll<HTMLImageElement>('img[loading="lazy"]')]
+    .filter((img) => !img.complete); // already-loaded (cached) images have no drift to correct
+  if (!pending.length) return;
+
+  // One refresh after everything has settled, not one per image — lazy
+  // photos finish loading spread out over the whole scroll session, so a
+  // refresh-per-image was calling ScrollTrigger.refresh() (a full-page
+  // layout read) repeatedly WHILE the user was mid-scroll, which is heavy
+  // enough on mobile to visibly stall a touch-scroll gesture. A single
+  // batched refresh (capped so one slow/broken image can't block it
+  // forever) fixes the drift just as well without the repeated jank.
+  let done = false;
+  const finish = () => {
+    if (done) return;
+    done = true;
+    ScrollTrigger.refresh();
   };
-  imgs.forEach((img) => {
-    if (img.complete) return; // already loaded (cached) — no drift to correct
-    img.addEventListener("load", scheduleRefresh, { once: true });
-  });
+  const settled = pending.map(
+    (img) => new Promise<void>((resolve) => img.addEventListener("load", () => resolve(), { once: true })),
+  );
+  Promise.all(settled).then(finish);
+  setTimeout(finish, 4000); // fallback in case an image never fires load (e.g. 404)
 }
 
 function build(): void {
   setupReveals();
-  setupStaggerGrids(); // no-op if no [data-stagger-reveal] grids
   setupSplitText();
   setupParallax();
   setupKenBurns();
@@ -1071,16 +1048,36 @@ document.addEventListener("astro:page-load", () => {
   initSmoothScroll();
   lenis?.scrollTo(0, { immediate: true, force: true });
   build();
-  // Hash anchor (e.g. /#news) — jump immediately after layouts settle.
+  // Hash anchor (e.g. /#news) — jump shortly after layouts settle.
   // immediate:true avoids the visible scroll journey through the whole page.
+  //
+  // setTimeout, not requestAnimationFrame: rAF callbacks are paused by the
+  // browser whenever the tab isn't actively compositing (backgrounded,
+  // switched away from, or — the case that actually bit this once —
+  // whatever transient state a tab can be in right after a fast click
+  // during a live demo). A stalled rAF chain here means the hash target is
+  // never scrolled to AND the "did we already land on a hash" guard below
+  // never runs, so the page can be left wherever the browser's own
+  // scroll-restoration happened to clamp it — which on a shorter new page
+  // is the bottom. setTimeout fires regardless of paint/visibility state,
+  // and 80ms is imperceptible for an immediate (non-animated) jump.
   const hash = window.location.hash;
   if (hash) {
-    const target = document.querySelector<HTMLElement>(hash);
-    if (target) {
-      requestAnimationFrame(() => requestAnimationFrame(() => {
-        lenis?.scrollTo(target, { offset: -80, immediate: true, force: true });
-      }));
-    }
+    setTimeout(() => {
+      const target = document.querySelector<HTMLElement>(hash);
+      if (target) lenis?.scrollTo(target, { offset: -80, immediate: true, force: true });
+    }, 80);
+  } else {
+    // Safety net for a slow-paint race: on a slow connection/device the
+    // browser can still clamp scroll to the new document's bottom (it's
+    // often shorter than whatever page you scrolled deep into before
+    // navigating) after the synchronous reset above already ran — re-assert
+    // it once more, shortly after the new page has actually painted.
+    setTimeout(() => {
+      if (window.location.hash) return; // a hash link may have been clicked since
+      window.scrollTo(0, 0);
+      lenis?.scrollTo(0, { immediate: true, force: true });
+    }, 80);
   }
 });
 

@@ -205,7 +205,7 @@ const droneZones = [
       <h2 data-split class="mt-3 font-display text-[clamp(2.2rem,4vw,3.4rem)] font-normal leading-[1.02]">EIDL — an tagairt thapa.</h2>
 
       {/* At a glance */}
-      <div data-stagger-reveal class="mt-10 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+      <div data-animate="fade-up" class="mt-10 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
         {stats.map((s, i) => (
           <div class={`group bg-surface px-5 py-6 transition-colors duration-300 ${i % 2 === 0 ? "hover:bg-[var(--color-atlantic)]" : "hover:bg-[var(--color-sand)]"}`}>
             <p class="inline-block origin-left font-display text-[clamp(1.5rem,2.4vw,2rem)] leading-none text-ink transition-all duration-300 group-hover:scale-110 group-hover:text-white">{s.big}{s.unit && <span class="ml-0.5 font-mono text-[0.5em] font-medium tracking-tight">{s.unit}</span>}</p>
@@ -360,7 +360,7 @@ const droneZones = [
         <script type="application/json" id="tower-hours-data" is:inline set:html={JSON.stringify(hoursData)} />
       </div>
 
-      {/* Live weather — METAR / TAF, auto-refreshing; JS-enhanced with a static fallback for no-JS */}
+      {/* Live weather — TAF, auto-refreshing; JS-enhanced with a static fallback for no-JS */}
       <div data-animate="fade-up" class="mt-6 rounded-2xl border border-line bg-[color-mix(in_srgb,var(--color-atlantic)_4%,var(--color-surface))] p-6 sm:p-8">
         <div id="eidl-weather">
           <p class="font-mono text-[0.72rem] text-mute">Ag lódáil an tuairisc is déanaí…</p>
@@ -698,7 +698,7 @@ const droneZones = [
       // Tower opening-hours interactive widget
       initTowerHours();
 
-      // Live METAR/TAF widget
+      // Live TAF widget
       initEidlWeather();
 
       // Map label editor — authoring only. On automatically in local dev,
@@ -862,68 +862,39 @@ const droneZones = [
         if (!host) return;
         if (eidlWeatherTimer) clearInterval(eidlWeatherTimer);
 
-        const CAT_COLOR: Record<string, string> = { VFR: "#36d07f", MVFR: "#4db8ff", IFR: "#ff5b4d", LIFR: "#ff5b4d" };
         const pad2 = (n: number) => ("0" + n).slice(-2);
         const fmtZ = (unixSeconds: number) => {
           const d = new Date(unixSeconds * 1000);
           return `${pad2(d.getUTCDate())}/${pad2(d.getUTCHours())}${pad2(d.getUTCMinutes())}Z`;
-        };
-        const windText = (wdir: number | string | null, wspd: number | null, wgst: number | null) => {
-          if (wdir == null && !wspd) return "—";
-          const dir = typeof wdir === "number" ? String(wdir).padStart(3, "0") + "°" : (wdir || "VRB");
-          return `${dir} ${wspd ?? 0}${wgst ? "G" + wgst : ""} kt`;
-        };
-        const cloudsText = (clouds: { cover: string; base: number | null }[] | null) => {
-          if (!clouds || !clouds.length) return "CLR";
-          return clouds.map((c) => c.cover + (c.base != null ? " " + c.base + " ft" : "")).join(" · ");
         };
 
         async function load() {
           try {
             const res = await fetch("/api/weather.json?_=" + Date.now());
             const data = await res.json();
-            render(data.metar, data.taf);
+            render(data.taf);
           } catch {
-            host!.innerHTML = `<p style="font-family:var(--font-mono);font-size:12px;color:var(--color-mute)">Níl an tuairisc bheo ar fáil faoi láthair — seiceáil an METAR/TAF agus NOTAM reatha go díreach.</p>`;
+            host!.innerHTML = `<p style="font-family:var(--font-mono);font-size:12px;color:var(--color-mute)">Níl an tuairisc bheo ar fáil faoi láthair — seiceáil an TAF agus NOTAM reatha go díreach.</p>`;
           }
         }
 
-        function render(metar: any, taf: any) {
-          if (!metar && !taf) {
-            host!.innerHTML = `<p style="font-family:var(--font-mono);font-size:12px;color:var(--color-mute)">Níl an tuairisc bheo ar fáil faoi láthair — seiceáil an METAR/TAF agus NOTAM reatha go díreach.</p>`;
+        // TAF amháin — níl stáisiún uathoibríoch METAR ag EIDL lasmuigh
+        // d'uaireanta ATC/AFIS, mar sin níl sé ar fáil go hiontaofa; tá an
+        // réamhaisnéis (TAF) ann i gcónaí.
+        function render(taf: any) {
+          if (!taf) {
+            host!.innerHTML = `<p style="font-family:var(--font-mono);font-size:12px;color:var(--color-mute)">Níl an tuairisc bheo ar fáil faoi láthair — seiceáil an TAF agus NOTAM reatha go díreach.</p>`;
             return;
           }
 
-          const catColor = metar?.fltCat ? (CAT_COLOR[metar.fltCat] || "var(--color-mute)") : "var(--color-mute)";
-
-          const metarHtml = metar
-            ? `<div>
-                <div style="display:flex;flex-wrap:wrap;align-items:center;gap:10px">
-                  ${metar.fltCat ? `<span style="background:${catColor};color:#0c1210;border-radius:999px;padding:3px 11px;font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.1em">${metar.fltCat}</span>` : ""}
-                  <span style="font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-mute)">METAR · ${fmtZ(metar.obsTime)}</span>
-                </div>
-                <p style="margin:12px 0 0;font-family:var(--font-mono);font-size:13px;line-height:1.6;color:var(--color-ink);word-break:break-word">${metar.rawOb ?? "—"}</p>
-                <div style="margin-top:14px;display:grid;grid-template-columns:repeat(2,1fr);gap:8px 24px;font-family:var(--font-mono);font-size:11.5px;color:var(--color-mute)">
-                  <div><span style="color:var(--color-ink)">Gaoth</span> ${windText(metar.wdir, metar.wspd, metar.wgst)}</div>
-                  <div><span style="color:var(--color-ink)">Léargas</span> ${metar.visib ?? "—"}</div>
-                  <div><span style="color:var(--color-ink)">Scamaill</span> ${cloudsText(metar.clouds)}</div>
-                  <div><span style="color:var(--color-ink)">Teocht / QNH</span> ${metar.temp ?? "—"}/${metar.dewp ?? "—"}°C · Q${metar.altim ?? "—"}</div>
-                </div>
-              </div>`
-            : "";
-
-          const tafHtml = taf
-            ? `<div style="margin-top:${metar ? "22px" : "0"};padding-top:${metar ? "20px" : "0"};border-top:${metar ? "1px solid var(--color-line)" : "none"}">
-                <p style="margin:0;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-mute)">TAF · bailí ${fmtZ(taf.validTimeFrom)} – ${fmtZ(taf.validTimeTo)}</p>
-                <p style="margin:12px 0 0;font-family:var(--font-mono);font-size:13px;line-height:1.6;color:var(--color-ink);word-break:break-word">${taf.rawTAF ?? "—"}</p>
-              </div>`
-            : "";
-
           host!.innerHTML =
-            `<div style="display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:20px">`
-            + `<p style="margin:0;font-family:var(--font-mono);font-size:13px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--color-atlantic)">Aimsir bheo · METAR / TAF</p>`
-            + `<p style="margin:0;font-family:var(--font-mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--color-mute)">EIDL · uathnuashonraithe</p>`
-            + `</div>${metarHtml}${tafHtml}`;
+            `<div style="margin-bottom:20px">`
+            + `<p style="margin:0;font-family:var(--font-mono);font-size:13px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--color-atlantic)">Aimsir bheo · TAF</p>`
+            + `</div>`
+            + `<div>`
+            + `<p style="margin:0;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-mute)">TAF · bailí ${fmtZ(taf.validTimeFrom)} – ${fmtZ(taf.validTimeTo)}</p>`
+            + `<p style="margin:12px 0 0;font-family:var(--font-mono);font-size:13px;line-height:1.6;color:var(--color-ink);word-break:break-word">${taf.rawTAF ?? "—"}</p>`
+            + `</div>`;
         }
 
         load();

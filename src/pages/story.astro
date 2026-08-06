@@ -48,6 +48,21 @@ type Chapter = {
   captionShiftX?: number;
 };
 
+/* Real pixel dimensions of each chapter photo. On mobile the photo sits in
+   normal document flow (only pinned via CSS absolute on desktop, ≥1024px),
+   so without width/height attributes the browser can't reserve its box
+   ahead of load — it loads in with zero height, then jumps to full size,
+   which was cutting mid-scroll touch gestures short on iOS. Passing the
+   real intrinsic size lets the browser compute the aspect-ratio itself. */
+const PHOTO_DIMS: Record<string, [number, number]> = {
+  "/photos/story/story-ch01.webp": [2000, 1490],
+  "/photos/story/story-ch02.webp": [684, 411],
+  "/photos/story/story-ch03.webp": [323, 350],
+  "/photos/story/story-ch04.webp": [1400, 1059],
+  "/photos/story/story-ch05.webp": [1300, 1401],
+  "/photos/story/story-ch06.webp": [2048, 1365],
+};
+
 const chapters: Chapter[] = [
   {
     year: "1978",
@@ -516,6 +531,8 @@ const airlines: Airline[] = [
                     <img
                       src={c.photo}
                       alt={c.photoAlt ?? ""}
+                      width={PHOTO_DIMS[c.photo!]?.[0]}
+                      height={PHOTO_DIMS[c.photo!]?.[1]}
                       class="photo-painted-img block w-full"
                       loading="lazy"
                       decoding="async"
