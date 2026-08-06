@@ -1,0 +1,193 @@
+---
+import { t, type Locale } from "../i18n";
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+---
+
+{/* Two-tier consent banner: a simple bar (Accept all / Reject non-essential
+    / Customize) that most visitors resolve in one click either way, plus a
+    "Customize" panel for anyone who wants to actually toggle categories.
+    Only two categories exist because that's honestly all this site uses —
+    Essential (always on) and Analytics (GA4, opt-in). No Marketing/External
+    Media toggles: adding those would ask consent for tracking that doesn't
+    exist here.
+
+    Google Consent Mode v2 default state (analytics_storage: denied) is set
+    inline in BaseLayout's <head>, before gtag.js loads — GA4 doesn't set
+    any cookie or send full pageview data until this banner grants it. */}
+<div
+  id="cookie-consent-banner"
+  hidden
+  role="region"
+  aria-label={t("cookies.manage", locale)}
+  class="fixed inset-x-0 bottom-0 z-50 border-t border-line bg-ink text-white"
+>
+  <div class="mx-auto max-w-7xl px-6 py-5">
+    {/* Simple view */}
+    <div id="cookie-simple" class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <p class="max-w-2xl text-sm leading-relaxed text-white/85">
+        {t("cookies.message", locale)}
+      </p>
+      <div class="flex flex-wrap shrink-0 items-center gap-3">
+        <button
+          type="button"
+          id="cookie-customize-open"
+          class="font-mono text-xs uppercase tracking-[0.16em] text-white/70 underline decoration-white/40 underline-offset-4 transition-colors hover:text-white hover:decoration-white"
+        >
+          {t("cookies.customize", locale)}
+        </button>
+        <button
+          type="button"
+          id="cookie-reject"
+          class="rounded-full border border-white/35 px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-[0.16em] text-white transition-colors hover:bg-white/10"
+        >
+          {t("cookies.reject", locale)}
+        </button>
+        <button
+          type="button"
+          id="cookie-accept"
+          class="rounded-full bg-atlantic px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-[0.16em] text-white transition-colors hover:bg-white hover:text-ink"
+        >
+          {t("cookies.acceptAll", locale)}
+        </button>
+      </div>
+    </div>
+
+    {/* Customize view */}
+    <div id="cookie-customize" hidden class="flex flex-col gap-5">
+      <p class="max-w-2xl text-sm leading-relaxed text-white/85">
+        {t("cookies.message", locale)}
+      </p>
+      <div class="flex flex-wrap gap-x-8 gap-y-4">
+        <label class="flex items-start gap-2.5 text-sm">
+          <input type="checkbox" checked disabled class="mt-0.5 h-4 w-4 accent-atlantic opacity-70" />
+          <span>
+            <span class="font-semibold text-white">{t("cookies.essential", locale)}</span>
+            <span class="text-white/50"> · {t("cookies.alwaysActive", locale)}</span>
+          </span>
+        </label>
+        <label class="flex items-start gap-2.5 text-sm">
+          <input type="checkbox" id="cookie-analytics-toggle" class="mt-0.5 h-4 w-4 accent-atlantic" />
+          <span class="font-semibold text-white">{t("cookies.analytics", locale)}</span>
+        </label>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <button
+          type="button"
+          id="cookie-save"
+          class="rounded-full bg-atlantic px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-[0.16em] text-white transition-colors hover:bg-white hover:text-ink"
+        >
+          {t("cookies.save", locale)}
+        </button>
+        <button
+          type="button"
+          id="cookie-accept-2"
+          class="rounded-full border border-white/35 px-5 py-2.5 font-mono text-xs font-bold uppercase tracking-[0.16em] text-white transition-colors hover:bg-white/10"
+        >
+          {t("cookies.acceptAll", locale)}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = "cookie-consent";
+
+  type Prefs = { analytics: boolean };
+
+  function readPrefs(): Prefs | null {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return typeof parsed?.analytics === "boolean" ? parsed : null;
+    } catch {
+      return null;
+    }
+  }
+
+  function savePrefs(prefs: Prefs): void {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(prefs));
+    if (prefs.analytics) {
+      window.gtag?.("consent", "update", { analytics_storage: "granted" });
+    }
+    // No explicit "denied" update needed — Consent Mode's default (set in
+    // BaseLayout's <head>, before gtag.js) is already denied.
+  }
+
+  function initCookieConsent(): void {
+    const banner = document.getElementById("cookie-consent-banner");
+    const simple = document.getElementById("cookie-simple");
+    const customize = document.getElementById("cookie-customize");
+    const analyticsToggle = document.getElementById("cookie-analytics-toggle") as HTMLInputElement | null;
+    if (!banner || !simple || !customize || !analyticsToggle) return;
+
+    const showSimple = () => {
+      simple.hidden = false;
+      customize.hidden = true;
+    };
+    const showCustomize = () => {
+      // Reflect any previously saved choice when re-opening (e.g. via the
+      // footer's "Cookie settings" link) instead of always defaulting to
+      // unchecked.
+      analyticsToggle.checked = readPrefs()?.analytics ?? false;
+      simple.hidden = true;
+      customize.hidden = false;
+    };
+
+    const existing = readPrefs();
+    if (existing) {
+      banner.hidden = true;
+    } else {
+      banner.hidden = false;
+      showSimple();
+    }
+
+    document.getElementById("cookie-customize-open")?.addEventListener("click", showCustomize);
+
+    document.getElementById("cookie-accept")?.addEventListener("click", () => {
+      savePrefs({ analytics: true });
+      banner.hidden = true;
+    });
+    document.getElementById("cookie-accept-2")?.addEventListener("click", () => {
+      savePrefs({ analytics: true });
+      banner.hidden = true;
+    });
+    document.getElementById("cookie-reject")?.addEventListener("click", () => {
+      savePrefs({ analytics: false });
+      banner.hidden = true;
+    });
+    document.getElementById("cookie-save")?.addEventListener("click", () => {
+      savePrefs({ analytics: analyticsToggle.checked });
+      banner.hidden = true;
+    });
+  }
+
+  // "Cookie settings" link in the footer re-opens the banner (reset to the
+  // simple view) so a visitor can change their mind after the fact —
+  // required for real compliance, not just a first-visit prompt.
+  function initCookieManageLinks(): void {
+    document.querySelectorAll<HTMLElement>("[data-cookie-manage]").forEach((el) => {
+      el.addEventListener("click", (e) => {
+        e.preventDefault();
+        const banner = document.getElementById("cookie-consent-banner");
+        const simple = document.getElementById("cookie-simple");
+        const customize = document.getElementById("cookie-customize");
+        if (!banner || !simple || !customize) return;
+        simple.hidden = false;
+        customize.hidden = true;
+        banner.hidden = false;
+      });
+    });
+  }
+
+  document.addEventListener("astro:page-load", () => {
+    initCookieConsent();
+    initCookieManageLinks();
+  });
+</script>

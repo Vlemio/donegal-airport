@@ -131,57 +131,73 @@ const marqueeItems = [
         </div>
       </div>
 
-      {/* Nav */}
-      <div data-animate="fade-up" data-animate-delay="0.16" class="md:col-span-2">
-        <p class="font-mono text-[0.68rem] uppercase tracking-[0.22em] text-sand">
-          {t("footer.explore", locale)}
-        </p>
-        <ul class="mt-5 space-y-2 text-sm">
-          {nav.map((item) => (
-            <li>
-              <a
-                href={item.href}
-                class="text-mute transition-colors hover:text-sand"
-              >
-                {t(`nav.${item.key}` as any, locale)}
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
+      {/* Nav + Social — side by side even on mobile (both lists are short,
+          single-word links; stacked full-height one after the other made
+          the footer needlessly long on a phone). md:contents unwraps this
+          pairing at the md breakpoint so Nav/Social go back to being two
+          independent items of the outer 12-col grid, exactly as before —
+          desktop layout is untouched. */}
+      <div class="grid grid-cols-2 gap-6 md:contents">
+        {/* Nav */}
+        <div data-animate="fade-up" data-animate-delay="0.16" class="md:col-span-2">
+          <p class="font-mono text-[0.68rem] uppercase tracking-[0.22em] text-sand">
+            {t("footer.explore", locale)}
+          </p>
+          <ul class="mt-5 space-y-2 text-sm">
+            {nav.map((item) => (
+              <li>
+                <a
+                  href={item.href}
+                  class="text-mute transition-colors hover:text-sand"
+                >
+                  {t(`nav.${item.key}` as any, locale)}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
 
-      {/* Social */}
-      <div data-animate="fade-up" data-animate-delay="0.24" class="md:col-span-2">
-        <p class="font-mono text-[0.68rem] uppercase tracking-[0.22em] text-sand">
-          {t("footer.follow", locale)}
-        </p>
-        <ul class="mt-5 space-y-2 text-sm">
-          {socials.map((s) => (
-            <li>
-              <a
-                href={s.href}
-                target="_blank"
-                rel="noopener"
-                class="text-mute transition-colors hover:text-sand"
-              >
-                {s.label}
-              </a>
-            </li>
-          ))}
-        </ul>
+        {/* Social */}
+        <div data-animate="fade-up" data-animate-delay="0.24" class="md:col-span-2">
+          <p class="font-mono text-[0.68rem] uppercase tracking-[0.22em] text-sand">
+            {t("footer.follow", locale)}
+          </p>
+          <ul class="mt-5 space-y-2 text-sm">
+            {socials.map((s) => (
+              <li>
+                <a
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener"
+                  class="text-mute transition-colors hover:text-sand"
+                >
+                  {s.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </div>
 
     <div
-      class="mt-20 flex flex-col gap-3 border-t border-line pt-8 text-[0.7rem] uppercase tracking-[0.2em] text-mute sm:flex-row sm:items-center sm:justify-between"
+      class="mt-20 flex flex-col gap-3 border-t border-line pt-8 text-[0.7rem] uppercase tracking-[0.2em] text-mute sm:flex-row sm:items-start sm:justify-between"
     >
-      <p>© {year} {t("site.name", locale)}. {t("footer.rights", locale)}</p>
+      {/* nowrap only from 340px up — below that (very old/small phones,
+         e.g. 320px) even zero letter-spacing can't fit this line, so let
+         it fall back to wrapping instead of clipping against overflow-x:clip. */}
+      <p class="[@media(min-width:340px)]:whitespace-nowrap tracking-[0.04em] sm:tracking-[0.2em]">© {year} {t("site.name", locale)}. {t("footer.rights", locale)}</p>
       <ul class="flex flex-wrap gap-x-5 gap-y-1">
         {legalLinks.map((label) => (
           <li><a href="#" class="hover:text-sand">{label}</a></li>
         ))}
         <li><a href="#" class="hover:text-sand">Ráiteas Beartas Teanga</a></li>
+        <li><a href="#" data-cookie-manage class="hover:text-sand">{t("cookies.manage", locale)}</a></li>
       </ul>
     </div>
+
+    <p class="mt-6 text-center text-[0.62rem] uppercase tracking-[0.2em] text-mute/60">
+      Powered by Vlemio
+    </p>
   </div>
 </footer>

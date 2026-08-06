@@ -22,5 +22,16 @@
   },
   "languageToggle": {
     "switchTo": "Gaeilge"
+  },
+  "cookies": {
+    "message": "This site uses cookies to enhance your experience.",
+    "acceptAll": "Accept all",
+    "reject": "Reject non-essential",
+    "customize": "Customize",
+    "essential": "Essential",
+    "alwaysActive": "always active",
+    "analytics": "Analytics",
+    "save": "Save preferences",
+    "manage": "Cookie settings"
   }
 }

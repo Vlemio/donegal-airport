@@ -22,5 +22,16 @@
   },
   "languageToggle": {
     "switchTo": "English"
+  },
+  "cookies": {
+    "message": "Úsáideann an suíomh seo fianáin chun d'eispéireas a fheabhsú.",
+    "acceptAll": "Glac le gach ceann",
+    "reject": "Diúltaigh do neamhriachtanach",
+    "customize": "Saincheap",
+    "essential": "Riachtanach",
+    "alwaysActive": "i gcónaí gníomhach",
+    "analytics": "Anailísíocht",
+    "save": "Sábháil sainroghanna",
+    "manage": "Socruithe fianán"
   }
 }

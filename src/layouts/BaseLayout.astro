@@ -3,7 +3,16 @@ import "../styles/global.css";
 import { ClientRouter } from "astro:transitions";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
+import CookieConsent from "../components/CookieConsent.astro";
 import { getLocale, altLocalePath, t, type Locale } from "../i18n";
+
+// TODO: swap for the real GA4 Measurement ID once it's created (see
+// CLAUDE.md / the ago-2026 cookie-consent conversation for the
+// access-control notes on who should own that Google account). Left as a
+// placeholder — same pattern as WEB3FORMS_KEY in contact.astro — so gtag.js
+// simply isn't loaded at all until a real ID replaces this string.
+const GA4_MEASUREMENT_ID = "REPLACE_WITH_REAL_GA4_ID";
+const hasGA4 = !GA4_MEASUREMENT_ID.startsWith("REPLACE_WITH");
 
 interface Props {
   title: string;
@@ -103,6 +112,45 @@ const localeTag: Record<Locale, string> = {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    {/* Google Consent Mode v2 — must run before gtag.js (or anything else
+        that could set a cookie) loads. Every category defaults to
+        "denied"; ad_storage/ad_user_data/ad_personalization stay denied
+        permanently (no ads/remarketing on this site — see
+        CookieConsent.astro). If the visitor already granted analytics
+        consent on a previous visit (remembered in localStorage), re-apply
+        that immediately so GA4 tracks correctly from the very first
+        pageview instead of waiting for the banner script further down. */}
+    <script is:inline>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      gtag("consent", "default", {
+        ad_storage: "denied",
+        ad_user_data: "denied",
+        ad_personalization: "denied",
+        analytics_storage: "denied",
+      });
+      try {
+        var stored = JSON.parse(localStorage.getItem("cookie-consent"));
+        if (stored && stored.analytics === true) {
+          gtag("consent", "update", { analytics_storage: "granted" });
+        }
+      } catch (e) {}
+    </script>
+    {
+      hasGA4 && (
+        <>
+          <script is:inline define:vars={{ GA4_MEASUREMENT_ID }} async src={`https://www.googletagmanager.com/gtag/js?id=${GA4_MEASUREMENT_ID}`} />
+          <script is:inline define:vars={{ GA4_MEASUREMENT_ID }}>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag("js", new Date());
+            gtag("config", GA4_MEASUREMENT_ID);
+          </script>
+        </>
+      )
+    }
+
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="generator" content={Astro.generator} />
     {/* Playfair Display — used for the café-menu names on /plan */}
@@ -186,6 +234,7 @@ const localeTag: Record<Locale, string> = {
       <slot />
     </main>
     <Footer locale={locale} />
+    <CookieConsent locale={locale} />
     <script>
       import "../scripts/animations.ts";
     </script>
