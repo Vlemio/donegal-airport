@@ -21,7 +21,12 @@
     "policies": "Beartais"
   },
   "languageToggle": {
-    "switchTo": "English"
+    "switchTo": "English",
+    "switchToAria": "Aistrigh go"
+  },
+  "a11y": {
+    "siteNavigation": "Nascleanúint an tsuímh",
+    "openMenu": "Oscail an roghchlár"
   },
   "cookies": {
     "message": "Úsáideann an suíomh seo fianáin chun d'eispéireas a fheabhsú.",

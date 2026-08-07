@@ -21,7 +21,12 @@
     "policies": "Policies"
   },
   "languageToggle": {
-    "switchTo": "Gaeilge"
+    "switchTo": "Gaeilge",
+    "switchToAria": "Switch to"
+  },
+  "a11y": {
+    "siteNavigation": "Site navigation",
+    "openMenu": "Open menu"
   },
   "cookies": {
     "message": "This site uses cookies to enhance your experience.",

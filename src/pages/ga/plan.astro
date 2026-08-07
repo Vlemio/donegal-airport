@@ -40,14 +40,14 @@ const carHire = [
   },
   {
     name: "GoCar",
-    details: ["Cíos uaire", "Breosla agus árachas san áireamh", "Solúbtha — gan gealltanas fadtéarmach"],
+    details: ["Cíos uaire", "Breosla agus árachas san áireamh", "Solúbtha — gan gealltanas", "fadtéarmach"],
     website: "https://www.gocar.ie/",
     bg: "#8DC73F",
     logo: "/photos/plan/cars/logo-gocar-white.png",
     car: "/photos/plan/cars/car-gocar.png",
     roof: "/photos/plan/cars/logo-gocar-white.png",
     side: "right", logoW: 38, logoLeft: 56,
-    cardH: 230, logoPct: 43,
+    cardH: 230, logoPct: 40,
   },
 ] as const;
 
@@ -1188,7 +1188,7 @@ const busColumns = [
       { height: 230, logoPct: 31 },
       { height: 230, logoPct: 37 },
       { height: 230, logoPct: 10 },
-      { height: 230, logoPct: 43 },
+      { height: 230, logoPct: 40 },
     ];
     const state = cards.map((card, i) => ({
       height: BAKED[i]?.height ?? Math.round(card.getBoundingClientRect().height),

@@ -39,7 +39,7 @@ const switchToLabel = t("languageToggle.switchTo", locale);
 <header
   data-header
   class="fixed inset-x-0 top-0 z-50"
-  aria-label="Site navigation"
+  aria-label={t("a11y.siteNavigation", locale)}
 >
   <div
     class:list={[
@@ -99,7 +99,7 @@ const switchToLabel = t("languageToggle.switchTo", locale);
         href={altPath}
         data-lang-toggle
         class="font-mono text-[0.7rem] uppercase tracking-[0.22em] text-ink/70 transition-colors hover:text-atlantic"
-        aria-label={`Switch to ${switchToLabel}`}
+        aria-label={`${t("languageToggle.switchToAria", locale)} ${switchToLabel}`}
       >
         {switchToLabel}
       </a>
@@ -110,7 +110,7 @@ const switchToLabel = t("languageToggle.switchTo", locale);
       type="button"
       aria-expanded="false"
       aria-controls="mobile-nav"
-      aria-label="Open menu"
+      aria-label={t("a11y.openMenu", locale)}
       class="relative z-50 text-ink lg:hidden"
     >
       <svg

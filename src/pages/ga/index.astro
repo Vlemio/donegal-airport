@@ -704,7 +704,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
                   href={d.bookUrl}
                   target="_blank"
                   rel="noopener"
-                  class="mt-4 inline-flex w-fit items-center gap-2 rounded-full bg-atlantic px-5 py-2.5 font-mono text-[0.65rem] font-bold uppercase tracking-[0.14em] text-white transition-colors hover:bg-ink"
+                  class="mt-4 inline-flex w-fit items-center gap-2 whitespace-nowrap rounded-full bg-atlantic px-5 py-2.5 font-mono text-[0.58rem] font-bold uppercase tracking-[0.08em] text-white transition-colors hover:bg-ink"
                 >
                   Cuir {d.city} in áirithe →
                 </a>
@@ -1106,6 +1106,17 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
 
   function statusKey(s) { return String(s || '').toLowerCase().replace(/[^a-z]/g, ''); }
 
+  // Irish labels for the FIDS feed's English status text — same mapping as
+  // /ga/flights, kept in sync by hand (see that page's STATUS_LABELS_GA).
+  var STATUS_LABELS_GA = {
+    scheduled: 'Sceidealta', checkin: 'Seiceáil isteach', ontime: 'In am',
+    boarding: 'Ag cur ar bord', departed: 'Imithe', landed: 'Tuirlingthe',
+    enroute: 'Ar an mbealach', onapproach: 'Ag druidim isteach',
+    finalcall: 'Glao deiridh', delayed: 'Moillithe', approaching: 'Ag druidim isteach',
+    gateclosed: 'Geata dúnta', cancelled: 'Cealaithe', diverted: 'Atreoraithe',
+  };
+  function statusLabel(s) { return STATUS_LABELS_GA[statusKey(s)] || s || 'Sceidealta'; }
+
   // Same palette as the live information display (/flights): grey =
   // check-in, green = on time/landed/boarding, blue = departed, amber =
   // delayed/approach, red = cancelled/diverted/gate closed. One deliberate
@@ -1136,7 +1147,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
       }
       deps.forEach(function (f) {
         var key = statusKey(f.status);
-        var lbl = key === 'delayed' && f.estTime ? '→ ' + f.estTime : f.status;
+        var lbl = key === 'delayed' && f.estTime ? '→ ' + f.estTime : statusLabel(f.status);
         var tone = toneFor(f.status);
         var li = document.createElement('li');
         li.className = 'ops-board-row';
@@ -1162,7 +1173,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
       }
       arrs.forEach(function (f) {
         var key = statusKey(f.status);
-        var lbl = key === 'delayed' && f.estTime ? '→ ' + f.estTime : f.status;
+        var lbl = key === 'delayed' && f.estTime ? '→ ' + f.estTime : statusLabel(f.status);
         var tone = toneFor(f.status);
         var li = document.createElement('li');
         li.className = 'ops-board-row';

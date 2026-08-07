@@ -205,7 +205,7 @@ const droneZones = [
       <h2 data-split class="mt-3 font-display text-[clamp(2.2rem,4vw,3.4rem)] font-normal leading-[1.02]">EIDL — an tagairt thapa.</h2>
 
       {/* At a glance */}
-      <div data-animate="fade-up" class="mt-10 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+      <div data-animate="fade-up" class="mt-10 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-line bg-line md:grid-cols-3 lg:grid-cols-6">
         {stats.map((s, i) => (
           <div class={`group bg-surface px-5 py-6 transition-colors duration-300 ${i % 2 === 0 ? "hover:bg-[var(--color-atlantic)]" : "hover:bg-[var(--color-sand)]"}`}>
             <p class="inline-block origin-left font-display text-[clamp(1.5rem,2.4vw,2rem)] leading-none text-ink transition-all duration-300 group-hover:scale-110 group-hover:text-white">{s.big}{s.unit && <span class="ml-0.5 font-mono text-[0.5em] font-medium tracking-tight">{s.unit}</span>}</p>
@@ -243,11 +243,11 @@ const droneZones = [
               class="w-full"
             />
             {/* bearing + direction of travel, pinned just above each threshold */}
-            <span class="map-item absolute left-[18.3%] top-[28.3%] flex -translate-x-1/2 items-center gap-1 font-mono text-[0.62rem] font-bold uppercase tracking-[0.1em] text-atlantic sm:text-[0.74rem]">
+            <span class="map-item absolute left-[19.06%] top-[61.36%] flex -translate-x-1/2 items-center gap-1 font-mono text-[0.62rem] font-bold uppercase tracking-[0.1em] text-atlantic sm:left-[18.3%] sm:top-[28.3%] sm:text-[0.74rem]">
               <span class="map-counter-rotate rotate-[90deg] inline-block sm:rotate-0">023°</span>
               <svg viewBox="0 0 24 10" class="h-2 w-6" aria-hidden="true"><line x1="1" y1="5" x2="21" y2="5" stroke="currentColor" stroke-width="1.6" /><polyline points="16,1 22,5 16,9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
             </span>
-            <span class="map-item absolute left-[79.2%] top-[28.3%] flex -translate-x-1/2 items-center gap-1 font-mono text-[0.62rem] font-bold uppercase tracking-[0.1em] text-atlantic sm:text-[0.74rem]">
+            <span class="map-item absolute left-[77.67%] top-[20.56%] flex -translate-x-1/2 items-center gap-1 font-mono text-[0.62rem] font-bold uppercase tracking-[0.1em] text-atlantic sm:left-[79.2%] sm:top-[28.3%] sm:text-[0.74rem]">
               <svg viewBox="0 0 24 10" class="h-2 w-6" aria-hidden="true"><line x1="3" y1="5" x2="23" y2="5" stroke="currentColor" stroke-width="1.6" /><polyline points="8,1 2,5 8,9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></svg>
               <span class="map-counter-rotate rotate-[90deg] inline-block sm:rotate-0">203°</span>
             </span>
@@ -262,7 +262,7 @@ const droneZones = [
               </svg>
               <span class="map-txt map-counter-rotate rotate-[90deg] font-mono text-[0.58rem] font-bold uppercase tracking-[0.06em] text-atlantic sm:rotate-0 sm:text-[0.7rem]">209 m</span>
             </span>
-            <span class="map-item absolute left-[86.2%] top-[60.3%] flex -translate-x-1/2 flex-col items-center gap-0.5" style="width:7.5%">
+            <span class="map-item absolute left-[86.1%] top-[87.04%] flex -translate-x-1/2 flex-col items-center gap-0.5 sm:left-[86.2%] sm:top-[60.3%]" style="width:7.5%">
               <svg class="w-full" viewBox="0 0 200 24" preserveAspectRatio="none" style="height:11px" fill="none" aria-hidden="true">
                 <g stroke="var(--color-atlantic)" stroke-width="1.6" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="2" y1="2" x2="2" y2="22" /><line x1="198" y1="2" x2="198" y2="22" />
@@ -273,8 +273,8 @@ const droneZones = [
               <span class="map-txt map-counter-rotate rotate-[90deg] font-mono text-[0.58rem] font-bold uppercase tracking-[0.06em] text-atlantic sm:rotate-0 sm:text-[0.7rem]">129 m</span>
             </span>
             {/* clearways */}
-            <span class="map-item absolute left-[90.6%] top-[5.3%] -translate-x-1/2 font-mono text-[0.58rem] font-bold uppercase tracking-[0.08em] text-atlantic sm:text-[0.68rem]"><span class="map-txt map-counter-rotate rotate-[90deg] inline-block sm:rotate-0">CWY 279 m × 150 m</span></span>
-            <span class="map-item absolute left-[10.5%] top-[2.4%] -translate-x-1/2 font-mono text-[0.58rem] font-bold uppercase tracking-[0.08em] text-atlantic sm:text-[0.68rem]"><span class="map-txt map-counter-rotate rotate-[90deg] inline-block sm:rotate-0">CWY 74 m × 150 m</span></span>
+            <span class="map-item absolute left-[90.13%] top-[-50.99%] -translate-x-1/2 font-mono text-[0.58rem] font-bold uppercase tracking-[0.08em] text-atlantic sm:left-[90.6%] sm:top-[5.3%] sm:text-[0.68rem]"><span class="map-txt map-counter-rotate rotate-[90deg] inline-block sm:rotate-0">CWY 279 m × 150 m</span></span>
+            <span class="map-item absolute left-[10.22%] top-[-51.08%] -translate-x-1/2 font-mono text-[0.58rem] font-bold uppercase tracking-[0.08em] text-atlantic sm:left-[10.5%] sm:top-[2.4%] sm:text-[0.68rem]"><span class="map-txt map-counter-rotate rotate-[90deg] inline-block sm:rotate-0">CWY 74 m × 150 m</span></span>
           </div>
           </div>
 

@@ -301,6 +301,22 @@ const flightsToday = flightsPayload.flights;
     var k = String(s || '').toLowerCase().replace(/[^a-z]/g, '');
     return STATUS_COLORS[k] || '#8b9897';
   }
+  // Irish labels for the FIDS feed's English status text — the feed itself
+  // stays English (same operational data source as EN), only the on-page
+  // label is translated. Falls back to the raw feed text for any status
+  // this list doesn't recognise, so an unexpected new status still shows
+  // something rather than going blank.
+  var STATUS_LABELS_GA = {
+    scheduled: 'Sceidealta', checkin: 'Seiceáil isteach', ontime: 'In am',
+    boarding: 'Ag cur ar bord', departed: 'Imithe', landed: 'Tuirlingthe',
+    enroute: 'Ar an mbealach', onapproach: 'Ag druidim isteach',
+    finalcall: 'Glao deiridh', delayed: 'Moillithe', approaching: 'Ag druidim isteach',
+    gateclosed: 'Geata dúnta', cancelled: 'Cealaithe', diverted: 'Atreoraithe',
+  };
+  function statusLabel(s) {
+    var k = String(s || '').toLowerCase().replace(/[^a-z]/g, '');
+    return STATUS_LABELS_GA[k] || s || 'Sceidealta';
+  }
   function dirCode(f) { return f.type === 'departure' ? 'dep' : 'arr'; }
 
   // ---------- Split-flap tile engine ----------
@@ -426,7 +442,7 @@ const flightsToday = flightsPayload.flights;
     var statusCell = document.createElement('span');
     var statusInner = document.createElement('span'); statusInner.className = 'eidl-status';
     var dot = document.createElement('span'); dot.className = 'eidl-status-dot';
-    var statusText = document.createElement('span'); statusText.textContent = f.status || 'Scheduled';
+    var statusText = document.createElement('span'); statusText.textContent = statusLabel(f.status);
     var c = statusColor(f.status);
     dot.style.background = c; dot.style.boxShadow = '0 0 0 3px ' + c + '2b';
     statusInner.style.color = c;
@@ -475,7 +491,7 @@ const flightsToday = flightsPayload.flights;
         entry.iataEl.textContent = f.airlineCode || '';
         entry.airlineEl.textContent = f.airline || '';
         entry.cityEl.textContent = f.city || '';
-        entry.statusText.textContent = f.status || 'Scheduled';
+        entry.statusText.textContent = statusLabel(f.status);
         var c = statusColor(f.status);
         entry.statusDot.style.background = c; entry.statusDot.style.boxShadow = '0 0 0 3px ' + c + '2b';
         entry.statusInner.style.color = c;

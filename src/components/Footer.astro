@@ -53,17 +53,29 @@ const socials = [
 // current routes from CFN tick across; clicking jumps to that
 // destination card. Animation is pure CSS (see global.css). Content
 // is duplicated inline so the loop seam is invisible. */
-const marqueeItems = [
-  "CFN → DUB · DUBLIN",
-  "EI 3401 · EI 3402",
-  "CFN → GLA · GLASGOW",
-  "EI 3403 · EI 3408",
-  "WORLD'S MOST SCENIC RUNWAY",
-  "CARRICKFINN · 55.04°N 8.34°W",
-  "ELEV 30 FT",
-  "RUNWAY 02/20 · 1495M",
-  "ATC 129.805",
-];
+const marqueeItems = locale === "ga"
+  ? [
+      "CFN → DUB · BAILE ÁTHA CLIATH",
+      "EI 3401 · EI 3402",
+      "CFN → GLA · GLASCHÚ",
+      "EI 3403 · EI 3408",
+      "AN RÚIDBHEALACH IS SUAITHINSÍ AR DOMHAN",
+      "CARRAIG FHINN · 55.04°N 8.34°W",
+      "AIRDE 30 FT",
+      "RÚIDBHEALACH 02/20 · 1495M",
+      "ATC 129.805",
+    ]
+  : [
+      "CFN → DUB · DUBLIN",
+      "EI 3401 · EI 3402",
+      "CFN → GLA · GLASGOW",
+      "EI 3403 · EI 3408",
+      "WORLD'S MOST SCENIC RUNWAY",
+      "CARRICKFINN · 55.04°N 8.34°W",
+      "ELEV 30 FT",
+      "RUNWAY 02/20 · 1495M",
+      "ATC 129.805",
+    ];
 ---
 
 <footer data-footer class="relative bg-surface text-ink">
