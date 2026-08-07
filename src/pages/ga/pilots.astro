@@ -575,8 +575,7 @@ const droneZones = [
       // function is called earlier in this listener (initEidlWeather();)
       // than its own body appears in the file — a plain `let` down there
       // would still be in its temporal dead zone at call time and throw,
-      // silently aborting the rest of this listener (initMapEditor()
-      // included) on every run.
+      // silently aborting the rest of this listener on every run.
       let eidlWeatherTimer: ReturnType<typeof setInterval> | undefined;
       const links = [...document.querySelectorAll<HTMLElement>("[data-nav-link]")];
       if (!links.length) return;
@@ -639,60 +638,6 @@ const droneZones = [
           el.addEventListener("focus", () => hot(id, true));
           el.addEventListener("blur", () => hot(id, false));
         });
-
-        // dev-only: drag the schematic labels and read back their coords
-        if (new URLSearchParams(location.search).has("edit")) {
-          const svg = uas.querySelector("svg");
-          const labels = [...uas.querySelectorAll<SVGTextElement>(".uas-label")];
-          if (svg && labels.length) {
-            const readout = document.createElement("div");
-            readout.style.cssText = "margin-top:8px;font:600 11px/1.5 ui-monospace,monospace;color:#1a4a6e;white-space:pre-wrap";
-            (svg.parentElement || svg).after(readout);
-            const toSvg = (e: PointerEvent) => { const p = svg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; return p.matrixTransform(svg.getScreenCTM()!.inverse()); };
-            const report = () => { readout.textContent = "labels: " + labels.map((l) => `${l.dataset.l}(${Math.round(+l.getAttribute("x")!)},${Math.round(+l.getAttribute("y")!)})`).join("  "); };
-            labels.forEach((l) => {
-              l.style.pointerEvents = "auto"; l.style.cursor = "move";
-              l.addEventListener("pointerdown", (ev: PointerEvent) => {
-                ev.preventDefault();
-                const move = (e: PointerEvent) => { const p = toSvg(e); l.setAttribute("x", p.x.toFixed(1)); l.setAttribute("y", p.y.toFixed(1)); report(); };
-                const up = () => { document.removeEventListener("pointermove", move); document.removeEventListener("pointerup", up); };
-                document.addEventListener("pointermove", move);
-                document.addEventListener("pointerup", up);
-              });
-            });
-            report();
-
-            // green-cut editor: move the clip in/out (offset) and rotate (angle)
-            const cutRect = svg.querySelector("#uas-cut-rect");
-            if (cutRect) {
-              let ang = 215, off = 104;
-              const panel = document.createElement("div");
-              panel.style.cssText = "margin-top:6px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;font:600 11px/1.6 ui-monospace,monospace;color:#1a4a6e";
-              panel.innerHTML = 'cut angle <input type="range" min="0" max="360" step="1" data-cut="ang" style="vertical-align:middle"> offset <input type="range" min="-20" max="150" step="1" data-cut="off" style="vertical-align:middle"> <span data-cut-read></span>';
-              readout.after(panel);
-              const angEl = panel.querySelector('[data-cut="ang"]') as HTMLInputElement;
-              const offEl = panel.querySelector('[data-cut="off"]') as HTMLInputElement;
-              const readEl = panel.querySelector("[data-cut-read]") as HTMLElement;
-              angEl.value = String(ang); offEl.value = String(off);
-              const edge = svg.querySelector("#uas-cut-edge");
-              const apply = () => {
-                cutRect.setAttribute("transform", `translate(150 150) rotate(${ang}) translate(${off} 0)`);
-                if (edge) {
-                  const rad = ang * Math.PI / 180;
-                  const px = 150 + off * Math.cos(rad), py = 150 + off * Math.sin(rad);
-                  const ux = -Math.sin(rad), uy = Math.cos(rad);
-                  const t = off < 144 ? Math.sqrt(144 * 144 - off * off) : 0;
-                  edge.setAttribute("x1", (px + t * ux).toFixed(1)); edge.setAttribute("y1", (py + t * uy).toFixed(1));
-                  edge.setAttribute("x2", (px - t * ux).toFixed(1)); edge.setAttribute("y2", (py - t * uy).toFixed(1));
-                }
-                readEl.textContent = `angle=${ang}°  offset=${off}`;
-              };
-              angEl.addEventListener("input", () => { ang = +angEl.value; apply(); });
-              offEl.addEventListener("input", () => { off = +offEl.value; apply(); });
-              apply();
-            }
-          }
-        }
       }
 
       // Tower opening-hours interactive widget
@@ -700,34 +645,6 @@ const droneZones = [
 
       // Live TAF widget
       initEidlWeather();
-
-      // Map label editor — authoring only. On automatically in local dev,
-      // or with ?edit in the URL. Never ships to production visitors.
-      if (new URLSearchParams(location.search).has("edit")) initMapEditor();
-
-      // Hero F-glyph size editor — authoring only (?edit). The F is created
-      // at runtime by data-split, so poll until the .f-fix span exists, then
-      // let me resize it with a slider and read back the em value.
-      if (new URLSearchParams(location.search).has("edit")) {
-        let tries = 0;
-        const wait = setInterval(() => {
-          const f = document.querySelector<HTMLElement>("h1.hero-display .f-fix");
-          if (f) { clearInterval(wait); mountFEditor(f); }
-          else if (++tries > 60) clearInterval(wait);
-        }, 100);
-      }
-      function mountFEditor(f: HTMLElement) {
-        let em = 1;
-        const panel = document.createElement("div");
-        panel.style.cssText = "position:fixed;left:14px;bottom:14px;z-index:9999;background:#fff;border:1px solid #1a4a6e;border-radius:10px;padding:10px 12px;box-shadow:0 4px 16px rgba(0,0,0,.18);font:600 12px/1.6 ui-monospace,monospace;color:#1a4a6e;display:flex;gap:10px;align-items:center";
-        panel.innerHTML = 'F size <input type="range" min="0.6" max="1.3" step="0.01" value="1" style="vertical-align:middle"> <span data-f-read></span>';
-        document.body.appendChild(panel);
-        const range = panel.querySelector("input") as HTMLInputElement;
-        const read = panel.querySelector("[data-f-read]") as HTMLElement;
-        const apply = () => { f.style.fontSize = em + "em"; read.textContent = "font-size: " + em.toFixed(2) + "em"; };
-        range.addEventListener("input", () => { em = +range.value; apply(); });
-        apply();
-      }
 
       function initTowerHours() {
         const host = document.getElementById("tower-hours");
@@ -867,6 +784,12 @@ const droneZones = [
           const d = new Date(unixSeconds * 1000);
           return `${pad2(d.getUTCDate())}/${pad2(d.getUTCHours())}${pad2(d.getUTCMinutes())}Z`;
         };
+        // rawTAF comes straight from aviationweather.gov (a third-party API,
+        // not user input, but still not ours to trust blindly) and gets
+        // interpolated into an innerHTML template below — escape it so a
+        // compromised or malformed upstream response can't inject markup.
+        const escapeHtml = (s: string) =>
+          s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
         async function load() {
           try {
@@ -893,7 +816,7 @@ const droneZones = [
             + `</div>`
             + `<div>`
             + `<p style="margin:0;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-mute)">TAF · bailí ${fmtZ(taf.validTimeFrom)} – ${fmtZ(taf.validTimeTo)}</p>`
-            + `<p style="margin:12px 0 0;font-family:var(--font-mono);font-size:13px;line-height:1.6;color:var(--color-ink);word-break:break-word">${taf.rawTAF ?? "—"}</p>`
+            + `<p style="margin:12px 0 0;font-family:var(--font-mono);font-size:13px;line-height:1.6;color:var(--color-ink);word-break:break-word">${taf.rawTAF ? escapeHtml(taf.rawTAF) : "—"}</p>`
             + `</div>`;
         }
 
@@ -901,172 +824,6 @@ const droneZones = [
         eidlWeatherTimer = setInterval(load, 300000);
       }
 
-      function initMapEditor() {
-        const canvas = document.getElementById("map-canvas");
-        if (!canvas || canvas.dataset.editorReady) return;
-        canvas.dataset.editorReady = "1";
-        canvas.style.touchAction = "none";
-        // The toolbar lives on the wrap (not the canvas) so the mobile
-        // preview's rotation — applied to #map-canvas — doesn't drag the
-        // toolbar diagonally along with it.
-        const wrap = document.getElementById("map-canvas-wrap") || canvas;
-
-        const labelCls = "map-item map-user absolute flex -translate-x-1/2 items-center gap-1 font-mono text-[0.62rem] font-bold uppercase tracking-[0.1em] text-atlantic sm:text-[0.74rem]";
-        const arrowRight = '<svg viewBox="0 0 24 10" class="h-2 w-6" aria-hidden="true"><line x1="1" y1="5" x2="21" y2="5" stroke="currentColor" stroke-width="1.6"/><polyline points="16,1 22,5 16,9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-
-        const bar = document.createElement("div");
-        bar.contentEditable = "false";
-        bar.style.cssText = "position:absolute;top:8px;left:8px;z-index:30;display:flex;gap:6px;align-items:center;background:rgba(24,29,22,.85);color:#fff;padding:6px 8px;border-radius:8px;font:700 11px/1 ui-monospace,monospace;user-select:none";
-        bar.innerHTML = '<span data-handle style="cursor:move;opacity:.75;user-select:none;padding-right:2px">⠿ EDIT</span>'
-          + '<button data-act="text" style="cursor:pointer;background:#1a4a6e;color:#fff;border:0;padding:5px 8px;border-radius:5px;font:inherit">+ Text</button>'
-          + '<button data-act="arrow" style="cursor:pointer;background:#1a4a6e;color:#fff;border:0;padding:5px 8px;border-radius:5px;font:inherit">+ Text+arrow</button>'
-          + '<button data-act="del" style="cursor:pointer;background:#9c3d54;color:#fff;border:0;padding:5px 8px;border-radius:5px;font:inherit">Delete</button>'
-          + '<button data-act="copy" style="cursor:pointer;background:#2e7d5b;color:#fff;border:0;padding:5px 8px;border-radius:5px;font:inherit">Copy layout</button>'
-          + '<span data-read style="opacity:.85;min-width:96px"></span>';
-        wrap.appendChild(bar);
-        const read = bar.querySelector("[data-read]") as HTMLElement;
-        let selected: HTMLElement | null = null;
-
-        // drag the toolbar itself by its handle
-        const handle = bar.querySelector("[data-handle]") as HTMLElement;
-        handle.addEventListener("pointerdown", (ev: PointerEvent) => {
-          ev.preventDefault();
-          const c = wrap.getBoundingClientRect(), r = bar.getBoundingClientRect();
-          const gx = ev.clientX - r.left, gy = ev.clientY - r.top;
-          bar.style.right = "auto";
-          const move = (e: PointerEvent) => {
-            bar.style.left = (e.clientX - gx - c.left) + "px";
-            bar.style.top = (e.clientY - gy - c.top) + "px";
-          };
-          const up = () => { document.removeEventListener("pointermove", move); document.removeEventListener("pointerup", up); };
-          document.addEventListener("pointermove", move);
-          document.addEventListener("pointerup", up);
-        });
-
-        // Labels are positioned via left/top % on #map-canvas, which the
-        // mobile preview below can rotate as one rigid unit (canvas +
-        // every label together) to stand the runway upright. Plain
-        // bounding-rect math (mouse px ÷ canvas px) only holds when
-        // there's no rotation — once rotated, screen-space deltas point in
-        // the wrong direction relative to the canvas's own left/top axes,
-        // which read as "backwards" dragging. Rather than hand-derive the
-        // rotation trig (error-prone, and it'd need to match whatever
-        // angle the other script currently has applied), three invisible
-        // 0×0 markers are positioned at local (0%,0%)/(100%,0%)/(0%,100%)
-        // — exactly like a real label would be — so their on-screen
-        // position after the SAME transform gives the canvas's true local
-        // axes empirically, whatever the current rotation happens to be.
-        const axisOrigin = document.createElement("span");
-        const axisX = document.createElement("span");
-        const axisY = document.createElement("span");
-        [[axisOrigin, 0, 0], [axisX, 100, 0], [axisY, 0, 100]].forEach(([el, l, t]) => {
-          (el as HTMLElement).style.cssText = `position:absolute;left:${l}%;top:${t}%;width:0;height:0;pointer-events:none;`;
-          canvas.appendChild(el as HTMLElement);
-        });
-
-        const screenToLocalPct = (clientX: number, clientY: number) => {
-          const o = axisOrigin.getBoundingClientRect();
-          const xr = axisX.getBoundingClientRect();
-          const yr = axisY.getBoundingClientRect();
-          const ax = xr.left - o.left, ay = xr.top - o.top; // screen vector for +100% left
-          const bx = yr.left - o.left, by = yr.top - o.top; // screen vector for +100% top
-          const px = clientX - o.left, py = clientY - o.top;
-          const det = ax * by - bx * ay || 1;
-          return {
-            l: +(((px * by - bx * py) / det) * 100).toFixed(2),
-            t: +(((ax * py - px * ay) / det) * 100).toFixed(2),
-          };
-        };
-
-        // Ground-truth current position: labels start out positioned via
-        // Tailwind classes (left-[18.3%] etc.), not inline style, so
-        // el.style.left is empty until the very first drag ever sets it.
-        // Trying to reverse-engineer a rotated element's local % from its
-        // (axis-aligned) bounding box turned out fragile — which corner/
-        // edge "top" or "left" corresponds to shifts with the rotation
-        // angle. Reading the number straight out of the inline style or
-        // the class text sidesteps that entirely; only mouse movement
-        // itself needs the rotation-aware conversion (screenToLocalPct).
-        const posPct = (el: HTMLElement) => {
-          const inlineL = parseFloat(el.style.left);
-          const inlineT = parseFloat(el.style.top);
-          if (!Number.isNaN(inlineL) && !Number.isNaN(inlineT)) return { l: inlineL, t: inlineT };
-          const lMatch = el.className.match(/left-\[([\d.]+)%\]/);
-          const tMatch = el.className.match(/top-\[([\d.]+)%\]/);
-          return { l: lMatch ? parseFloat(lMatch[1]) : 50, t: tMatch ? parseFloat(tMatch[1]) : 50 };
-        };
-        const select = (el: HTMLElement | null) => {
-          if (selected) selected.style.outline = "";
-          selected = el;
-          if (el) el.style.outline = "1px dashed rgba(26,74,110,.9)";
-        };
-
-        const makeDraggable = (el: HTMLElement) => {
-          el.style.cursor = "move";
-          el.addEventListener("pointerdown", (ev: PointerEvent) => {
-            if ((ev.target as HTMLElement).isContentEditable) return;
-            ev.preventDefault();
-            select(el);
-            const prevZ = el.style.zIndex;
-            el.style.zIndex = "70"; // above the toolbar (30) and preview panel (60) — dragging near either used to hide the label underneath it
-            const startPtr = screenToLocalPct(ev.clientX, ev.clientY);
-            const startElPos = posPct(el);
-            const grabL = startPtr.l - startElPos.l;
-            const grabT = startPtr.t - startElPos.t;
-            const move = (e: PointerEvent) => {
-              const p = screenToLocalPct(e.clientX, e.clientY);
-              el.style.left = (p.l - grabL).toFixed(2) + "%";
-              el.style.top = (p.t - grabT).toFixed(2) + "%";
-              const pp = posPct(el); read.textContent = pp.l + "% , " + pp.t + "%";
-            };
-            const up = () => {
-              document.removeEventListener("pointermove", move);
-              document.removeEventListener("pointerup", up);
-              el.style.zIndex = prevZ;
-            };
-            document.addEventListener("pointermove", move);
-            document.addEventListener("pointerup", up);
-          });
-          el.addEventListener("dblclick", () => {
-            const t = (el.querySelector(".map-txt") as HTMLElement) || el;
-            t.contentEditable = "true"; t.focus();
-            const done = () => { t.contentEditable = "false"; t.removeEventListener("blur", done); };
-            t.addEventListener("blur", done);
-          });
-        };
-
-        [...canvas.querySelectorAll<HTMLElement>(".map-item")].forEach(makeDraggable);
-
-        const addLabel = (withArrow: boolean) => {
-          const el = document.createElement("span");
-          el.className = labelCls;
-          el.style.left = "50%"; el.style.top = "42%";
-          el.innerHTML = '<span class="map-txt">TEXT</span>' + (withArrow ? " " + arrowRight : "");
-          canvas.appendChild(el);
-          makeDraggable(el); select(el);
-          const t = el.querySelector(".map-txt") as HTMLElement;
-          t.contentEditable = "true"; t.focus();
-          getSelection()?.selectAllChildren(t);
-          const done = () => { t.contentEditable = "false"; t.removeEventListener("blur", done); };
-          t.addEventListener("blur", done);
-        };
-
-        bar.addEventListener("click", (ev) => {
-          const act = (ev.target as HTMLElement).closest("[data-act]")?.getAttribute("data-act");
-          if (act === "text") addLabel(false);
-          else if (act === "arrow") addLabel(true);
-          else if (act === "del") { if (selected && selected.classList.contains("map-user")) { selected.remove(); select(null); } }
-          else if (act === "copy") {
-            const out = [...canvas.querySelectorAll<HTMLElement>(".map-item")].map((el) => {
-              const p = posPct(el);
-              return "left-[" + p.l + "%] top-[" + p.t + "%]  «" + el.textContent!.trim() + "»";
-            }).join("\n");
-            navigator.clipboard?.writeText(out);
-            read.textContent = "copied ✓";
-            console.log("[map layout]\n" + out);
-          }
-        });
-      }
     });
 
     // Runway diagram — mobile only: rotate the (landscape) chart -90° into a
@@ -1086,27 +843,15 @@ const droneZones = [
     // un-countered so they end up pointing along the runway's new axis.
     // Desktop is untouched — sm: classes disable all of this and the chart
     // renders exactly as before.
-    //
-    // Under ?edit, a small angle/height panel lets you tune the rotated,
-    // sized result live and read off the values to bake in here as the new
-    // defaults. Preview starts on by default (same as real mobile
-    // visitors see) — the label-drag editor above measures the canvas's
-    // actual current axes on every move, so dragging works correctly
-    // whether this is rotated or flattened via the panel's toggle.
     document.addEventListener("astro:page-load", () => {
       const wrap = document.getElementById("map-canvas-wrap");
       const canvas = document.getElementById("map-canvas");
       if (!wrap || !canvas) return;
       const ASPECT = 2896 / 392; // original landscape width/height
-      const isEdit = new URLSearchParams(location.search).has("edit");
 
-      let angle = 90; // degrees off vertical — straight portrait orientation
-      let heightFrac = 0.72; // fraction of viewport height, capped below
-      // Always on by default, edit mode included — the label editor's drag
-      // math (in initMapEditor() above) measures the canvas's actual
-      // current axes on every move, so it stays correct whether rotated or
-      // flat. No more need to flatten the view just to drag labels.
-      let previewOn = true;
+      const angle = 90; // degrees off vertical — straight portrait orientation
+      const heightFrac = 0.72; // fraction of viewport height, capped below
+      const previewOn = true;
 
       const counterRotated = () => Array.from(canvas.querySelectorAll<HTMLElement>(".map-counter-rotate"));
 
@@ -1148,35 +893,6 @@ const droneZones = [
 
       apply();
       window.addEventListener("resize", apply);
-
-      if (isEdit) {
-        const panel = document.createElement("div");
-        panel.contentEditable = "false";
-        panel.style.cssText = "position:fixed;left:8px;bottom:8px;z-index:60;display:flex;flex-direction:column;gap:7px;background:rgba(24,29,22,.88);color:#fff;padding:10px 12px;border-radius:10px;font:600 11px/1.4 ui-monospace,monospace;max-width:220px";
-        panel.innerHTML =
-          '<strong style="font-size:11px;opacity:.85">Runway mobile preview</strong>' +
-          '<label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" data-rp-toggle> Preview rotated</label>' +
-          '<label>Angle <input type="range" data-rp-angle min="0" max="90" step="1" value="90" style="width:100%;vertical-align:middle"></label>' +
-          '<label>Height <input type="range" data-rp-height min="30" max="100" step="1" value="72" style="width:100%;vertical-align:middle"></label>' +
-          '<span data-rp-read style="opacity:.85"></span>' +
-          '<span style="opacity:.6;font-weight:400">Drag labels directly, rotated or flat — angle/height only change the frame.</span>';
-        document.body.appendChild(panel);
-
-        const read = panel.querySelector("[data-rp-read]") as HTMLElement;
-        const toggleEl = panel.querySelector("[data-rp-toggle]") as HTMLInputElement;
-        const angleEl = panel.querySelector("[data-rp-angle]") as HTMLInputElement;
-        const heightEl = panel.querySelector("[data-rp-height]") as HTMLInputElement;
-        toggleEl.checked = previewOn;
-
-        const updateRead = () => {
-          read.textContent = `rotate(-${angle}deg) · ${Math.round(heightFrac * 100)}vh`;
-        };
-        updateRead();
-
-        toggleEl.addEventListener("change", () => { previewOn = toggleEl.checked; apply(); });
-        angleEl.addEventListener("input", () => { angle = +angleEl.value; updateRead(); apply(); });
-        heightEl.addEventListener("input", () => { heightFrac = +heightEl.value / 100; updateRead(); apply(); });
-      }
     });
   </script>
 

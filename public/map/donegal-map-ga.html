@@ -870,8 +870,10 @@ function initMap() {
       setTimeout(() => { if(!_loaded) { _loaded = true; loadDonegal(); } }, 5000);
     }
 
-    // Listen for parent page signals
+    // Listen for parent page signals — the embedding page is always
+    // same-origin (self-hosted iframe), so reject anything else.
     window.addEventListener('message', e => {
+      if(e.origin !== location.origin) return;
       if(e.data && e.data.type === 'don-start-intro') startIntro();
       if(e.data && e.data.type === 'don-replay-intro') replayIntro();
       if(e.data && e.data.type === 'don-waw-pause') pauseWAWAnim();

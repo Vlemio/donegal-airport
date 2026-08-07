@@ -668,77 +668,7 @@ const airlines: Airline[] = [
     window.addEventListener("resize", updateCounter);
   }
 
-  // Dev-only: drag to pan / scroll-wheel to zoom the Operators section's
-  // background photo, with a live readout of background-position and
-  // background-size to copy into the .cfn-operators rule in global.css.
-  // Never live for ordinary visitors — gated behind ?edit.
-  function initOperatorsBgEditor(): void {
-    if (!new URLSearchParams(location.search).has("edit")) return;
-    const section = document.querySelector<HTMLElement>(".cfn-operators");
-    if (!section) return;
-
-    const overlay = document.createElement("div");
-    overlay.style.cssText =
-      "position:absolute;inset:0;z-index:40;cursor:grab;";
-    section.appendChild(overlay);
-
-    const readout = document.createElement("div");
-    readout.style.cssText =
-      "position:absolute;left:12px;top:12px;z-index:41;background:rgba(0,0,0,.72);color:#fff;font:11px/1.6 monospace;padding:8px 12px;border-radius:6px;pointer-events:none;white-space:pre;";
-    section.appendChild(readout);
-
-    let posX = 50;
-    let posY = 50;
-    let size = 100; // % — starting point only; cover's actual scale varies with the photo, so this may jump slightly when edit mode opens. Wheel from there.
-    let dragging = false;
-    let startX = 0;
-    let startY = 0;
-
-    const apply = () => {
-      section.style.setProperty("--op-bg-pos", `${posX.toFixed(1)}% ${posY.toFixed(1)}%`);
-      section.style.setProperty("--op-bg-size", `${size.toFixed(0)}%`);
-      readout.textContent =
-        `background-position: ${posX.toFixed(1)}% ${posY.toFixed(1)}%\n` +
-        `background-size: ${size.toFixed(0)}%`;
-    };
-
-    overlay.addEventListener(
-      "wheel",
-      (e) => {
-        e.preventDefault();
-        size = Math.max(100, Math.min(400, size - e.deltaY * 0.15));
-        apply();
-      },
-      { passive: false },
-    );
-
-    overlay.addEventListener("mousedown", (e) => {
-      dragging = true;
-      startX = e.clientX;
-      startY = e.clientY;
-      overlay.style.cursor = "grabbing";
-    });
-    window.addEventListener("mousemove", (e) => {
-      if (!dragging) return;
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-      startX = e.clientX;
-      startY = e.clientY;
-      const rect = section.getBoundingClientRect();
-      posX = Math.max(0, Math.min(100, posX - (dx / rect.width) * 100));
-      posY = Math.max(0, Math.min(100, posY - (dy / rect.height) * 100));
-      apply();
-    });
-    window.addEventListener("mouseup", () => {
-      dragging = false;
-      overlay.style.cursor = "grab";
-    });
-
-    apply();
-  }
-
   document.addEventListener("astro:page-load", () => {
     initOperatorsCarousel();
-    initOperatorsBgEditor();
   });
 </script>

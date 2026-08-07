@@ -898,84 +898,6 @@ const islands = [
 </style>
 
 <script>
-  function initPhotoDrag() {
-    if (!new URLSearchParams(location.search).has("edit")) return;
-
-    document.querySelectorAll<HTMLElement>("[data-drag-fig]").forEach((fig) => {
-      const img     = fig.querySelector<HTMLImageElement>("[data-drag-img]");
-      const overlay = fig.querySelector<HTMLElement>("[data-drag-overlay]");
-      const readout = fig.querySelector<HTMLElement>("[data-drag-readout]");
-      if (!img || !overlay) return;
-      overlay.classList.remove("pointer-events-none");
-      overlay.classList.add("cursor-grab");
-
-      const initial = img.style.objectPosition || "50% 50%";
-      const [ix, iy] = initial.split(" ").map((v) => parseFloat(v));
-      let posX = isNaN(ix) ? 50 : ix;
-      let posY = isNaN(iy) ? 50 : iy;
-      let zoom  = 1;
-      let tx    = 0;
-      let ty    = 0;
-      let dragging = false;
-      let startX = 0, startY = 0;
-
-      const clampPos = (v: number) => Math.max(0, Math.min(100, v));
-      const clampT   = () => {
-        const mx = fig.offsetWidth  * (zoom - 1) / (2 * zoom);
-        const my = fig.offsetHeight * (zoom - 1) / (2 * zoom);
-        tx = Math.max(-mx, Math.min(mx, tx));
-        ty = Math.max(-my, Math.min(my, ty));
-      };
-      const apply = () => {
-        img.style.objectPosition = `${Math.round(posX)}% ${Math.round(posY)}%`;
-        img.style.transform = zoom > 1 ? `scale(${zoom}) translate(${tx}px,${ty}px)` : "";
-        if (readout) {
-          const pos = `${Math.round(posX)}% ${Math.round(posY)}%`;
-          readout.textContent = zoom > 1 ? `×${zoom.toFixed(1)}  ${pos}` : pos;
-        }
-      };
-
-      overlay.addEventListener("wheel", (e) => {
-        e.preventDefault();
-        zoom = Math.max(1, Math.min(4, zoom - e.deltaY * 0.002));
-        if (zoom === 1) { tx = 0; ty = 0; }
-        clampT();
-        if (readout) readout.classList.remove("hidden");
-        apply();
-      }, { passive: false });
-
-      overlay.addEventListener("mousedown", (e) => {
-        dragging = true;
-        startX = e.clientX; startY = e.clientY;
-        if (readout) readout.classList.remove("hidden");
-        overlay.style.cursor = "grabbing";
-        e.preventDefault();
-      });
-      window.addEventListener("mousemove", (e) => {
-        if (!dragging) return;
-        const dx = e.clientX - startX;
-        const dy = e.clientY - startY;
-        startX = e.clientX; startY = e.clientY;
-        if (zoom > 1) {
-          tx -= dx / zoom;
-          ty -= dy / zoom;
-          clampT();
-        } else {
-          const rect = overlay.getBoundingClientRect();
-          posX = clampPos(posX - dx / rect.width  * 100);
-          posY = clampPos(posY - dy / rect.height * 100);
-        }
-        apply();
-      });
-      window.addEventListener("mouseup", () => {
-        dragging = false;
-        overlay.style.cursor = "grab";
-      });
-      overlay.style.cursor = "grab";
-      apply();
-    });
-  }
-
   function initGolfCarousel() {
     const wrap    = document.getElementById("golf-carousel-wrap");
     const track   = document.getElementById("golf-track");
@@ -1248,7 +1170,6 @@ const islands = [
   }
 
   document.addEventListener("astro:page-load", () => {
-    initPhotoDrag();
     initGolfCarousel();
     initIslandCarousel();
     initGrain();
@@ -1274,6 +1195,8 @@ const islands = [
       wawVis.observe(frame);
 
       window.addEventListener('message', (e) => {
+        // The map iframe is self-hosted (same-origin) — reject anything else.
+        if (e.origin !== location.origin) return;
         if (e.data?.type !== 'don-scroll-through') return;
         const delta = e.data.deltaY * (e.data.deltaMode === 1 ? 20 : 1);
         window.scrollBy({ top: delta, left: 0, behavior: 'auto' });

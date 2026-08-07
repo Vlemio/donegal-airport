@@ -567,68 +567,6 @@ const flightsToday = flightsPayload.flights;
 
   render();
   fetchFlights();
-
-  // ---------- Icon position/size editor — authoring only (?edit) ----------
-  if (new URLSearchParams(location.search).has('edit')) {
-    var icons = [...document.querySelectorAll('.eidl-section-ic')];
-    if (icons.length) {
-      var panel = document.createElement('div');
-      panel.style.cssText = 'position:fixed;left:14px;bottom:14px;z-index:9999;background:#fff;border:1px solid #1a4a6e;border-radius:10px;padding:12px 14px;box-shadow:0 4px 16px rgba(0,0,0,.18);font:600 11px/1.7 ui-monospace,monospace;color:#1a4a6e;max-width:340px';
-      panel.innerHTML = '<div style="margin-bottom:6px">Drag icons to move &middot; slider to resize</div><div>size <input type="range" min="14" max="56" step="1" value="24" id="eidl-ic-size" style="vertical-align:middle"> <span id="eidl-ic-size-read">24px</span></div><pre id="eidl-ic-read" style="margin:6px 0 0;white-space:pre-wrap"></pre>';
-      document.body.appendChild(panel);
-
-      var state = icons.map(function () { return { x: 0, y: 0 }; });
-      var sizeEl = document.getElementById('eidl-ic-size');
-      var sizeReadEl = document.getElementById('eidl-ic-size-read');
-      var readEl = document.getElementById('eidl-ic-read');
-
-      // Measures the actual rendered box (post-resize) against the row's
-      // text baseline, so you can see whether the space above the icon
-      // matches the space below it — not just trust flex centring blindly.
-      function report() {
-        var lines = icons.map(function (icon, i) {
-          var label = icon.closest('#eidl-dep-section') ? 'dep' : 'arr';
-          var iconRect = icon.getBoundingClientRect();
-          var headRect = icon.closest('.eidl-section-head').getBoundingClientRect();
-          var spaceAbove = Math.round(iconRect.top - headRect.top);
-          var spaceBelow = Math.round(headRect.bottom - iconRect.bottom);
-          return label + ':  translate(' + state[i].x + 'px, ' + state[i].y + 'px)  size ' + sizeEl.value + 'px' +
-            '\n      rendered height ' + Math.round(iconRect.height) + 'px  |  space above row ' + spaceAbove + 'px, below ' + spaceBelow + 'px';
-        });
-        readEl.textContent = lines.join('\n\n');
-      }
-
-      icons.forEach(function (icon, i) {
-        icon.style.cursor = 'move';
-        icon.style.position = 'relative';
-        icon.addEventListener('pointerdown', function (ev) {
-          ev.preventDefault();
-          var startX = ev.clientX, startY = ev.clientY;
-          var origX = state[i].x, origY = state[i].y;
-          function move(e) {
-            state[i].x = origX + (e.clientX - startX);
-            state[i].y = origY + (e.clientY - startY);
-            icon.style.setProperty('transform', 'translate(' + state[i].x + 'px,' + state[i].y + 'px)', 'important');
-            report();
-          }
-          function up() { document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up); }
-          document.addEventListener('pointermove', move);
-          document.addEventListener('pointerup', up);
-        });
-      });
-
-      sizeEl.addEventListener('input', function () {
-        sizeReadEl.textContent = sizeEl.value + 'px';
-        icons.forEach(function (icon) {
-          icon.style.setProperty('width', sizeEl.value + 'px', 'important');
-          icon.style.setProperty('height', sizeEl.value + 'px', 'important');
-        });
-        report();
-      });
-
-      report();
-    }
-  }
   }
 })();
 </script>
