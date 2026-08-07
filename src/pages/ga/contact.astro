@@ -14,13 +14,19 @@ const WEB3FORMS_KEY = "REPLACE_WITH_REAL_ACCESS_KEY";
 <BaseLayout title={title} description={description}>
   {/* ─── HERO ── full-bleed photo, same pattern as every other page ────────── */}
   <section class="relative isolate flex min-h-[80vh] w-full items-center overflow-hidden border-b border-line">
-    <img
-      src="/photos/contact/contact-hero.jpg"
-      alt="Foireann talún, dóiteáin agus teirminéil Aerfort Dhún na nGall ar an rúidbhealach"
-      class="absolute inset-0 h-full w-full object-cover object-[center_40%]"
-      loading="eager"
-      decoding="async"
-    />
+    <picture>
+      {/* Landscape hero crops awkwardly on a portrait phone viewport —
+          swap to a dedicated vertical photo below sm:, same as the other
+          hero-photo pages. */}
+      <source media="(max-width: 639px)" srcset="/photos/contact/contact-hero-mobile.jpg" />
+      <img
+        src="/photos/contact/contact-hero.jpg"
+        alt="Foireann talún, dóiteáin agus teirminéil Aerfort Dhún na nGall ar an rúidbhealach"
+        class="absolute inset-0 h-full w-full object-cover object-[center_40%]"
+        loading="eager"
+        decoding="async"
+      />
+    </picture>
     <div class="cfn-hero-content relative z-10 mx-auto w-full max-w-7xl px-6 py-28">
       <p
         data-animate="fade-up"
