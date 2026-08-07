@@ -1,0 +1,93 @@
+---
+// Shared shell for simple text/legal pages (Privacy, Safety, Environmental,
+// Language Policy) — no photo hero, just an eyebrow + heading + prose body,
+// so these don't need eight near-identical hero sections copy-pasted.
+import BaseLayout from "./BaseLayout.astro";
+
+interface Props {
+  title: string;
+  description?: string;
+  eyebrow: string;
+  heading: string;
+  lastUpdated?: string;
+}
+
+const { title, description, eyebrow, heading, lastUpdated } = Astro.props;
+---
+
+<BaseLayout title={title} description={description}>
+  <section class="mx-auto max-w-2xl px-6 pb-24 lg:px-8" style="padding-top: calc(var(--header-h) + 3.5rem)">
+    <p data-animate="fade-up" class="font-mono text-xs font-bold uppercase tracking-[0.22em] text-atlantic">
+      {eyebrow}
+    </p>
+    <h1 data-animate="fade-up" data-animate-delay="0.08" class="mt-4 font-display text-4xl leading-[1.05] text-ink sm:text-5xl">
+      {heading}
+    </h1>
+    {lastUpdated && (
+      <p class="mt-4 font-mono text-xs uppercase tracking-[0.14em] text-mute">{lastUpdated}</p>
+    )}
+    <div class="mt-12 h-px w-16 bg-atlantic"></div>
+    <div data-animate="fade-up" data-animate-delay="0.14" class="legal-body mt-12">
+      <slot />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* Plain utility classes on every element would work too, but this page
+     type is prose-shaped (headings + paragraphs + lists) throughout, so a
+     scoped :global block here is less repetition than tagging every <p>. */
+  .legal-body :global(h2) {
+    margin-top: 2.25rem;
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    color: var(--color-ink);
+  }
+  .legal-body :global(h2:first-child) {
+    margin-top: 0;
+  }
+  .legal-body :global(p) {
+    margin-top: 0.85rem;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: color-mix(in srgb, var(--color-ink) 80%, transparent);
+  }
+  .legal-body :global(ul) {
+    margin-top: 0.85rem;
+    padding-left: 1.25rem;
+    list-style: disc;
+  }
+  .legal-body :global(li) {
+    margin-top: 0.4rem;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: color-mix(in srgb, var(--color-ink) 80%, transparent);
+  }
+  .legal-body :global(a) {
+    color: var(--color-atlantic);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .legal-body :global(a:hover) {
+    color: var(--color-ink);
+  }
+  .legal-body :global(strong) {
+    color: var(--color-ink);
+    font-weight: 600;
+  }
+  .legal-body :global(blockquote) {
+    margin-top: 1.1rem;
+    padding-left: 1rem;
+    border-left: 2px solid var(--color-atlantic);
+  }
+  .legal-body :global(blockquote p) {
+    font-style: italic;
+    color: var(--color-mute);
+  }
+  .legal-body :global(em) {
+    font-size: 0.85rem;
+    color: var(--color-mute);
+  }
+</style>

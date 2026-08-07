@@ -37,8 +37,22 @@ const routes = locale === "ga"
     ];
 
 const legalLinks = locale === "ga"
-  ? ["Príobháideachas", "Sábháilteacht", "Comhshaol"]
-  : ["Privacy", "Safety", "Environmental"];
+  ? [
+      { label: "Príobháideachas", href: `${prefix}/privacy` },
+      { label: "Sábháilteacht", href: `${prefix}/safety` },
+      { label: "Slándáil", href: `${prefix}/security` },
+      { label: "Cáilíocht", href: `${prefix}/quality` },
+      { label: "Comhshaol", href: `${prefix}/environmental` },
+      { label: "Téarmaí", href: `${prefix}/terms` },
+    ]
+  : [
+      { label: "Privacy", href: `${prefix}/privacy` },
+      { label: "Safety", href: `${prefix}/safety` },
+      { label: "Security", href: `${prefix}/security` },
+      { label: "Quality", href: `${prefix}/quality` },
+      { label: "Environmental", href: `${prefix}/environmental` },
+      { label: "Terms", href: `${prefix}/terms` },
+    ];
 
 const socials = [
   { label: "Facebook", href: "https://www.facebook.com/donegalairport" },
@@ -200,10 +214,10 @@ const marqueeItems = locale === "ga"
          it fall back to wrapping instead of clipping against overflow-x:clip. */}
       <p class="[@media(min-width:340px)]:whitespace-nowrap tracking-[0.04em] sm:tracking-[0.2em]">© {year} {t("site.name", locale)}. {t("footer.rights", locale)}</p>
       <ul class="flex flex-wrap gap-x-5 gap-y-1">
-        {legalLinks.map((label) => (
-          <li><a href="#" class="hover:text-sand">{label}</a></li>
+        {legalLinks.map((l) => (
+          <li><a href={l.href} class="hover:text-sand">{l.label}</a></li>
         ))}
-        <li><a href="#" class="hover:text-sand">Ráiteas Beartas Teanga</a></li>
+        <li><a href={`${prefix}/language-policy`} class="hover:text-sand">Ráiteas Beartas Teanga</a></li>
         <li><a href="#" data-cookie-manage class="hover:text-sand">{t("cookies.manage", locale)}</a></li>
       </ul>
     </div>

@@ -210,7 +210,12 @@ function setupKenBurns(): void {
    every other page gets the transparent-over-hero-photo treatment. Recomputed
    fresh from location.pathname on every astro:page-load — no captured
    state, so it can't go stale after a client-side navigation. */
-const SOLID_HEADER_PATHS = ["/flights", "/contact", "/ga/flights", "/ga/contact"];
+const SOLID_HEADER_PATHS = [
+  "/flights", "/plan", "/contact",
+  "/ga/flights", "/ga/plan", "/ga/contact",
+  "/privacy", "/safety", "/security", "/quality", "/environmental", "/language-policy", "/terms",
+  "/ga/privacy", "/ga/safety", "/ga/security", "/ga/quality", "/ga/environmental", "/ga/language-policy", "/ga/terms",
+];
 
 function applyHeaderMode(): void {
   const path = window.location.pathname.replace(/\/+$/, "") || "/";

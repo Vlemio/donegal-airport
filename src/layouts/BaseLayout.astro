@@ -46,7 +46,12 @@ const isHome = Astro.url.pathname === "/" || Astro.url.pathname === "/ga/";
 // first paint on a hard load/reload, not just after client JS runs (see
 // SOLID_HEADER_PATHS in animations.ts, which keeps this in sync for
 // client-side View Transitions navigations).
-const SOLID_HEADER_PATHS = ["/flights", "/plan", "/contact", "/ga/flights", "/ga/plan", "/ga/contact"];
+const SOLID_HEADER_PATHS = [
+  "/flights", "/plan", "/contact",
+  "/ga/flights", "/ga/plan", "/ga/contact",
+  "/privacy", "/safety", "/security", "/quality", "/environmental", "/language-policy", "/terms",
+  "/ga/privacy", "/ga/safety", "/ga/security", "/ga/quality", "/ga/environmental", "/ga/language-policy", "/ga/terms",
+];
 const pathNoTrailingSlash = Astro.url.pathname.replace(/\/+$/, "") || "/";
 const transparentHeader = !SOLID_HEADER_PATHS.includes(pathNoTrailingSlash);
 
