@@ -32,6 +32,19 @@ function toneFor(s: string) {
   return "ok";
 }
 
+// 'En Route'/'Departed' are real internal states the ADS-B tracker uses for
+// an arrival's own progression, but every passenger-facing display collapses
+// them to 'On Time' before rendering — see displayStatus() in the FIDS's
+// public/board.js and public/operator.js, and the same fix applied on
+// /flights. Mirrored here (inert today since flightsToday is always empty
+// at prerender, but kept correct for when the client script's own copy of
+// this function runs against real data below).
+function displayStatus(f: SyncedFlight) {
+  const s = f.status || "Scheduled";
+  if (f.type === "arrival" && (s === "En Route" || s === "Departed")) return "On Time";
+  return s;
+}
+
 // Hero ops-panel — derived from flightsToday so both are always in sync.
 // Capped at the 4 nearest departures; the card shows a fallback line
 // (below) when there are none left today.
@@ -44,9 +57,9 @@ const heroDepartures = flightsToday
     dest: f.city,
     flight: `${f.flightNo} · ${f.airline}`,
     status:
-      statusKey(f.status) === "delayed" && f.estTime ? `→ ${f.estTime}` :
-      f.status,
-    tone: toneFor(f.status),
+      statusKey(displayStatus(f)) === "delayed" && f.estTime ? `→ ${f.estTime}` :
+      displayStatus(f),
+    tone: toneFor(displayStatus(f)),
   }));
 const heroArrivals = flightsToday
   .filter((f) => f.type === "arrival" && f.status !== "Landed")
@@ -56,9 +69,9 @@ const heroArrivals = flightsToday
     dest: f.city,
     flight: `${f.flightNo} · ${f.airline}`,
     status:
-      statusKey(f.status) === "delayed" && f.estTime ? `→ ${f.estTime}` :
-      f.status,
-    tone: toneFor(f.status),
+      statusKey(displayStatus(f)) === "delayed" && f.estTime ? `→ ${f.estTime}` :
+      displayStatus(f),
+    tone: toneFor(displayStatus(f)),
   }));
 
 // Hero weather (static placeholder — wire to Met Éireann or METAR post-firma)
@@ -181,6 +194,9 @@ const allNews = _newsSorted.map(_mapNews);
       <div class="absolute inset-y-0 left-0 w-[65%] bg-gradient-to-r from-[rgba(18,22,29,0.52)] to-transparent" />
       {/* Bottom fade — grounds the image */}
       <div class="absolute inset-x-0 bottom-0 h-[160px] bg-gradient-to-t from-[rgba(18,22,29,0.45)] to-transparent" />
+      {/* Extra mobile-only scrim — the lede line reads too faint against the
+          photo on narrow crops; desktop's left scrim is already enough. */}
+      <div class="absolute inset-y-0 left-0 w-[80%] bg-gradient-to-r from-[rgba(9,13,20,0.4)] to-transparent md:hidden" />
     </div>
 
     {/* ── Layer 2: hero content (scrolls with page) ──────────────── */}
@@ -803,7 +819,7 @@ const allNews = _newsSorted.map(_mapNews);
               </p>
             </div>
             <p
-              class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.18em] text-[#0f3550] md:text-right"
+              class="whitespace-nowrap font-mono text-[0.62rem] font-bold uppercase tracking-[0.08em] text-[#0f3550] md:whitespace-normal md:text-[0.82rem] md:tracking-[0.18em] md:text-right"
             >
               {award.source}
             </p>
@@ -1180,6 +1196,16 @@ const allNews = _newsSorted.map(_mapNews);
     if (key === 'gateclosed' || key === 'cancelled' || key === 'diverted') return 'bad';
     return 'ok';
   }
+  // 'En Route'/'Departed' are real internal states the ADS-B tracker uses
+  // for an arrival's own progression, but every passenger-facing display
+  // collapses them to 'On Time' before rendering — see displayStatus() in
+  // the FIDS's public/board.js and public/operator.js, and the same fix
+  // applied on /flights. This hero panel was reading f.status raw too.
+  function displayStatus(f) {
+    var s = f.status || 'Scheduled';
+    if (f.type === 'arrival' && (s === 'En Route' || s === 'Departed')) return 'On Time';
+    return s;
+  }
 
   // Seed from SSR so the hero panel is instant on first paint.
   // Subsequent updates come from polling /api/flights-today.json.
@@ -1202,9 +1228,10 @@ const allNews = _newsSorted.map(_mapNews);
         ul.appendChild(empty);
       }
       deps.forEach(function (f) {
-        var key = statusKey(f.status);
-        var lbl = key === 'delayed' && f.estTime ? '→ ' + f.estTime : f.status;
-        var tone = toneFor(f.status);
+        var s = displayStatus(f);
+        var key = statusKey(s);
+        var lbl = key === 'delayed' && f.estTime ? '→ ' + f.estTime : s;
+        var tone = toneFor(s);
         var li = document.createElement('li');
         li.className = 'ops-board-row';
         var timeSpan = document.createElement('span'); timeSpan.className = 'b-time'; timeSpan.textContent = f.time;
@@ -1230,9 +1257,10 @@ const allNews = _newsSorted.map(_mapNews);
         arrUl.appendChild(emptyArr);
       }
       arrs.forEach(function (f) {
-        var key = statusKey(f.status);
-        var lbl = key === 'delayed' && f.estTime ? '→ ' + f.estTime : f.status;
-        var tone = toneFor(f.status);
+        var s = displayStatus(f);
+        var key = statusKey(s);
+        var lbl = key === 'delayed' && f.estTime ? '→ ' + f.estTime : s;
+        var tone = toneFor(s);
         var li = document.createElement('li');
         li.className = 'ops-board-row';
         var timeSpan = document.createElement('span'); timeSpan.className = 'b-time'; timeSpan.textContent = f.time;

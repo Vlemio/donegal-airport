@@ -203,7 +203,7 @@ const flightsToday = flightsPayload.flights;
   @keyframes eidlPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
   @keyframes eidlFlip { 0% { transform: translateY(-108%); } 60% { transform: translateY(6%); } 100% { transform: translateY(0); } }
 
-  .eidl-row { display: grid; grid-template-columns: 96px minmax(150px,1.3fr) minmax(90px,1fr) 118px minmax(120px,0.9fr); align-items: center; gap: 16px; padding: 14px 14px; border-bottom: 1px solid #ffffff0d; transition: background .18s ease; }
+  .eidl-row { display: grid; grid-template-columns: 96px minmax(150px,1.3fr) minmax(90px,1fr) 118px minmax(120px,0.9fr); align-items: start; gap: 16px; padding: 14px 14px; border-bottom: 1px solid #ffffff0d; transition: background .18s ease; }
   .eidl-row:nth-child(odd) { background: #ffffff05; }
   .eidl-row:hover { background: #ffffff08 !important; }
   .eidl-row:last-child { border-bottom: 0; }
@@ -212,6 +212,16 @@ const flightsToday = flightsPayload.flights;
   .eidl-iata { font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; letter-spacing: 0.05em; color: #12110E; background: #E0A94D; border-radius: 4px; padding: 3px 7px; flex: 0 0 auto; line-height: 1; }
   .eidl-airline-name { font-size: 17px; font-weight: 600; color: #EDE9DE; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .eidl-city { font-size: 17px; font-weight: 700; color: #d8d4c8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* Time cell: the estimate sits on its own line below the scheduled tiles,
+     flush under where the tiles themselves end (not the grid column's own
+     edge — justify-self:start stops the cell stretching to the full 96px
+     track so align-self:flex-end below hugs the tiles' real right edge).
+     The row itself is align-items:start (not center) so the scheduled
+     tiles stay pinned at the top of their cell — the extra line only grows
+     the row downward, it never nudges the tiles (or the other columns)
+     out of their original position. */
+  .eidl-row > span:first-child { display: flex; flex-direction: column; align-items: flex-start; justify-self: start; }
+  .eidl-est-time { display: none; margin-top: 2px; align-self: flex-end; font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.03em; white-space: nowrap; }
   .eidl-status { display: inline-flex; align-items: center; gap: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; justify-self: end; white-space: nowrap; }
   .eidl-status-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
   .eidl-empty { padding: 26px 4px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.08em; color: #6f6b61; text-align: center; }
@@ -278,6 +288,8 @@ const flightsToday = flightsPayload.flights;
   // you reload the page by hand.
   var flightsTimer = null;
   var clockTimer = null;
+  var rollAudio = new Audio('/audio/flap-roll.mp3');
+  rollAudio.preload = 'auto';
   document.addEventListener('astro:page-load', init);
 
   function init() {
@@ -317,7 +329,40 @@ const flightsToday = flightsPayload.flights;
     var k = String(s || '').toLowerCase().replace(/[^a-z]/g, '');
     return STATUS_LABELS_GA[k] || s || 'Sceidealta';
   }
+  // 'En Route'/'Departed' are real internal states the ADS-B tracker uses
+  // for an arrival's own progression (needed for ETA/delay math), but every
+  // passenger-facing display collapses them to 'On Time' before rendering —
+  // see displayStatus() in the FIDS's public/board.js and public/operator.js.
+  // This board was reading f.status raw, so it showed 'En Route' while the
+  // operator panel (which already collapses it) showed 'On Time' for the
+  // same flight. Mirrors those two exactly so all three stay in sync — and
+  // runs BEFORE statusLabel() so the Irish label is translated from the
+  // already-collapsed English word, not from 'En Route' itself.
+  function displayStatus(f) {
+    var s = f.status || 'Scheduled';
+    if (f.type === 'arrival' && (s === 'En Route' || s === 'Departed')) return 'On Time';
+    return s;
+  }
   function dirCode(f) { return f.type === 'departure' ? 'dep' : 'arr'; }
+
+  // Scheduled time only ever shows the timetable slot — with a real ADS-B
+  // feed, the estimate can slide well past that, so show it as a small
+  // "HH:MM" line under the scheduled tile whenever the sync reports one
+  // that actually differs (estTime lands equal to time for on-time flights).
+  // Green if it's landing/leaving at or before the scheduled slot, orange
+  // if later — a direct compare, not the sync's own estLate/estVeryLate
+  // flags, so it always matches what the two times on screen actually say.
+  function toMinutes(t) { var p = String(t).split(':'); return (+p[0] || 0) * 60 + (+p[1] || 0); }
+  function updateEstTime(estEl, f) {
+    if (f.estTime && f.estTime !== f.time) {
+      estEl.textContent = f.estTime;
+      estEl.style.color = toMinutes(f.estTime) > toMinutes(f.time) ? STATUS_COLORS.enroute : STATUS_COLORS.ontime;
+      estEl.style.display = 'block';
+    } else {
+      estEl.textContent = '';
+      estEl.style.display = 'none';
+    }
+  }
 
   // ---------- Split-flap tile engine ----------
   var DIGITS = '0123456789', LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
@@ -426,6 +471,10 @@ const flightsToday = flightsPayload.flights;
     var timeCell = document.createElement('span');
     var timeField = createFlapField(f.time || '--:--', ACCENT, 19);
     timeCell.appendChild(timeField);
+    var estEl = document.createElement('span');
+    estEl.className = 'eidl-est-time';
+    timeCell.appendChild(estEl);
+    updateEstTime(estEl, f);
 
     var airlineCell = document.createElement('span');
     airlineCell.className = 'eidl-airline';
@@ -442,8 +491,8 @@ const flightsToday = flightsPayload.flights;
     var statusCell = document.createElement('span');
     var statusInner = document.createElement('span'); statusInner.className = 'eidl-status';
     var dot = document.createElement('span'); dot.className = 'eidl-status-dot';
-    var statusText = document.createElement('span'); statusText.textContent = statusLabel(f.status);
-    var c = statusColor(f.status);
+    var statusText = document.createElement('span'); statusText.textContent = statusLabel(displayStatus(f));
+    var c = statusColor(displayStatus(f));
     dot.style.background = c; dot.style.boxShadow = '0 0 0 3px ' + c + '2b';
     statusInner.style.color = c;
     statusInner.appendChild(dot); statusInner.appendChild(statusText);
@@ -452,7 +501,7 @@ const flightsToday = flightsPayload.flights;
 
     row.appendChild(timeCell); row.appendChild(airlineCell); row.appendChild(cityCell); row.appendChild(flightCell); row.appendChild(statusCell);
 
-    return { row: row, timeField: timeField, flightField: flightField, iataEl: iataEl, airlineEl: airlineEl, cityEl: cityCell, statusText: statusText, statusDot: dot, statusInner: statusInner };
+    return { row: row, timeField: timeField, estEl: estEl, flightField: flightField, iataEl: iataEl, airlineEl: airlineEl, cityEl: cityCell, statusText: statusText, statusDot: dot, statusInner: statusInner };
   }
 
   function renderSection(type, wrapId, map) {
@@ -487,12 +536,13 @@ const flightsToday = flightsPayload.flights;
         wrap.appendChild(entry.row);
       } else {
         entry.timeField.set(f.time || '--:--', false);
+        updateEstTime(entry.estEl, f);
         entry.flightField.set(f.flightNo || '', false);
         entry.iataEl.textContent = f.airlineCode || '';
         entry.airlineEl.textContent = f.airline || '';
         entry.cityEl.textContent = f.city || '';
-        entry.statusText.textContent = statusLabel(f.status);
-        var c = statusColor(f.status);
+        entry.statusText.textContent = statusLabel(displayStatus(f));
+        var c = statusColor(displayStatus(f));
         entry.statusDot.style.background = c; entry.statusDot.style.boxShadow = '0 0 0 3px ' + c + '2b';
         entry.statusInner.style.color = c;
       }
@@ -589,6 +639,7 @@ const flightsToday = flightsPayload.flights;
     });
   }
 
+  try { rollAudio.currentTime = 0; rollAudio.play().catch(function () {}); } catch (e) {}
   render();
   fetchFlights();
   }

@@ -31,10 +31,16 @@ type Chapter = {
      lines up with the photo's centre. Depends on the photo's height (aspect),
      so it's set per chapter. Defaults to 58 (panoramic) when omitted. */
   cardShiftY?: number;
+  /* Photo-ONLY vertical nudge (px, from the in-browser editor) — unlike
+     photoShiftY this does NOT move the text card, so the photo can be
+     re-centred without dragging the card out of alignment. */
+  photoNudgeY?: number;
   /* Optional size overrides (from the in-browser editor). photoW = panoramic
-     width e.g. "52%"; photoH = portrait height e.g. "82vh". */
+     width e.g. "52%"; photoH = portrait height e.g. "82vh"; photoMaxW caps
+     a tall/portrait photo's width e.g. "34rem". */
   photoW?: string;
   photoH?: string;
+  photoMaxW?: string;
   /* Optional year-watermark overrides: vertical nudge (px) and font size
      e.g. "20rem". */
   yearShiftY?: number;
@@ -51,7 +57,7 @@ type Chapter = {
    mobile and loading it mid-scroll was cutting touch-scroll gestures short. */
 const PHOTO_DIMS: Record<string, [number, number]> = {
   "/photos/story/story-ch01.webp": [2000, 1490],
-  "/photos/story/story-ch02.webp": [684, 411],
+  "/photos/story/story-ch02.webp": [1331, 601],
   "/photos/story/story-ch03.webp": [323, 350],
   "/photos/story/story-ch04.webp": [1400, 1059],
   "/photos/story/story-ch05.webp": [1300, 1401],
@@ -91,7 +97,7 @@ const chapters: Chapter[] = [
     photo: "/photos/story/story-ch02.webp",
     photoAlt: "Aerárthach Malinair ar aprún Charraig Fhinn, 1985–1987",
     photoCaption: "Malinair · aprún Charraig Fhinn · 1985–87",
-    cardShiftY: -10,
+    cardShiftY: 40,
     captionShiftY: 19,
   },
   {
@@ -445,9 +451,11 @@ const airlines: Airline[] = [
         const side = i % 2 === 0 ? "left" : "right";
         const styleVars = [
           c.photoShiftY != null ? `--photo-shift:${c.photoShiftY}px` : null,
+          c.photoNudgeY != null ? `--photo-nudge:${c.photoNudgeY}px` : null,
           c.cardShiftY != null ? `--card-shift:${c.cardShiftY}px` : null,
           c.photoW ? `--photo-w:${c.photoW}` : null,
           c.photoH ? `--photo-h:${c.photoH}` : null,
+          c.photoMaxW ? `--photo-max-w:${c.photoMaxW}` : null,
           c.yearShiftY != null ? `--year-shift:${c.yearShiftY}px` : null,
           c.yearSize ? `--year-size:${c.yearSize}` : null,
           c.captionShiftY != null ? `--cap-shift-y:${c.captionShiftY}px` : null,
@@ -664,8 +672,81 @@ const airlines: Airline[] = [
     window.addEventListener("resize", updateCounter);
   }
 
+  // Temporary, unlinked dev tool — only mounts with ?editphoto in the URL.
+  // Lets you scale the Malinair (ch02) photo live, then read off
+  // photoH/photoShiftY/photoMaxW to paste into the chapters array.
+  // Desktop only (≥1024px), since that's where these CSS vars apply.
+  //
+  // Earlier version exposed raw Height/Max-width sliders — Max-width did
+  // basically nothing, because for a portrait photo the browser derives
+  // the rendered WIDTH from the explicit height × the image's own aspect
+  // ratio; the max-width cap only ever binds once height already pushes
+  // past it. Dragging what looked like the "size" control did nothing
+  // visible, which read as broken. Replaced with one Size % slider that
+  // drives height directly (the one dimension that actually is the size)
+  // and derives a max-width comfortably above the natural width so the
+  // cap never binds and never distorts the image.
+  function initPhotoEditor(): void {
+    if (!location.search.includes("editphoto")) return;
+    if (document.getElementById("photo-editor-panel")) return;
+    const img = document.querySelector<HTMLImageElement>('img[src*="story-ch02"]');
+    const chapterEl = img?.closest<HTMLElement>("[data-story-chapter]");
+    if (!img || !chapterEl) return;
+
+    const BASE_H_VH = 78; // matches the CSS fallback — 100% = original default size
+    const rootFontSize = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+    const naturalAspect = img.naturalWidth && img.naturalHeight
+      ? img.naturalWidth / img.naturalHeight
+      : 1200 / 1652;
+
+    const panel = document.createElement("div");
+    panel.id = "photo-editor-panel";
+    panel.style.cssText =
+      "position:fixed;right:16px;bottom:16px;z-index:9999;background:rgba(10,14,20,.92);color:#f3f0ea;" +
+      "font:12px/1.4 monospace;padding:14px 16px;border-radius:10px;width:260px;box-shadow:0 12px 40px rgba(0,0,0,.5)";
+    panel.innerHTML = `
+      <div style="font-weight:700;margin-bottom:8px;letter-spacing:.05em;text-transform:uppercase;font-size:11px">Malinair photo — editor</div>
+      <label style="display:block;margin-top:8px">Size <span id="pe-h-val">100</span>%
+        <input id="pe-h" type="range" min="30" max="500" step="5" value="100" style="width:100%">
+      </label>
+      <label style="display:block;margin-top:8px">Vertical shift (image only) <span id="pe-s-val">0</span>px
+        <input id="pe-s" type="range" min="-600" max="600" value="0" style="width:100%">
+      </label>
+      <pre id="pe-out" style="margin-top:10px;background:rgba(255,255,255,.06);padding:8px;border-radius:6px;white-space:pre-wrap;word-break:break-word"></pre>
+      <button id="pe-copy" style="margin-top:6px;width:100%;padding:6px;border-radius:6px;border:1px solid rgba(255,255,255,.25);background:transparent;color:inherit;cursor:pointer">Copy values</button>
+      <p style="margin-top:8px;opacity:.6;font-size:10.5px">Desktop only (&ge;1024px). Dev tool — not linked anywhere.</p>
+    `;
+    document.body.appendChild(panel);
+
+    const hEl = panel.querySelector<HTMLInputElement>("#pe-h")!;
+    const sEl = panel.querySelector<HTMLInputElement>("#pe-s")!;
+    const hVal = panel.querySelector("#pe-h-val")!;
+    const sVal = panel.querySelector("#pe-s-val")!;
+    const out = panel.querySelector("#pe-out")!;
+
+    const apply = () => {
+      const pct = parseFloat(hEl.value);
+      const hVh = BASE_H_VH * (pct / 100);
+      const hPx = (hVh / 100) * window.innerHeight;
+      const wRem = ((hPx * naturalAspect) / rootFontSize) * 1.15; // headroom so the cap never binds
+      chapterEl.style.setProperty("--photo-h", `${hVh.toFixed(1)}vh`);
+      chapterEl.style.setProperty("--photo-nudge", `${sEl.value}px`);
+      chapterEl.style.setProperty("--photo-max-w", `${wRem.toFixed(1)}rem`);
+      hVal.textContent = pct.toFixed(0);
+      sVal.textContent = sEl.value;
+      out.textContent = `photoH: "${hVh.toFixed(0)}vh",\nphotoNudgeY: ${sEl.value},\nphotoMaxW: "${wRem.toFixed(0)}rem",`;
+    };
+    [hEl, sEl].forEach((el) => el.addEventListener("input", apply));
+    apply();
+
+    panel.querySelector("#pe-copy")?.addEventListener("click", () => {
+      navigator.clipboard?.writeText(out.textContent || "");
+    });
+  }
+
   document.addEventListener("astro:page-load", () => {
     initOperatorsCarousel();
+    initPhotoEditor();
   });
 </script>
 

@@ -741,8 +741,11 @@ figure[data-story-photo] {
        gap is identical for every chapter regardless of the photo's aspect.
        --photo-shift is an optional per-chapter nudge (set inline) that lowers
        the photo (and the card, below) together when a panel reads too high.
+       --photo-nudge is photo-ONLY (the in-browser editor's vertical slider) —
+       it does NOT touch --card-shift below, so re-centring the photo doesn't
+       drag the text card along with it.
        No transform here — GSAP animates the INNER div, so nothing fights. */
-    top: calc(33vh + var(--photo-shift, 0px));
+    top: calc(33vh + var(--photo-shift, 0px) + var(--photo-nudge, 0px));
   }
   /* Outer edge flush to the viewport (small negative bleed so the strong
      edge-fray never leaves a hairline gap at the screen edge). The inner
@@ -763,11 +766,18 @@ figure[data-story-photo] {
      resulting narrower width, still flush at the outer edge, caption directly
      under the image. A taller panel keeps the bottom clear of the next one. */
   [data-story-chapter].has-tall-photo {
-    min-height: 120vh;
+    /* Was a flat 120vh — fine for the old default (~78vh photo), but a
+       taller override (--photo-h) then overflowed past this box's own
+       bottom edge into the NEXT chapter, which paints over it (later in
+       DOM = on top for two position:relative siblings), silently hiding
+       the growth. Derive the panel's height from the actual photo instead,
+       so it always has room and never gets covered. */
+    min-height: calc(33vh + var(--photo-shift, 0px) + var(--photo-nudge, 0px) + var(--photo-h, 78vh) + 10vh);
   }
   [data-story-chapter].has-tall-photo figure[data-story-photo] {
     width: auto;
-    max-width: clamp(28rem, 52%, 54rem);
+    /* --photo-max-w lets the in-browser editor override the tall-photo cap. */
+    max-width: var(--photo-max-w, clamp(28rem, 52%, 54rem));
   }
   [data-story-chapter].has-tall-photo .photo-painted-img {
     width: auto;
@@ -781,9 +791,22 @@ figure[data-story-photo] {
      exact nudge is set per-chapter via --card-shift (computed from its
      aspect). --photo-shift adds the optional per-chapter lowering so the
      card tracks the photo. Transform is on the CARD container; GSAP only
-     animates the card's children, so nothing fights. */
+     animates the card's children, so nothing fights.
+     The card is the only real flex item in the chapter (the photo is
+     position:absolute, out of flow) so align-items:center centres it
+     against the chapter's own box height — meaning growing min-height to
+     fit a taller --photo-h/--photo-nudge silently re-centres the card too,
+     dragging the text along with the photo. The last two terms cancel that:
+     they're zero for every ordinary chapter (the vars fall back to the
+     defaults they're already sized around), and only kick in for a chapter
+     using the size/position overrides, keeping the card exactly where it
+     was regardless of how big the photo gets. */
   [data-story-chapter].has-photo .story-card {
-    transform: translateY(calc(var(--card-shift, 58px) + var(--photo-shift, 0px)));
+    transform: translateY(calc(
+      var(--card-shift, 58px) + var(--photo-shift, 0px)
+      - (var(--photo-h, 78vh) - 78vh) / 2
+      - var(--photo-nudge, 0px) / 2
+    ));
   }
 
   /* The photo bleeds ~1.2% off the OUTER (flush) edge; keep the left-aligned
