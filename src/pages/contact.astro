@@ -2,9 +2,13 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import "leaflet/dist/leaflet.css";
 import "leaflet-gesture-handling/dist/leaflet-gesture-handling.css";
+import { readHours } from "../lib/siteContent";
 
 const title = "Contact · Donegal Airport";
 const description = "Reach Donegal Airport (CFN). Phone, email, address, opening hours, lost & found and press contact.";
+
+// Editable in /keystatic ("Terminal & café hours" singleton).
+const hours = await readHours();
 
 // TODO: swap for the airport's own Web3Forms access key once they've
 // confirmed which mailbox submissions should land in (currently on hold).
@@ -204,10 +208,10 @@ const WEB3FORMS_KEY = "REPLACE_WITH_REAL_ACCESS_KEY";
 
     <div data-animate="fade-up" class="mt-14 border-t border-line pt-10">
       <p class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-mute">
-        Coming next
+        Opening hours
       </p>
       <p class="mt-4 max-w-2xl font-display text-2xl leading-snug text-ink">
-        Terminal opening hours.
+        Terminal open daily, {hours.terminal}.
       </p>
     </div>
   </section>

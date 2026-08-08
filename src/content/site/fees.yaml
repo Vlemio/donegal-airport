@@ -1,0 +1,69 @@
+landing:
+  singleEngine:
+    en: "€15.00"
+    ga: "€15.00"
+  twinEngine:
+    en: "€28.75"
+    ga: "€28.75"
+  over4t:
+    en: "€17.50 / t or part"
+    ga: "€17.50 / t nó cuid de"
+parking:
+  first2h:
+    en: "No charge"
+    ga: "Saor in aisce"
+  under3t:
+    en: "€15.00"
+    ga: "€15.00"
+  under10t:
+    en: "€35.75"
+    ga: "€35.75"
+  under20t:
+    en: "€64.00"
+    ga: "€64.00"
+  over20t:
+    en: "€80.00"
+    ga: "€80.00"
+handling:
+  paxSupplement:
+    en: "€17.50"
+    ga: "€17.50"
+  handlingFee:
+    en: "€9.75"
+    ga: "€9.75"
+  exempt:
+    en: "Under 2s · non-commercial"
+    ga: "Faoi bhun 2 bhliain · neamhthráchtála"
+groundServices:
+  gpu:
+    en: "€51.50 hook-up + €51.50/h or part after 30 min"
+    ga: "€51.50 nascadh + €51.50/uair nó cuid de tar éis 30 nóim"
+  hotWater:
+    en: "€35.00"
+    ga: "€35.00"
+  cleaning:
+    en: "€50.00"
+    ga: "€50.00"
+  towing:
+    en: "€50.00 / tow"
+    ga: "€50.00 / tarraingt"
+  special:
+    en: "+15% (min €30)"
+    ga: "+15% (íosmhéid €30)"
+outOfHours:
+  extension:
+    en: "€330.00 / aircraft / hour"
+    ga: "€330.00 / aerárthach / uair"
+hangarage:
+  privateSingle:
+    en: "€20.00 / 24 h"
+    ga: "€20.00 / 24 uair"
+  privateTwin:
+    en: "€40.00 / 24 h"
+    ga: "€40.00 / 24 uair"
+  commercial:
+    en: "€15.00 / t / 24 h"
+    ga: "€15.00 / t / 24 uair"
+  pushInOut:
+    en: "€50.00 / push"
+    ga: "€50.00 / brú"

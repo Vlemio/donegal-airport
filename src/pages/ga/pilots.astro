@@ -1,9 +1,15 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import { readTowerHours, readAerodromeData, readFees, parseHourBlocks } from "../../lib/siteContent";
 
 const title = "Píolótaí agus dróin · Aerfort Dhún na nGall";
 const description =
   "Sonraí tagartha an aeradróim, minicíochtaí ATC, nós imeachta PPR, táillí agus muirir agus oibríochtaí dróin i gcrios rialaithe Dhún na nGall (EIDL) — ó AIP Ireland AD 2 EIDL.";
+
+// Editable in /keystatic — see src/lib/siteContent.ts and keystatic.config.ts.
+const towerHoursCms = await readTowerHours();
+const aero = await readAerodromeData();
+const fees = await readFees();
 
 /* Figures from AIP Ireland — EIDL AD 2 (AIRAC Amdt 004/26, eff 16 APR 2026). Cross-check current AIP & NOTAMs. */
 
@@ -24,23 +30,25 @@ const stats = [
   { big: "CAT 5", small: "Eitiltí sceidealta" },
 ];
 
-/* Detail blocks (accordions) */
+/* Detail blocks (accordions). Values come from /keystatic ("Aerodrome data"
+   singleton) — labels stay fixed here since they're standard AIP field
+   names, not something an editor should be retyping. */
 const identifiers = [
-  ["IATA / ICAO", "CFN / EIDL"],
-  ["Cineál aeradróim", "Sibhialta · Donegal Airport Co."],
-  ["ARP", "55°02′39″N 008°20′28″W"],
-  ["Suíomh", "2 NM SI ó Bun Beag"],
-  ["Teocht thagartha", "19.1 °C ar a mhéad · 2.2 °C ar a laghad"],
-  ["Athraitheas maighnéadach", "2°I (2026) · −11′/bl"],
-  ["Trácht ceadaithe", "IFR / VFR"],
+  ["IATA / ICAO", aero.identifiers.iataIcao.ga],
+  ["Cineál aeradróim", aero.identifiers.aerodromeType.ga],
+  ["ARP", aero.identifiers.arp.ga],
+  ["Suíomh", aero.identifiers.position.ga],
+  ["Teocht thagartha", aero.identifiers.refTemp.ga],
+  ["Athraitheas maighnéadach", aero.identifiers.magVar.ga],
+  ["Trácht ceadaithe", aero.identifiers.trafficPermitted.ga],
 ];
 const runwayFull = [
-  ["Treo", "023° / 203° maighnéadach · 020.4° / 200.4° fíor"],
-  ["Dromchla", "Asfalt eangaithe · PCN 21/F/B/X/T"],
-  ["Tairseach aistrithe", "02 → 209 m · 20 → 129 m"],
-  ["Stráice / RESA", "1562 × 150 m / 120 × 60 m"],
-  ["PAPI", "3.3° an dá cheann (ar chlé) · MEHT 43 ft"],
-  ["Soilse druidime", "02: LIH 420 m\n20: LIH 455 m · LED"],
+  ["Treo", aero.runway.bearing.ga],
+  ["Dromchla", aero.runway.surface.ga],
+  ["Tairseach aistrithe", aero.runway.displacedThr.ga],
+  ["Stráice / RESA", aero.runway.stripResa.ga],
+  ["PAPI", aero.runway.papi.ga],
+  ["Soilse druidime", aero.runway.approachLgt.ga],
 ];
 /* Mobile-only: rows whose value wraps to an extra line in the narrow accordion
    column — pull letters (and word gaps) tighter, not smaller, just enough per
@@ -82,51 +90,53 @@ const ddRwy: Record<string, DDRwy> = {
 };
 const ddDir: Record<string, string> = { "02": "→", "20": "←" };
 
+/* All 5 remaining boxes + Cautions, values from /keystatic ("Aerodrome
+   data" singleton) — labels stay fixed here, only the values are editable. */
 const airspace = [
-  ["Ainmniú", "CTR Dhún na nGall · laistigh d'FIR na Sionainne"],
-  ["Teorainneacha cliathánacha", "Ciorcal ga 10 NM timpeall an ARP"],
-  ["Teorainneacha ingearacha", "SFC – 5000 ft AMSL"],
-  ["Aicme", "C (G lasmuigh d'uaireanta ATC)"],
-  ["Airde trasdula", "5000 ft"],
-  ["Plean eitilte", "Éigeantach le linn uaireanta ATS"],
+  ["Ainmniú", aero.airspace.designation.ga],
+  ["Teorainneacha cliathánacha", aero.airspace.lateralLimits.ga],
+  ["Teorainneacha ingearacha", aero.airspace.verticalLimits.ga],
+  ["Aicme", aero.airspace.airspaceClass.ga],
+  ["Airde trasdula", aero.airspace.transitionAltitude.ga],
+  ["Plean eitilte", aero.airspace.flightPlan.ga],
 ];
 const approaches = [
-  ["RWY 02", "RNP (RNAV) · NDB/DME"],
-  ["RWY 20", "RNP (RNAV) · LOC · NDB/DME"],
+  ["RWY 02", aero.approaches.rwy02.ga],
+  ["RWY 20", aero.approaches.rwy20.ga],
 ];
 const navaids = [
-  ["NDB", "CFN · 361 kHz · H24 · DOC 25 NM"],
-  ["DME", "IFN · 110.3 MHz (Ch 40X)\nnialas ag DTHR · DOC 20 NM"],
-  ["LOC 20", "IFN · 110.3 MHz · H24"],
+  ["NDB", aero.navaids.ndb.ga],
+  ["DME", aero.navaids.dme.ga],
+  ["LOC 20", aero.navaids.loc20.ga],
 ];
 const comms = [
-  ["Túr", "Túr Dhún na nGall · 129.805 MHz"],
-  ["Talamh", "Talamh Dhún na nGall · 129.805 MHz"],
-  ["AFIS", "Faisnéis Dhún na nGall · 129.805 MHz"],
-  ["ATIS", "ATIS Dhún na nGall · 129.930 MHz"],
+  ["Túr", aero.comms.tower.ga],
+  ["Talamh", aero.comms.ground.ga],
+  ["AFIS", aero.comms.afis.ga],
+  ["ATIS", aero.comms.atis.ga],
 ];
 const ops = [
-  ["RFFS", "CAT 5 (eitiltí sceidealta) · clúdach dóiteáin le linn uaireanta oibríochta"],
-  ["Aprún thuaidh", "Biotúman / macadam · PCR 134/F/C/X/T"],
-  ["Aprún theas", "Coincréit · MTOW 5700 kg · páirceáil GA"],
-  ["Slí rollta A", "Asfalt · PCN 23/F/B/X/T · 25 m"],
-  ["Slí rollta B", "Coincréit · 12 m"],
-  ["Breosla", "Jet A1 amháin · tancaer 10000 L"],
-  ["Slándáil", "H24"],
-  ["PPR", "Riachtanach do gach eitilt"],
-  ["Custaim / Inimirce", "24 UAIR fógra neamh-AE\n12 UAIR fógra AE"],
+  ["RFFS", aero.ops.rffs.ga],
+  ["Aprún thuaidh", aero.ops.northApron.ga],
+  ["Aprún theas", aero.ops.southApron.ga],
+  ["Slí rollta A", aero.ops.taxiwayA.ga],
+  ["Slí rollta B", aero.ops.taxiwayB.ga],
+  ["Breosla", aero.ops.fuel.ga],
+  ["Slándáil", aero.ops.security.ga],
+  ["PPR", aero.ops.ppr.ga],
+  ["Custaim / Inimirce", aero.ops.customsImm.ga],
 ];
-const cautions = [
-  "Fiarshiabadh gaoithe agus suaiteacht faoi choimirce Shliabh na hEaragaile — bí airdeallach ag druidim le RWY 20 i ngaotha 250°–300°.",
-];
+const cautions = aero.cautions.ga.split("\n").map((c) => c.trim()).filter(Boolean);
 
-/* Opening hours → timeline (UTC). Bar range 06:00–21:00. */
+/* Opening hours → timeline (UTC). Bar range 06:00–21:00. Editable in
+   /keystatic ("Tower opening hours" singleton) — times only, same in both
+   languages, so there's no EN/GA split to thread through here. */
 const hoursData = {
   Winter: [
-    { day: "Mon–Sun", blocks: [["0740", "0830"], ["0900", "1300"], ["1330", "1700"], ["1800", "2010"]] },
+    { day: "Mon–Sun", blocks: parseHourBlocks(towerHoursCms.winter) },
   ],
   Summer: [
-    { day: "Mon–Sun", blocks: [["0640", "0730"], ["0800", "1200"], ["1230", "1600"], ["1700", "1910"]] },
+    { day: "Mon–Sun", blocks: parseHourBlocks(towerHoursCms.summer) },
   ],
 };
 /* Display-only translations. Data keys stay English (used as lookups both
@@ -150,13 +160,15 @@ const accordions = [
 ];
 
 /* ── Fees & charges (effective 1 March 2025) ────────────────── */
+/* Values from /keystatic ("Fees & charges" singleton) — group/row labels
+   stay fixed here, only the amounts on the right are editable. */
 const feeGroups = [
-  { title: "Tuirlingt", badge: "in aghaidh na tuirlinge", rows: [["Inneall amháin", "€15.00"], ["Déinneall (< 4 t)", "€28.75"], ["Os cionn 4 t", "€17.50 / t nó cuid de"]] },
-  { title: "Páirceáil Aerárthaigh", badge: "in aghaidh 24 uair", rows: [["An chéad 2 uair", "Saor in aisce"], ["Faoi bhun 3 t", "€15.00"], ["Faoi bhun 10 t", "€35.75"], ["Faoi bhun 20 t", "€64.00"], ["Os cionn 20 t", "€80.00"]] },
-  { title: "Láimhseáil", badge: "in aghaidh an phaisinéara amach", rows: [["Formhuirear ualaigh paisinéirí", "€17.50"], ["Táille láimhseála", "€9.75"], ["Díolmhaithe", "Faoi bhun 2 bhliain · neamhthráchtála"]] },
-  { title: "Seirbhísí Talún", badge: "de réir úsáide", rows: [["Aonad cumhachta talún", "€51.50 nascadh + €51.50/uair nó cuid de tar éis 30 nóim"], ["Uisce te", "€35.00"], ["Glanadh soithí lónadóireachta", "€50.00"], ["Tarraingt aerárthaigh", "€50.00 / tarraingt"], ["Seirbhísí speisialta", "+15% (íosmhéid €30)"]] },
-  { title: "Lasmuigh d'Uaireanta", badge: "fógra 48 uair", rows: [["Síneadh aerfoirt", "€330.00 / aerárthach / uair"]] },
-  { title: "Haingear", badge: "+ 23% CBL", rows: [["Inneall aonair príobháideach", "€20.00 / 24 uair"], ["Déinneall príobháideach", "€40.00 / 24 uair"], ["Tráchtála", "€15.00 / t / 24 uair"], ["Brú isteach / amach", "€50.00 / brú"]] },
+  { title: "Tuirlingt", badge: "in aghaidh na tuirlinge", rows: [["Inneall amháin", fees.landing.singleEngine.ga], ["Déinneall (< 4 t)", fees.landing.twinEngine.ga], ["Os cionn 4 t", fees.landing.over4t.ga]] },
+  { title: "Páirceáil Aerárthaigh", badge: "in aghaidh 24 uair", rows: [["An chéad 2 uair", fees.parking.first2h.ga], ["Faoi bhun 3 t", fees.parking.under3t.ga], ["Faoi bhun 10 t", fees.parking.under10t.ga], ["Faoi bhun 20 t", fees.parking.under20t.ga], ["Os cionn 20 t", fees.parking.over20t.ga]] },
+  { title: "Láimhseáil", badge: "in aghaidh an phaisinéara amach", rows: [["Formhuirear ualaigh paisinéirí", fees.handling.paxSupplement.ga], ["Táille láimhseála", fees.handling.handlingFee.ga], ["Díolmhaithe", fees.handling.exempt.ga]] },
+  { title: "Seirbhísí Talún", badge: "de réir úsáide", rows: [["Aonad cumhachta talún", fees.groundServices.gpu.ga], ["Uisce te", fees.groundServices.hotWater.ga], ["Glanadh soithí lónadóireachta", fees.groundServices.cleaning.ga], ["Tarraingt aerárthaigh", fees.groundServices.towing.ga], ["Seirbhísí speisialta", fees.groundServices.special.ga]] },
+  { title: "Lasmuigh d'Uaireanta", badge: "fógra 48 uair", rows: [["Síneadh aerfoirt", fees.outOfHours.extension.ga]] },
+  { title: "Haingear", badge: "+ 23% CBL", rows: [["Inneall aonair príobháideach", fees.hangarage.privateSingle.ga], ["Déinneall príobháideach", fees.hangarage.privateTwin.ga], ["Tráchtála", fees.hangarage.commercial.ga], ["Brú isteach / amach", fees.hangarage.pushInOut.ga]] },
 ];
 
 /* ── Drones ─────────────────────────────────────────────────── */

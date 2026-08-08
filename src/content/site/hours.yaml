@@ -1,0 +1,9 @@
+terminal: "06:30–20:15"
+cafeHours:
+  monday: "06:30–13:30"
+  tuesday: "06:30–13:30"
+  wednesday: "06:30–16:00"
+  thursday: "06:30–13:30"
+  friday: "06:30–13:30"
+  saturday: "06:30–16:00"
+  sunday: "06:30–13:30, 17:00–19:00"

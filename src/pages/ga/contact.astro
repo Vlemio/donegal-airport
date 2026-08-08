@@ -2,6 +2,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import "leaflet/dist/leaflet.css";
 import "leaflet-gesture-handling/dist/leaflet-gesture-handling.css";
+import { readHours } from "../../lib/siteContent";
 
 const title = "Teagmháil · Aerfort Dhún na nGall";
 const description = "Déan teagmháil le hAerfort Dhún na nGall (CFN). Fón, ríomhphost, seoladh, uaireanta oscailte, earraí caillte agus teagmháil preasa.";
@@ -9,6 +10,9 @@ const description = "Déan teagmháil le hAerfort Dhún na nGall (CFN). Fón, r�
 // TODO: swap for the airport's own Web3Forms access key once they've
 // confirmed which mailbox submissions should land in (currently on hold).
 const WEB3FORMS_KEY = "REPLACE_WITH_REAL_ACCESS_KEY";
+
+// Editable in /keystatic ("Terminal & café hours" singleton).
+const hours = await readHours();
 ---
 
 <BaseLayout title={title} description={description}>
@@ -204,10 +208,10 @@ const WEB3FORMS_KEY = "REPLACE_WITH_REAL_ACCESS_KEY";
 
     <div data-animate="fade-up" class="mt-14 border-t border-line pt-10">
       <p class="font-mono text-[0.66rem] uppercase tracking-[0.22em] text-mute">
-        Ag teacht
+        Uaireanta oscailte
       </p>
       <p class="mt-4 max-w-2xl font-display text-2xl leading-snug text-ink">
-        Uaireanta oscailte an teirminéil.
+        Oscailte gach lá, {hours.terminal}.
       </p>
     </div>
   </section>

@@ -1,8 +1,15 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import { readHours, groupCafeHours } from "../../lib/siteContent";
 
 const title = "Pleanáil do thuras · Aerfort Dhún na nGall";
 const description = "Conas teacht anseo, páirceáil, cíos gluaisteán, tacsaithe, inrochtaineacht (PRM) agus slándáil ag Aerfort Dhún na nGall (CFN).";
+
+// Editable in /keystatic ("Terminal & café hours" singleton) — one hours
+// value per day; groupCafeHours collapses matching days into rows
+// automatically, so the layout below doesn't assume a fixed number of rows.
+const hours = await readHours();
+const cafeRows = groupCafeHours(hours.cafeHours, "ga");
 
 const carHire = [
   {
@@ -727,9 +734,11 @@ const busColumns = [
                 </h2>
               </div>
 
-              <p class="absolute bottom-[8%] left-[7%] z-10 font-mono text-[0.78rem] uppercase tracking-[0.16em] text-[#6a5142]">
-                Oscailte gach lá · maidineacha go dtí <span class="font-bold text-[#a06a34]">3in</span>
-              </p>
+              <div class="absolute bottom-[8%] left-[7%] z-10 space-y-0.5 font-mono text-[0.68rem] uppercase leading-snug tracking-[0.13em] text-[#6a5142]">
+                {cafeRows.map((row) => (
+                  <p>{row.days} <span class="font-bold text-[#a06a34]">{row.hours}</span></p>
+                ))}
+              </div>
 
               <div id="cafe-stage" class="absolute inset-0">
                 <div id="cafe-groups"></div>
@@ -746,9 +755,11 @@ const busColumns = [
             <div class="order-1 lg:hidden">
               <p data-animate="fade-up" class="font-mono text-[0.8rem] font-bold uppercase tracking-[0.3em] text-[#a06a34]">Ag an aerfort</p>
               <h2 data-animate="fade-up" data-animate-delay="0.05" class="cafe-name mt-2 text-[clamp(1.9rem,8vw,2.6rem)] leading-[1.02] text-[#2b1a10]">Caife an Aerfoirt</h2>
-              <p data-animate="fade-up" data-animate-delay="0.1" class="mt-3 font-mono text-[0.72rem] uppercase tracking-[0.16em] text-[#6a5142]">
-                Oscailte gach lá · maidineacha go dtí <span class="font-bold text-[#a06a34]">3in</span>
-              </p>
+              <div data-animate="fade-up" data-animate-delay="0.1" class="mt-3 space-y-1 font-mono text-[0.68rem] uppercase tracking-[0.16em] text-[#6a5142]">
+                {cafeRows.map((row) => (
+                  <p>{row.days} <span class="font-bold text-[#a06a34]">{row.hours}</span></p>
+                ))}
+              </div>
               <div id="cafe-mobile-list" class="mt-8 divide-y divide-line border-y border-line">
                 {coffees.map((c) => (
                   <div class="flex items-center gap-5 py-5">
