@@ -103,6 +103,15 @@ function splitIntoChars(el: HTMLElement): void {
   const childNodes = Array.from(el.childNodes);
   const fullText = (el.textContent ?? "").replace(/\s+/g, " ").trim();
   el.textContent = "";
+  // A bare element (e.g. <p>, <span>, <div>) doesn't have a role that
+  // formally supports aria-label per the ARIA spec — Lighthouse/axe flag
+  // aria-label-without-a-role as "aria-prohibited-attr". role="text" is the
+  // Safari-originated, now widely-supported convention for exactly this
+  // "visually split into pieces, but read as one opaque text node" case.
+  // Headings already have an implicit role that supports aria-label, and
+  // setting role="text" on one would strip its heading semantics entirely
+  // (axe flags THAT as aria-allowed-role) — only non-heading elements need it.
+  if (!/^H[1-6]$/.test(el.tagName)) el.setAttribute("role", "text");
   el.setAttribute("aria-label", fullText);
   childNodes.forEach((node) => {
     if (node.nodeType === Node.ELEMENT_NODE && (node as Element).tagName === "BR") {
