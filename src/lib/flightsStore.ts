@@ -12,13 +12,21 @@
 // Reading a gist by ID needs no auth, but anonymous GitHub API calls are
 // capped at 60/hour PER IP — and on Vercel that IP pool is shared with
 // other traffic, so it can be exhausted fast. FLIGHTS_GIST_TOKEN (the same
-// gist-only token the FIDS uses to write) raises that to 5000/hour. A short
-// in-memory cache further keeps repeated visitor requests within a warm
-// serverless instance from hitting GitHub on every single page load.
+// gist-only token the FIDS uses to write) raises that to 5000/hour — plenty
+// of headroom to fetch fresh on every request without an in-memory cache.
+//
+// There used to be a short in-memory cache here, but Vercel runs several
+// serverless instances in parallel, each with its own module-scope cache
+// filled at a different real moment — one visitor's request could land on
+// an instance whose cache was 9 seconds stale while another, a moment
+// later, hit a different instance with fresher data, making the public
+// board visibly flip between two answers for the same underlying flight.
+// Always fetching fresh removes that inter-instance divergence; the CDN
+// layer (see flights-today.json.ts's Cache-Control) still absorbs repeat
+// hits within the same edge region.
 const GIST_ID = import.meta.env.FLIGHTS_GIST_ID;
 const GIST_TOKEN = import.meta.env.FLIGHTS_GIST_TOKEN;
 const GIST_API = GIST_ID ? `https://api.github.com/gists/${GIST_ID}` : null;
-const CACHE_MS = 10_000;
 
 export interface SyncedFlight {
   id: string;
@@ -50,8 +58,6 @@ export const FALLBACK_FLIGHTS: FlightsPayload = {
   ],
 };
 
-let cache: { payload: FlightsPayload; at: number } | null = null;
-
 export function isLiveStoreConfigured(): boolean {
   return GIST_API !== null;
 }
@@ -59,28 +65,23 @@ export function isLiveStoreConfigured(): boolean {
 export async function readFlights(): Promise<{ payload: FlightsPayload; live: boolean }> {
   if (!GIST_API) return { payload: FALLBACK_FLIGHTS, live: false };
 
-  if (cache && Date.now() - cache.at < CACHE_MS) {
-    return { payload: cache.payload, live: true };
-  }
-
   try {
     const headers: Record<string, string> = {
       accept: "application/vnd.github+json",
       "user-agent": "donegal-airport-web",
     };
     if (GIST_TOKEN) headers.authorization = `Bearer ${GIST_TOKEN}`;
-    const res = await fetch(GIST_API, { headers });
+    const res = await fetch(GIST_API, { headers, cache: "no-store" });
     if (!res.ok) throw new Error(`gist fetch ${res.status}`);
     const gist = await res.json();
     const content = gist?.files?.["flights.json"]?.content;
     if (!content) throw new Error("flights.json missing from gist");
     const payload = JSON.parse(content) as FlightsPayload;
     if (!Array.isArray(payload.flights)) throw new Error("malformed payload");
-    cache = { payload, at: Date.now() };
     return { payload, live: true };
   } catch {
     // FIDS hasn't synced yet, or GitHub is unreachable — keep the board
     // showing something rather than an empty page.
-    return { payload: cache?.payload ?? FALLBACK_FLIGHTS, live: false };
+    return { payload: FALLBACK_FLIGHTS, live: false };
   }
 }
