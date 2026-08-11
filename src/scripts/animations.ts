@@ -414,8 +414,12 @@ function setupScrubVideo(): void {
     };
 
     // Kick the first frame, then eagerly queue the rest of the range.
-    // Frames are ~52 KB WebP, so the whole 121-frame set (~6 MB) loads
-    // in the background well before the user finishes reading the hero.
+    // Frames are ~59 KB WebP on average (re-encoded at quality 80), so the
+    // whole 121-frame set (~7 MB) loads in the background well before the
+    // user finishes reading the hero. They'd previously drifted up to
+    // ~155 KB/frame (~18 MB total) from a re-export that didn't carry the
+    // original quality setting — caught by a Lighthouse "avoid large
+    // network payloads" audit. Re-encode with: sharp(buf).webp({quality:80}).
     load(startFrame);
     for (let i = startFrame; i <= endFrame; i++) load(i);
 
