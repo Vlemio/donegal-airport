@@ -165,6 +165,24 @@ const localeTag: Record<Locale, string> = {
       href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,500;1,600&display=swap"
       rel="stylesheet"
     />
+    {/* Space Mono + Switzer — used site-wide, previously loaded via @import
+        inside global.css. A runtime @import for an external URL isn't
+        inlined at build time, so the browser had to download and start
+        parsing the whole CSS bundle before it could even discover these
+        and start fetching them — a fully serial extra round-trip per font,
+        flagged by Lighthouse as render-blocking. <link> tags here let the
+        preload scanner find them immediately, fetching in parallel with
+        everything else instead of after it. */}
+    <link rel="preconnect" href="https://api.fontshare.com" />
+    <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://api.fontshare.com/v2/css?f[]=switzer@200,300,400,500,600,700,800,900&display=swap"
+      rel="stylesheet"
+    />
     <title>{title}</title>
     {siteDescription && <meta name="description" content={siteDescription} />}
     <link rel="canonical" href={canonical} />

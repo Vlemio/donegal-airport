@@ -2,12 +2,13 @@
 @import "@fontsource-variable/bricolage-grotesque";
 @import "@fontsource-variable/inter";
 
-/* Switzer — humanist sans body face. Served from Fontshare CDN.
-   Swap to a self-hosted @font-face block post-firma; see README in
-   /public/fonts/. */
-@import url("https://api.fontshare.com/v2/css?f[]=switzer@200,300,400,500,600,700,800,900&display=swap");
-/* Space Mono — typewriter mono face for airport-style labels */
-@import url("https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap");
+/* Switzer (humanist sans body face) and Space Mono (typewriter mono face
+   for airport-style labels) are loaded via <link rel="stylesheet"> tags in
+   BaseLayout.astro's <head> instead of @import here — a runtime @import
+   for an external URL blocks on downloading and parsing this whole file
+   first, while a <link> in <head> is found immediately by the browser's
+   preload scanner. Swap Switzer to a self-hosted @font-face block
+   post-firma; see README in /public/fonts/. */
 
 /* F-glyph fix: span applied to F/f chars in display headings */
 .f-fix {
