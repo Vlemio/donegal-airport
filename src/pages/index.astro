@@ -987,6 +987,13 @@ const allNews = _newsSorted.map(_mapNews);
       display: inline-flex;
       align-items: center;
       gap: 0.45rem;
+      padding: 0.3rem 0.55rem;
+      border-radius: 999px;
+      /* Solid backdrop so the white label stays readable regardless of
+         what the underlying news photo looks like at that corner — the
+         text-shadow alone wasn't enough contrast over bright sky/cloud
+         photos (flagged by Lighthouse). */
+      background: rgba(24,29,22,0.68);
       font-family: var(--font-mono);
       font-size: 0.6rem;
       font-weight: 700;
