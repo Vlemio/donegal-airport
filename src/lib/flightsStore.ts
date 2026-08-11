@@ -1,33 +1,22 @@
-// Live flight-board store — reads the secret GitHub Gist the Donegal FIDS
-// pushes to.
+// Live flight-board store — reads the Donegal FIDS's own public API directly.
 //
-// The FIDS server (wherever it physically runs — laptop today, an airport
-// PC later) never receives inbound connections. It only ever PATCHes its
-// own GitHub Gist directly with its own token; this module just reads that
-// gist's content back. No database, no paid Vercel storage — a secret gist
-// (unlisted, but readable by anyone who has the ID) is free forever and
-// exactly matches the "obscure public URL" pattern already used elsewhere
-// on this site.
-//
-// Reading a gist by ID needs no auth, but anonymous GitHub API calls are
-// capped at 60/hour PER IP — and on Vercel that IP pool is shared with
-// other traffic, so it can be exhausted fast. FLIGHTS_GIST_TOKEN (the same
-// gist-only token the FIDS uses to write) raises that to 5000/hour — plenty
-// of headroom to fetch fresh on every request without an in-memory cache.
-//
-// There used to be a short in-memory cache here, but Vercel runs several
-// serverless instances in parallel, each with its own module-scope cache
-// filled at a different real moment — one visitor's request could land on
-// an instance whose cache was 9 seconds stale while another, a moment
-// later, hit a different instance with fresher data, making the public
-// board visibly flip between two answers for the same underlying flight.
-// Always fetching fresh removes that inter-instance divergence; the CDN
-// layer (see flights-today.json.ts's Cache-Control) still absorbs repeat
-// hits within the same edge region.
-const GIST_ID = import.meta.env.FLIGHTS_GIST_ID;
-const GIST_TOKEN = import.meta.env.FLIGHTS_GIST_TOKEN;
-const GIST_API = GIST_ID ? `https://api.github.com/gists/${GIST_ID}` : null;
+// Used to go through a secret GitHub Gist: the FIDS PATCHed the gist, this
+// module read it back. That existed because the FIDS used to run somewhere
+// with no inbound connections (a laptop, an airport PC). Now that the FIDS
+// is itself deployed on Vercel with a real public URL, that relay is a
+// pure liability — an extra network hop through GitHub's own API, synced
+// only every ~2 min by the FIDS's cron tick, with GitHub's own eventual
+// consistency on top. Reading /api/flights directly means this board is
+// never more than one HTTP round-trip from the exact same data the FIDS's
+// own admin panel shows, with no intermediate copy that can fall out of
+// sync. FIDS_API_URL can override the default if the deployment ever moves.
+const FIDS_API_URL = import.meta.env.FIDS_API_URL || "https://donegal-fids.vercel.app";
+const FIDS_FLIGHTS_ENDPOINT = `${FIDS_API_URL}/api/flights`;
 
+// Raw shape of a flight as the FIDS stores it — a superset of what this site
+// displays (also carries internal fields like `source`, `locks`, `live`,
+// `schedDate`, `suppressed`). /api/flights already filters out suppressed
+// flights server-side, so nothing here needs to re-filter.
 export interface SyncedFlight {
   id: string;
   type: "arrival" | "departure";
@@ -59,29 +48,20 @@ export const FALLBACK_FLIGHTS: FlightsPayload = {
 };
 
 export function isLiveStoreConfigured(): boolean {
-  return GIST_API !== null;
+  return true;
 }
 
 export async function readFlights(): Promise<{ payload: FlightsPayload; live: boolean }> {
-  if (!GIST_API) return { payload: FALLBACK_FLIGHTS, live: false };
-
   try {
-    const headers: Record<string, string> = {
-      accept: "application/vnd.github+json",
-      "user-agent": "donegal-airport-web",
-    };
-    if (GIST_TOKEN) headers.authorization = `Bearer ${GIST_TOKEN}`;
-    const res = await fetch(GIST_API, { headers, cache: "no-store" });
-    if (!res.ok) throw new Error(`gist fetch ${res.status}`);
-    const gist = await res.json();
-    const content = gist?.files?.["flights.json"]?.content;
-    if (!content) throw new Error("flights.json missing from gist");
-    const payload = JSON.parse(content) as FlightsPayload;
-    if (!Array.isArray(payload.flights)) throw new Error("malformed payload");
+    const res = await fetch(FIDS_FLIGHTS_ENDPOINT, { cache: "no-store" });
+    if (!res.ok) throw new Error(`FIDS fetch ${res.status}`);
+    const body = await res.json();
+    if (!Array.isArray(body.flights)) throw new Error("malformed payload");
+    const payload: FlightsPayload = { updated: body.lastUpdated, flights: body.flights };
     return { payload, live: true };
   } catch {
-    // FIDS hasn't synced yet, or GitHub is unreachable — keep the board
-    // showing something rather than an empty page.
+    // FIDS is unreachable — keep the board showing something rather than
+    // an empty page.
     return { payload: FALLBACK_FLIGHTS, live: false };
   }
 }
