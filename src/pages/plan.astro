@@ -12,6 +12,35 @@ const description = "Getting here, parking, car hire, taxis, accessibility (PRM)
 const hours = await readHours();
 const cafeRows = groupCafeHours(hours.cafeHours, "en");
 
+// Car-hire brand colours range from Yuko's red (passes fine as-is) to
+// GoCar's light yellow-green (badly fails white text). Rather than pick one
+// dark overlay strength that either over-darkens the ones that don't need
+// it or under-darkens GoCar, compute the minimum black overlay each card's
+// own colour actually needs to clear 4.5:1 for its white detail text
+// (WCAG contrast math) — see cardTextOverlay() below, used inline per card.
+function relLuminance(hex: string): number {
+  const n = parseInt(hex.replace("#", ""), 16);
+  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  const f = (c: number) => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+}
+function contrastVsWhite(hex: string): number {
+  return (1.05) / (relLuminance(hex) + 0.05);
+}
+// Darkest the overlay is allowed to go (0.5 = the brand colour is barely
+// recognisable past this) — GoCar needs ~0.36 to clear 4.5:1, so this cap
+// is just a safety rail, not something any current card actually hits.
+function cardTextOverlay(hex: string): number {
+  if (contrastVsWhite(hex) >= 4.6) return 0; // already clears it, no need to darken
+  for (let pct = 2; pct <= 50; pct += 2) {
+    const darkened = hex.replace("#", "").match(/../g)!
+      .map((h) => Math.round(parseInt(h, 16) * (1 - pct / 100)).toString(16).padStart(2, "0"))
+      .join("");
+    if (contrastVsWhite("#" + darkened) >= 4.6) return pct / 100;
+  }
+  return 0.5;
+}
+
 const carHire = [
   {
     name: "Enterprise",
@@ -514,7 +543,14 @@ const busColumns = [
                   class="ch-card relative flex items-stretch overflow-hidden rounded-xl md:opacity-0"
                   style={`background-color:${c.bg};`}
                 >
-                  <div class="relative z-[2] flex flex-1 flex-col justify-between p-7">
+                  {/* Per-brand dark overlay (see cardTextOverlay above) — only
+                      the text side, not the logo side, and only as dark as
+                      that specific brand colour actually needs to clear
+                      4.5:1 for the white detail text on top of it. */}
+                  <div
+                    class="relative z-[2] flex flex-1 flex-col justify-between p-7"
+                    style={`background-color: rgba(0,0,0,${cardTextOverlay(c.bg)});`}
+                  >
                     <ul class="space-y-0.5">
                       {c.details.map((d) => (
                         <li class="text-sm leading-relaxed text-white [text-shadow:0_1px_8px_rgba(0,0,0,.5)]">{d}</li>
