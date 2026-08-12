@@ -39,7 +39,6 @@ const switchToLabel = t("languageToggle.switchTo", locale);
 <header
   data-header
   class="fixed inset-x-0 top-0 z-50"
-  aria-label={t("a11y.siteNavigation", locale)}
 >
   <div
     class:list={[
@@ -78,7 +77,10 @@ const switchToLabel = t("languageToggle.switchTo", locale);
     {/* Gaeilge labels run noticeably longer ("Pleanáil do thuras", "Faigh
         amach Dún na nGall") — the wider bar above gives this room to
         breathe without touching English's sizing or spacing at all. */}
-    <nav class:list={["hidden items-center lg:flex", locale === "ga" ? "gap-6" : "gap-7"]}>
+    <nav
+      class:list={["hidden items-center lg:flex", locale === "ga" ? "gap-6" : "gap-7"]}
+      aria-label={t("a11y.mainNavigation", locale)}
+    >
       {
         nav.map((item) => (
           <a
@@ -143,7 +145,10 @@ const switchToLabel = t("languageToggle.switchTo", locale);
   data-mobile-nav
   class="fixed inset-0 z-40 translate-x-full bg-surface transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] lg:hidden"
 >
-  <nav class="flex h-full flex-col items-center justify-center gap-4">
+  <nav
+    class="flex h-full flex-col items-center justify-center gap-4"
+    aria-label={t("a11y.siteNavigation", locale)}
+  >
     {
       nav.map((item) => (
         <a
