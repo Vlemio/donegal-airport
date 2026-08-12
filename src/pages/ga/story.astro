@@ -606,7 +606,8 @@ const airlines: Airline[] = [
           right) — see the @media (max-width: 639px) override on
           .airline-grid. */}
       <div data-animate="fade-up" class="mt-14">
-        <div id="op-track" class="airline-grid">
+        {/* tabindex + role/aria-label — see en/story.astro. */}
+        <div id="op-track" class="airline-grid" tabindex="0" role="region" aria-label="Aerlínte a d'eitil ó Aerfort Dhún na nGall">
           {
             airlines.map((a) => (
               <div class="airline-pass" data-op-card>

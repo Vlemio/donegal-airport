@@ -610,7 +610,11 @@ const airlines: Airline[] = [
           size, the next one peeks in on the right) — see the
           @media (max-width: 639px) override on .airline-grid. */}
       <div data-animate="fade-up" class="mt-14">
-        <div id="op-track" class="airline-grid">
+        {/* tabindex + role/aria-label: on mobile this becomes a native
+            swipe-scrollable row (see comment above) — a keyboard-only user
+            has no way to reach or scroll it without these (axe:
+            scrollable-region-focusable). */}
+        <div id="op-track" class="airline-grid" tabindex="0" role="region" aria-label="Airlines that have flown from Donegal Airport">
           {
             airlines.map((a) => (
               <div class="airline-pass" data-op-card>
