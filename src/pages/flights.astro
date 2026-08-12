@@ -437,6 +437,18 @@ const flightsToday = flightsPayload.flights;
   }
 
   // ---------- Rendering ----------
+  // Clear both row containers before the fresh (empty) `rendered` maps
+  // below take over tracking them. Astro's View Transitions can morph this
+  // page's DOM into the next one across a client-side nav (e.g. the /flights
+  // <-> /ga/flights language toggle) and leave the OLD rows physically
+  // sitting in #eidl-dep-rows/#eidl-arr-rows, while this script re-runs
+  // from scratch with empty maps that have no record of them — every flight
+  // then reads as "new" and gets appended on top, doubling every row.
+  var depWrapReset = document.getElementById('eidl-dep-rows');
+  var arrWrapReset = document.getElementById('eidl-arr-rows');
+  if (depWrapReset) depWrapReset.innerHTML = '';
+  if (arrWrapReset) arrWrapReset.innerHTML = '';
+
   var FLIGHTS = boardFlights;
   var rendered = { dep: new Map(), arr: new Map() }; // id -> {rowEl, timeField, flightField, cityEl, statusTextEl, statusDotEl, iataEl, airlineEl}
 

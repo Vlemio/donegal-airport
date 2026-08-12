@@ -459,6 +459,15 @@ const flightsToday = flightsPayload.flights;
   }
 
   // ---------- Rendering ----------
+  // Clear both row containers first — see en/flights.astro for why (View
+  // Transitions can leave the previous page's rows physically in the DOM
+  // while this script's fresh, empty `rendered` maps have no record of
+  // them, doubling every row on the /flights <-> /ga/flights toggle).
+  var depWrapReset = document.getElementById('eidl-dep-rows');
+  var arrWrapReset = document.getElementById('eidl-arr-rows');
+  if (depWrapReset) depWrapReset.innerHTML = '';
+  if (arrWrapReset) arrWrapReset.innerHTML = '';
+
   var FLIGHTS = boardFlights;
   var rendered = { dep: new Map(), arr: new Map() }; // id -> {rowEl, timeField, flightField, cityEl, statusTextEl, statusDotEl, iataEl, airlineEl}
 
