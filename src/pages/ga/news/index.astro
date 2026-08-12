@@ -36,6 +36,9 @@ const gridItems = all.slice(5);
 
   <div class="np-outer">
 
+    {/* Visually hidden — see en/news/index.astro for why. */}
+    <h1 class="sr-only">Nuacht</h1>
+
     {/* ===== HERO: featured card + sidebar ===== */}
     <section class="np-top">
       <div class="np-inner">
@@ -51,7 +54,8 @@ const gridItems = all.slice(5);
           </div>
         </a>
 
-        <aside class="np-side">
+        {/* Plain div, not <aside> — see en/news/index.astro. */}
+        <div class="np-side">
           <p class="np-side__label">Nuacht is déanaí</p>
           <ul class="np-side__list">
             {sidebarItems.map((item) => (
@@ -66,7 +70,7 @@ const gridItems = all.slice(5);
               </li>
             ))}
           </ul>
-        </aside>
+        </div>
 
       </div>
     </section>
@@ -163,7 +167,9 @@ const gridItems = all.slice(5);
     .np-feat__over {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to top, rgba(10,20,30,0.82) 0%, rgba(10,20,30,0.35) 55%, transparent 100%);
+      /* See en/news/index.astro — top stop keeps the site header legible
+         over whatever photo happens to be featured. */
+      background: linear-gradient(to top, rgba(10,20,30,0.82) 0%, rgba(10,20,30,0.35) 55%, transparent 75%, rgba(10,20,30,0.65) 100%);
       display: flex;
       flex-direction: column;
       justify-content: flex-end;

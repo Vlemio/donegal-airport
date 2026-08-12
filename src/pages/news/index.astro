@@ -30,6 +30,11 @@ const gridItems = all.slice(5);
 
   <div class="np-outer">
 
+    {/* Visually hidden — the page has no visible generic "News" title
+        (the featured article's own h2 fills that spot visually), but a
+        page still needs exactly one h1 for document structure. */}
+    <h1 class="sr-only">News</h1>
+
     {/* ===== HERO: featured card + sidebar ===== */}
     <section class="np-top">
       <div class="np-inner">
@@ -45,7 +50,11 @@ const gridItems = all.slice(5);
           </div>
         </a>
 
-        <aside class="np-side">
+        {/* Plain div, not <aside>: this "Latest news" list is supplementary
+            content within the same section as the featured article, not an
+            independent top-level landmark — axe's landmark-complementary-
+            is-top-level flags an <aside> nested inside <main>. */}
+        <div class="np-side">
           <p class="np-side__label">Latest news</p>
           <ul class="np-side__list">
             {sidebarItems.map((item) => (
@@ -60,7 +69,7 @@ const gridItems = all.slice(5);
               </li>
             ))}
           </ul>
-        </aside>
+        </div>
 
       </div>
     </section>
@@ -162,7 +171,13 @@ const gridItems = all.slice(5);
     .np-feat__over {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to top, rgba(10,20,30,0.82) 0%, rgba(10,20,30,0.35) 55%, transparent 100%);
+      /* Bottom stops darken for the title text; the top stop does the same
+         for the site header, which overlays this card at the very top of
+         the page with a transparent background. The featured photo is
+         whatever the latest news item happens to use, so its top corner
+         isn't reliably dark — without this, white nav text over a bright
+         sky/photo there fails contrast (axe: color-contrast). */
+      background: linear-gradient(to top, rgba(10,20,30,0.82) 0%, rgba(10,20,30,0.35) 55%, transparent 75%, rgba(10,20,30,0.65) 100%);
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
