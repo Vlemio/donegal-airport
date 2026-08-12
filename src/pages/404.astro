@@ -7,7 +7,12 @@ const description = "This page doesn't exist. Let's get you back on course.";
 
 <BaseLayout title={title} description={description} solidHeader>
   <section class="mx-auto flex min-h-[calc(100vh-var(--header-h))] max-w-3xl flex-col items-center justify-center px-6 py-32 text-center">
-    <p class="font-mono text-xs uppercase tracking-[0.3em] text-sand">404</p>
+    {/* text-[#866536] not text-sand: --color-sand (#a07840) is 3.57:1 against
+        this page's background at this text's size (12px normal weight,
+        under the "large text" threshold) — under the 4.5:1 minimum. Scoped
+        to just this label rather than darkening --color-sand itself, which
+        is used all over the site at sizes/contexts that already pass. */}
+    <p class="font-mono text-xs uppercase tracking-[0.3em] text-[#866536]">404</p>
     <h1 class="mt-6 font-display text-5xl leading-[1.05] sm:text-6xl">
       You've drifted off the runway.
     </h1>

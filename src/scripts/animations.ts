@@ -220,8 +220,8 @@ function setupKenBurns(): void {
    fresh from location.pathname on every astro:page-load — no captured
    state, so it can't go stale after a client-side navigation. */
 const SOLID_HEADER_PATHS = [
-  "/flights", "/plan", "/contact",
-  "/ga/flights", "/ga/plan", "/ga/contact",
+  "/flights", "/plan", "/contact", "/news",
+  "/ga/flights", "/ga/plan", "/ga/contact", "/ga/news",
   "/privacy", "/safety", "/security", "/quality", "/environmental", "/language-policy", "/terms",
   "/ga/privacy", "/ga/safety", "/ga/security", "/ga/quality", "/ga/environmental", "/ga/language-policy", "/ga/terms",
 ];
