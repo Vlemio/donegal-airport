@@ -43,9 +43,9 @@ const flightsToday = flightsPayload.flights;
           </div>
           <div class="eidl-controls">
             <div class="eidl-tabs" id="eidl-tabs" role="tablist">
-              <button type="button" data-view="all" aria-selected="true">All</button>
-              <button type="button" data-view="dep" aria-selected="false">Departures</button>
-              <button type="button" data-view="arr" aria-selected="false">Arrivals</button>
+              <button type="button" role="tab" data-view="all" aria-selected="true">All</button>
+              <button type="button" role="tab" data-view="dep" aria-selected="false" aria-controls="eidl-dep-section">Departures</button>
+              <button type="button" role="tab" data-view="arr" aria-selected="false" aria-controls="eidl-arr-section">Arrivals</button>
             </div>
           </div>
         </div>
