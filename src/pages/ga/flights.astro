@@ -590,8 +590,14 @@ const flightsToday = flightsPayload.flights;
     var isLive = !!(data && data.live);
     if (dot) dot.classList.toggle('is-stale', !isLive);
     if (label) label.textContent = isLive ? 'Beo' : 'Eolas is déanaí';
-    if (updatedEl && data && data.updated) {
-      var t = new Date(data.updated).toLocaleTimeString('en-IE', { timeZone: 'Europe/Dublin', hour12: false, hour: '2-digit', minute: '2-digit' });
+    // lastTick is when the FIDS's sync last ran (~every 1-2 min); `updated`
+    // only moves when a flight's own data actually changes, so on a quiet
+    // day it can sit still for a long stretch even though the sync itself
+    // is running fine. Prefer lastTick — fall back to `updated` for the
+    // offline FALLBACK_FLIGHTS payload, which has no lastTick.
+    var stamp = (data && (data.lastTick || data.updated));
+    if (updatedEl && stamp) {
+      var t = new Date(stamp).toLocaleTimeString('en-IE', { timeZone: 'Europe/Dublin', hour12: false, hour: '2-digit', minute: '2-digit' });
       updatedEl.textContent = '· Nuashonraithe ' + t;
     }
   }

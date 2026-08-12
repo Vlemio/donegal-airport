@@ -34,11 +34,18 @@ export interface SyncedFlight {
 
 export interface FlightsPayload {
   updated: string;
+  // Heartbeat of the FIDS's last completed sync tick (~every 1-2 min),
+  // distinct from `updated` — which only moves when a flight's own data
+  // actually changes. A quiet flight list can leave `updated` looking
+  // frozen for a long stretch even though the sync is running fine;
+  // `lastTick` is what the board's "Updated" label should show.
+  lastTick: string | null;
   flights: SyncedFlight[];
 }
 
 export const FALLBACK_FLIGHTS: FlightsPayload = {
   updated: "2026-06-19T06:00:00Z",
+  lastTick: null,
   flights: [
     { id: "ARR-EI3401", type: "arrival", time: "08:55", estTime: null, estLate: false, estVeryLate: false, airline: "Aer Lingus Regional", airlineCode: "EI", city: "Dublin", flightNo: "EI3401", codeshare: [], status: "Landed" },
     { id: "DEP-EI3402", type: "departure", time: "10:25", estTime: null, estLate: false, estVeryLate: false, airline: "Aer Lingus Regional", airlineCode: "EI", city: "Dublin", flightNo: "EI3402", codeshare: [], status: "Departed" },
@@ -57,7 +64,7 @@ export async function readFlights(): Promise<{ payload: FlightsPayload; live: bo
     if (!res.ok) throw new Error(`FIDS fetch ${res.status}`);
     const body = await res.json();
     if (!Array.isArray(body.flights)) throw new Error("malformed payload");
-    const payload: FlightsPayload = { updated: body.lastUpdated, flights: body.flights };
+    const payload: FlightsPayload = { updated: body.lastUpdated, lastTick: body.lastTick || null, flights: body.flights };
     return { payload, live: true };
   } catch {
     // FIDS is unreachable — keep the board showing something rather than

@@ -1,9 +1,8 @@
 // Public flight-board endpoint — read-only.
 //
-// The Donegal FIDS pushes flight data straight to its own secret GitHub
-// Gist (via src/websiteSync.js in that project, using its own token). This
-// route just reads that gist back and re-serves it same-origin, so the
-// board's client-side JS never needs to know the gist exists at all.
+// Reads the Donegal FIDS's own public /api/flights directly (see
+// ../../lib/flightsStore.ts) and re-serves it same-origin, so the board's
+// client-side JS never needs to know the FIDS's URL exists at all.
 import type { APIRoute } from "astro";
 import { readFlights } from "../../lib/flightsStore";
 
