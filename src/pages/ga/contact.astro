@@ -290,6 +290,11 @@ const hours = await readHours();
       iconSize: [16, 16],
       iconAnchor: [8, 8],
     });
-    L.marker(coords, { icon, alt: "Aerfort Dhún na nGall" }).addTo(map);
+    // `alt` only reaches the marker's img element for image-based icons —
+    // this is a divIcon (a plain <div>, no <img>), so Leaflet silently
+    // drops it and the marker ends up with no accessible name at all
+    // (axe: aria-command-name). `title` sets a real title attribute on
+    // the marker element itself regardless of icon type.
+    L.marker(coords, { icon, title: "Aerfort Dhún na nGall" }).addTo(map);
   }
 </script>
