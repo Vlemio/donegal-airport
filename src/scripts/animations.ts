@@ -228,7 +228,12 @@ const SOLID_HEADER_PATHS = [
 
 function applyHeaderMode(): void {
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
-  const solid = SOLID_HEADER_PATHS.includes(path);
+  // The 404 page can't be listed by path — it renders at whatever broken
+  // URL the visitor actually hit, never literally "/404" in the browser's
+  // address bar — so it marks itself with data-solid-header instead. It has
+  // no hero photo/video, so the default transparent-over-hero white text
+  // was unreadable against its plain page background (axe: color-contrast).
+  const solid = SOLID_HEADER_PATHS.includes(path) || document.body.hasAttribute("data-solid-header");
   document.documentElement.toggleAttribute("data-transparent-header", !solid);
 }
 

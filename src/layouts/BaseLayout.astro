@@ -24,6 +24,12 @@ interface Props {
   /** Force noindex regardless of the sitewide pitch-preview flag below —
       for internal tool pages that must never appear in search results. */
   noindex?: boolean;
+  /** Pages with no hero photo/video at the top (e.g. 404, which renders at
+      whatever broken URL the visitor hit — never a path animations.ts's
+      SOLID_HEADER_PATHS could list) need the solid dark-text header instead
+      of the default transparent-over-hero white text. Server-rendered so
+      it's correct even before JS runs. */
+  solidHeader?: boolean;
 }
 
 const {
@@ -32,6 +38,7 @@ const {
   pageTheme = "",
   ogImage = "/og-default.png",
   noindex = false,
+  solidHeader = false,
 } = Astro.props;
 
 const locale: Locale = getLocale(Astro.url.pathname);
@@ -53,7 +60,10 @@ const SOLID_HEADER_PATHS = [
   "/ga/privacy", "/ga/safety", "/ga/security", "/ga/quality", "/ga/environmental", "/ga/language-policy", "/ga/terms",
 ];
 const pathNoTrailingSlash = Astro.url.pathname.replace(/\/+$/, "") || "/";
-const transparentHeader = !SOLID_HEADER_PATHS.includes(pathNoTrailingSlash);
+// The 404 page can't be listed by path (it renders at whatever broken URL
+// the visitor hit), so it opts in via the solidHeader prop instead — see
+// applyHeaderMode() in animations.ts for the client-side equivalent.
+const transparentHeader = !SOLID_HEADER_PATHS.includes(pathNoTrailingSlash) && !solidHeader;
 
 const siteName = t("site.name", locale);
 const siteDescription = description || t("site.description", locale);
@@ -251,7 +261,7 @@ const localeTag: Record<Locale, string> = {
     </noscript>
     <ClientRouter />
   </head>
-  <body class="flex min-h-screen flex-col bg-surface text-ink">
+  <body class="flex min-h-screen flex-col bg-surface text-ink" data-solid-header={solidHeader || undefined}>
     <Header locale={locale} />
     <main class="flex-1">
       <slot />
