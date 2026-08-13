@@ -11,47 +11,6 @@ const description = "Conas teacht anseo, páirceáil, cíos gluaisteán, tacsait
 const hours = await readHours();
 const cafeRows = groupCafeHours(hours.cafeHours, "ga");
 
-// Per-brand dark text overlay — see en/plan.astro for the full explanation.
-function relLuminance(hex: string): number {
-  const n = parseInt(hex.replace("#", ""), 16);
-  const [r, g, b] = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-  const f = (c: number) => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
-  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
-}
-function contrastVsWhite(hex: string): number {
-  return (1.05) / (relLuminance(hex) + 0.05);
-}
-function darkenHex(hex: string, pct: number): string {
-  return "#" + hex.replace("#", "").match(/../g)!
-    .map((h) => Math.round(parseInt(h, 16) * (1 - pct)).toString(16).padStart(2, "0"))
-    .join("");
-}
-function cardTextOverlay(hex: string): number {
-  if (contrastVsWhite(hex) >= 4.6) return 0;
-  for (let pct = 2; pct <= 50; pct += 2) {
-    if (contrastVsWhite(darkenHex(hex, pct / 100)) >= 4.6) return pct / 100;
-  }
-  return 0.5;
-}
-// The whole card's background — see en/plan.astro for the full explanation
-// (previously only the text half was darkened, leaving a visible two-tone
-// cut against the logo half's untouched brand colour).
-function cardBg(hex: string): string {
-  return darkenHex(hex, cardTextOverlay(hex));
-}
-
-// GoCar's brand green is light enough that clearing 4.5:1 for WHITE text
-// needed darkening it ~36% — see en/plan.astro for the full explanation.
-// Dark ink text on the unmodified brand colour clears contrast just as well
-// for a light colour like this one, so prefer that whenever it does.
-const CARD_INK = "#181d16"; // matches --color-ink
-function contrastVsInk(hex: string): number {
-  return (relLuminance(hex) + 0.05) / (relLuminance(CARD_INK) + 0.05);
-}
-function cardUsesDarkText(hex: string): boolean {
-  return contrastVsInk(hex) >= 4.6 && contrastVsInk(hex) > contrastVsWhite(hex);
-}
-
 const carHire = [
   {
     name: "Enterprise",
@@ -519,36 +478,32 @@ const busColumns = [
 
           <div class="mx-auto w-full max-w-7xl px-6">
             <div id="car-hire-grid" class="relative z-[2] grid gap-4 sm:grid-cols-2">
-              {carHire.map((c, i) => {
-                const dark = cardUsesDarkText(c.bg);
-                const bg = dark ? c.bg : cardBg(c.bg);
-                const textCls = dark ? "text-ink" : "text-white [text-shadow:0_1px_8px_rgba(0,0,0,.5)]";
-                return (
-                  <a
-                    href={c.website}
-                    target="_blank"
-                    rel="noopener"
-                    data-idx={i}
-                    class="ch-card relative flex items-stretch overflow-hidden rounded-xl md:opacity-0"
-                    style={`background-color:${bg};`}
-                  >
-                    {/* One flat colour across the whole card — see en/plan.astro. */}
-                    <div class="relative z-[2] flex flex-1 flex-col justify-between p-7">
-                      <ul class="space-y-0.5">
-                        {c.details.map((d) => (
-                          <li class={`text-sm leading-relaxed ${textCls}`}>{d}</li>
-                        ))}
-                      </ul>
-                      <p class={`mt-4 font-mono text-[0.74rem] font-bold uppercase tracking-[0.18em] ${textCls}`}>
-                        Cuir in áirithe anois ↗
-                      </p>
-                    </div>
-                    <div class="ch-card-logowrap flex shrink-0 basis-[36%] items-center justify-end p-4">
-                      <img src={c.logo} alt={c.name} class="max-h-[58%] max-w-full object-contain" loading="lazy" />
-                    </div>
-                  </a>
-                );
-              })}
+              {carHire.map((c, i) => (
+                <a
+                  href={c.website}
+                  target="_blank"
+                  rel="noopener"
+                  data-idx={i}
+                  class="ch-card relative flex items-stretch overflow-hidden rounded-xl md:opacity-0"
+                  style={`background-color:${c.bg};`}
+                >
+                  {/* Real brand colour, untouched, white text throughout —
+                      see en/plan.astro. */}
+                  <div class="relative z-[2] flex flex-1 flex-col justify-between p-7">
+                    <ul class="space-y-0.5">
+                      {c.details.map((d) => (
+                        <li class="text-sm leading-relaxed text-white [text-shadow:0_1px_8px_rgba(0,0,0,.5)]">{d}</li>
+                      ))}
+                    </ul>
+                    <p class="mt-4 font-mono text-[0.74rem] font-bold uppercase tracking-[0.18em] text-white [text-shadow:0_1px_8px_rgba(0,0,0,.5)]">
+                      Cuir in áirithe anois ↗
+                    </p>
+                  </div>
+                  <div class="ch-card-logowrap flex shrink-0 basis-[36%] items-center justify-end p-4">
+                    <img src={c.logo} alt={c.name} class="max-h-[58%] max-w-full object-contain" loading="lazy" />
+                  </div>
+                </a>
+              ))}
             </div>
           </div>
 
