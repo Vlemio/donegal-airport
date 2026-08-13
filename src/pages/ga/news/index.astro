@@ -76,6 +76,20 @@ const gridItems = all.slice(5);
       </div>
     </section>
 
+    {/* ===== NEWSLETTER — sits right above "Gach scéal" ===== */}
+    <section class="np-nl-sec">
+      <div class="np-inner">
+        <div class="np-grid-hd">
+          <div>
+            <p class="np-grid-eyebrow">Newsletter</p>
+            <h2 class="np-grid-hed">Fan ar an eolas.</h2>
+          </div>
+        </div>
+        <p class="np-nl-desc">Nuacht eitiltí, nuashonruithe bealaí agus tairiscintí — díreach chuig do bhosca isteach.</p>
+        <NewsletterForm locale="ga" variant="plain" hideHead />
+      </div>
+    </section>
+
     {/* ===== ALL STORIES GRID ===== */}
     <section class="np-grid-sec">
       <div class="np-inner">
@@ -101,13 +115,6 @@ const gridItems = all.slice(5);
           ))}
         </div>
 
-      </div>
-    </section>
-
-    {/* ===== NEWSLETTER ===== */}
-    <section class="np-nl-sec">
-      <div class="np-inner">
-        <NewsletterForm locale="ga" variant="card" />
       </div>
     </section>
 
@@ -269,7 +276,9 @@ const gridItems = all.slice(5);
     }
 
     /* ---- Newsletter section ---- */
-    .np-nl-sec { padding: 0 0 6rem; }
+    .np-nl-sec { padding: 3rem 0 4rem; }
+    .np-nl-sec .np-grid-hd { margin-bottom: 1rem; }
+    .np-nl-desc { margin: 0 0 1.6rem; max-width: 34rem; color: var(--color-mute); font-size: 0.95rem; }
     .np-grid-hd {
       display: flex;
       align-items: flex-end;
