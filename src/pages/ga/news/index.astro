@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import BaseLayout from "../../../layouts/BaseLayout.astro";
+import NewsletterForm from "../../../components/NewsletterForm.astro";
 export const prerender = true;
 
 const IRISH_MONTHS = [
@@ -100,6 +101,13 @@ const gridItems = all.slice(5);
           ))}
         </div>
 
+      </div>
+    </section>
+
+    {/* ===== NEWSLETTER ===== */}
+    <section class="np-nl-sec">
+      <div class="np-inner">
+        <NewsletterForm locale="ga" variant="card" />
       </div>
     </section>
 
@@ -259,6 +267,9 @@ const gridItems = all.slice(5);
     .np-grid-sec {
       padding: 4.5rem 0 6rem;
     }
+
+    /* ---- Newsletter section ---- */
+    .np-nl-sec { padding: 0 0 6rem; }
     .np-grid-hd {
       display: flex;
       align-items: flex-end;

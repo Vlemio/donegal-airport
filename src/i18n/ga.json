@@ -39,5 +39,19 @@
     "analytics": "Anailísíocht",
     "save": "Sábháil sainroghanna",
     "manage": "Socruithe fianán"
+  },
+  "newsletter": {
+    "heading": "Fan ar an eolas",
+    "description": "Nuacht eitiltí, nuashonruithe bealaí agus tairiscintí — díreach chuig do bhosca isteach.",
+    "emailPlaceholder": "tusa@riomhphost.com",
+    "consentBefore": "Aontaím ríomhphoist a fháil ó Aerfort Dhún na nGall agus glacaim leis an",
+    "consentLinkText": "mBeartas Príobháideachais",
+    "consentAfter": ".",
+    "submit": "Liostáil",
+    "submitting": "Ag liostáil…",
+    "success": "Go raibh maith agat — seiceáil do bhosca isteach chun do liostáil a dhearbhú.",
+    "error": "Tharla earráid. Bain triail eile as le do thoil.",
+    "invalidEmail": "Cuir isteach seoladh ríomhphoist bailí le do thoil.",
+    "consentRequired": "Glac leis chun leanúint ar aghaidh le do thoil."
   }
 }

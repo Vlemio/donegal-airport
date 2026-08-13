@@ -1,5 +1,6 @@
 ---
 import { t, type Locale, getLocale } from "../i18n";
+import NewsletterForm from "./NewsletterForm.astro";
 
 interface Props {
   locale?: Locale;
@@ -206,8 +207,12 @@ const marqueeItems = locale === "ga"
       </div>
     </div>
 
+    <div data-animate="fade-up" class="mt-16 border-t border-line pt-10">
+      <NewsletterForm locale={locale} variant="footer" />
+    </div>
+
     <div
-      class="mt-20 flex flex-col gap-3 border-t border-line pt-8 text-[0.7rem] uppercase tracking-[0.2em] text-mute sm:flex-row sm:items-start sm:justify-between"
+      class="mt-16 flex flex-col gap-3 border-t border-line pt-8 text-[0.7rem] uppercase tracking-[0.2em] text-mute sm:flex-row sm:items-start sm:justify-between"
     >
       {/* nowrap only from 340px up — below that (very old/small phones,
          e.g. 320px) even zero letter-spacing can't fit this line, so let

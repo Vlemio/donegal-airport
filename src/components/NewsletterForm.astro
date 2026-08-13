@@ -1,0 +1,224 @@
+---
+// Newsletter signup — posts to /api/newsletter-subscribe (Node, server-side),
+// which upserts the subscriber into Mailchimp with status_if_new: "pending".
+// Mailchimp then sends its own double opt-in confirmation email, which is
+// what actually creates a GDPR-valid, timestamped record of consent — this
+// form's checkbox is a second, defense-in-depth check, not the only one.
+//
+// Used in two places (Footer.astro on every page, and news/index.astro),
+// so styling is self-contained here (scoped <style>) and the wiring script
+// below queries *all* .newsletter-form elements on the page rather than
+// assuming there's only one.
+import { t, type Locale } from "../i18n";
+
+interface Props {
+  locale: Locale;
+  variant?: "footer" | "card";
+}
+
+const { locale, variant = "card" } = Astro.props;
+const prefix = locale === "ga" ? "/ga" : "";
+---
+
+<div class:list={["nf", `nf--${variant}`]} data-newsletter-form>
+  <div class="nf-head">
+    <p class="nf-heading">{t("newsletter.heading", locale)}</p>
+    <p class="nf-desc">{t("newsletter.description", locale)}</p>
+  </div>
+
+  <form
+    class="nf-form"
+    novalidate
+    data-submitting-label={t("newsletter.submitting", locale)}
+    data-invalid-email-msg={t("newsletter.invalidEmail", locale)}
+    data-consent-required-msg={t("newsletter.consentRequired", locale)}
+    data-success-msg={t("newsletter.success", locale)}
+    data-error-msg={t("newsletter.error", locale)}
+  >
+    <div class="nf-row">
+      <label class="nf-email-label">
+        <span class="sr-only">{t("newsletter.emailPlaceholder", locale)}</span>
+        <input
+          type="email"
+          name="email"
+          required
+          placeholder={t("newsletter.emailPlaceholder", locale)}
+          class="nf-input"
+          autocomplete="email"
+        />
+      </label>
+      {/* Honeypot — hidden from real visitors (off-screen, not display:none,
+          so screen readers + bots that check computed visibility both still
+          "see" it as a field, but a human never fills in a field they can't
+          see or tab to). Any value here means a bot filled the form. */}
+      <label class="nf-honeypot" aria-hidden="true" tabindex="-1">
+        Company
+        <input type="text" name="company" tabindex="-1" autocomplete="off" />
+      </label>
+      <button type="submit" class="nf-submit">{t("newsletter.submit", locale)}</button>
+    </div>
+
+    <label class="nf-consent">
+      <input type="checkbox" name="consent" required />
+      <span>
+        {t("newsletter.consentBefore", locale)}
+        {" "}<a href={`${prefix}/privacy`}>{t("newsletter.consentLinkText", locale)}</a>{t("newsletter.consentAfter", locale)}
+      </span>
+    </label>
+
+    <p class="nf-status" role="status" aria-live="polite"></p>
+  </form>
+</div>
+
+<style>
+  .nf { color: inherit; }
+  .nf-heading {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    color: var(--color-sand);
+  }
+  .nf-desc { margin-top: 0.4rem; font-size: 0.85rem; color: var(--color-mute); max-width: 32rem; }
+
+  .nf-form { margin-top: 1rem; }
+  .nf-row { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+  .nf-email-label { flex: 1 1 14rem; min-width: 0; }
+  .nf-input {
+    width: 100%;
+    padding: 0.7rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-line);
+    background: color-mix(in srgb, var(--color-ink) 3%, transparent);
+    color: var(--color-ink);
+    font-size: 0.85rem;
+  }
+  .nf-input::placeholder { color: var(--color-mute); }
+  .nf-input:focus-visible { outline: 2px solid var(--color-atlantic); outline-offset: 2px; }
+
+  .nf-honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+
+  .nf-submit {
+    flex: 0 0 auto;
+    padding: 0.7rem 1.5rem;
+    border-radius: 999px;
+    background: var(--color-atlantic);
+    color: var(--color-atlantic-ink, #fff);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    transition: background-color 0.15s ease;
+    cursor: pointer;
+    border: none;
+  }
+  .nf-submit:hover { background: var(--color-ink); }
+  .nf-submit:disabled { opacity: 0.6; cursor: default; }
+
+  .nf-consent {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    font-size: 0.72rem;
+    line-height: 1.4;
+    color: var(--color-mute);
+    max-width: 34rem;
+  }
+  .nf-consent input { margin-top: 0.2rem; flex: 0 0 auto; }
+  .nf-consent a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+  .nf-consent a:hover { color: var(--color-atlantic); }
+
+  .nf-status { margin-top: 0.6rem; font-size: 0.78rem; min-height: 1.1em; }
+  .nf-status[data-tone="ok"] { color: var(--color-atlantic); }
+  .nf-status[data-tone="error"] { color: #c0392b; }
+
+  /* Footer variant: horizontal band, sits inside the dark footer already
+     styled by Footer.astro — just widen the row on larger screens. */
+  .nf--footer .nf-row { max-width: 34rem; }
+
+  /* Card variant (news page): boxed, matches the site's bordered card
+     pattern used elsewhere (pilots.astro runway box, ops-panel, etc). */
+  .nf--card {
+    border: 1px solid var(--color-line);
+    border-radius: 1rem;
+    padding: 1.75rem 2rem;
+    background: color-mix(in srgb, var(--color-atlantic) 4%, var(--color-surface));
+  }
+</style>
+
+<script>
+  // Registered on astro:page-load (not a bare top-level call) — this
+  // component can appear on every page via Footer.astro, and Astro's View
+  // Transitions can morph/keep the same footer DOM across a client-side
+  // nav rather than replacing it, so re-running init() must not re-attach
+  // a second submit listener to a form that's already wired (see the
+  // /flights row-duplication bug this same pattern caused elsewhere on
+  // this site — same root cause, same fix: a per-element "wired" guard).
+  document.addEventListener("astro:page-load", init);
+
+  function init() {
+    var forms = document.querySelectorAll<HTMLFormElement>("[data-newsletter-form] .nf-form");
+    forms.forEach(wireForm);
+  }
+
+  function wireForm(form: HTMLFormElement) {
+    if (form.dataset.wired === "1") return;
+    form.dataset.wired = "1";
+
+    var status = form.querySelector<HTMLElement>(".nf-status");
+    var submit = form.querySelector<HTMLButtonElement>(".nf-submit");
+    var submitLabel = submit ? submit.textContent || "" : "";
+    var submittingLabel = form.dataset.submittingLabel || submitLabel;
+
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      var data = new FormData(form);
+      var email = String(data.get("email") || "").trim();
+      var consent = form.querySelector<HTMLInputElement>('input[name="consent"]');
+      var honeypot = String(data.get("company") || "");
+
+      function setStatus(text: string, tone: "ok" | "error" | "") {
+        if (!status) return;
+        status.textContent = text;
+        if (tone) status.setAttribute("data-tone", tone);
+        else status.removeAttribute("data-tone");
+      }
+
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        setStatus(form.dataset.invalidEmailMsg || "Please enter a valid email address.", "error");
+        return;
+      }
+      if (!consent || !consent.checked) {
+        setStatus(form.dataset.consentRequiredMsg || "Please accept to continue.", "error");
+        return;
+      }
+
+      if (submit) { submit.disabled = true; submit.textContent = submittingLabel; }
+      setStatus("", "");
+
+      fetch("/api/newsletter-subscribe", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email: email, consent: true, company: honeypot }),
+      })
+        .then(function (r) { return r.json().then(function (b) { return { ok: r.ok, body: b }; }); })
+        .then(function (res) {
+          if (res.ok && res.body && res.body.ok) {
+            setStatus(form.dataset.successMsg || "Thanks — check your inbox to confirm your subscription.", "ok");
+            form.reset();
+          } else {
+            setStatus(form.dataset.errorMsg || "Something went wrong. Please try again.", "error");
+          }
+        })
+        .catch(function () {
+          setStatus(form.dataset.errorMsg || "Something went wrong. Please try again.", "error");
+        })
+        .finally(function () {
+          if (submit) { submit.disabled = false; submit.textContent = submitLabel; }
+        });
+    });
+  }
+</script>

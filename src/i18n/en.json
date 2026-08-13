@@ -39,5 +39,19 @@
     "analytics": "Analytics",
     "save": "Save preferences",
     "manage": "Cookie settings"
+  },
+  "newsletter": {
+    "heading": "Stay in the loop",
+    "description": "Flight news, route updates and offers — straight to your inbox.",
+    "emailPlaceholder": "you@email.com",
+    "consentBefore": "I agree to receive emails from Donegal Airport and accept the",
+    "consentLinkText": "Privacy Policy",
+    "consentAfter": ".",
+    "submit": "Subscribe",
+    "submitting": "Subscribing…",
+    "success": "Thanks — check your inbox to confirm your subscription.",
+    "error": "Something went wrong. Please try again.",
+    "invalidEmail": "Please enter a valid email address.",
+    "consentRequired": "Please accept to continue."
   }
 }
