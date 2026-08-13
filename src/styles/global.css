@@ -38,6 +38,13 @@
   --font-sans: "Switzer", "Inter Variable", ui-sans-serif, system-ui,
     sans-serif;
   --font-mono: "Space Mono", ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+  /* For digit-heavy content only (phone numbers, times, frequencies, fees)
+     — Space Mono's "0" has a dot through the middle, which reads fine in an
+     uppercase label but looks wrong in a number. Xanh Mono's "0" is a plain
+     empty oval (verified by rendering it to a canvas and sampling the
+     glyph's own centre for ink — 0% at every weight tested, vs. ~30% for
+     Space Mono's dot). Generates the `font-mono-num` utility class. */
+  --font-mono-num: "Xanh Mono", ui-monospace, Menlo, monospace;
 
   /* Surfaces — bleached limestone / coastal white */
   --color-surface:    #f3f2ee;
@@ -311,7 +318,9 @@
   gap: 4rem;
   width: max-content;
   animation: marquee 38s linear infinite;
-  font-family: var(--font-mono);
+  /* Mostly labels, but also flight numbers/elevation/runway length figures
+     — see --font-mono-num above. */
+  font-family: var(--font-mono-num);
 }
 .marquee:hover .marquee-track,
 .marquee-track:focus-within {
@@ -487,10 +496,13 @@
 }
 .ops-board-row .b-time {
   grid-row: span 2;
-  /* Space Mono's "0" glyph has a dot through the middle by design — fine for
-     labels, but reads oddly in a HH:MM clock. Skip it for just this element
-     and fall straight to the system mono stack, which draws a plain zero. */
-  font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+  /* Space Mono's "0" glyph has a dot through the middle — reads oddly in a
+     HH:MM clock. The previous fix here fell back to a system-font stack
+     that isn't actually installed on Windows, so it silently cascaded to
+     Courier New's slashed zero instead — same problem, different mark.
+     --font-mono-num is a real, verified-clean webfont, not a fallback
+     gamble. */
+  font-family: var(--font-mono-num);
   font-size: 21px;
   color: var(--hi);
 }
@@ -502,7 +514,7 @@
 }
 .ops-board-row .b-flight {
   grid-column: 2;
-  font-family: var(--font-mono);
+  font-family: var(--font-mono-num);
   font-size: 10.5px;
   letter-spacing: 0.06em;
   color: var(--hi-faint);

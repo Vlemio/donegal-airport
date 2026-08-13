@@ -354,7 +354,7 @@ const busColumns = [
                   {tariffLeft.map((t) => (
                     <li class={`flex items-center justify-between py-1.5 ${t.best ? "text-white" : "text-white/80"}`}>
                       <span class={`text-sm ${t.best ? "font-semibold" : ""}`}>{t.d}</span>
-                      <span class={`font-mono text-sm ${t.best ? "font-semibold text-white" : "text-white/80"}`}>{t.p}</span>
+                      <span class={`font-mono-num text-sm ${t.best ? "font-semibold text-white" : "text-white/80"}`}>{t.p}</span>
                     </li>
                   ))}
                 </ul>
@@ -369,7 +369,7 @@ const busColumns = [
                           </span>
                         )}
                       </span>
-                      <span class={`font-mono text-sm ${t.best ? "font-semibold text-white" : "text-white/80"}`}>{t.p}</span>
+                      <span class={`font-mono-num text-sm ${t.best ? "font-semibold text-white" : "text-white/80"}`}>{t.p}</span>
                     </li>
                   ))}
                 </ul>
@@ -648,7 +648,7 @@ const busColumns = [
             <p class="text-base font-medium leading-snug text-ink transition-colors duration-300 group-hover:text-white">
               {t.name}
             </p>
-            <p class="mt-4 font-mono text-[0.8rem] uppercase tracking-[0.15em] text-sand transition-all duration-300 group-hover:text-[0.95rem] group-hover:text-white">
+            <p class="mt-4 font-mono-num text-[0.8rem] uppercase tracking-[0.15em] text-sand transition-all duration-300 group-hover:text-[0.95rem] group-hover:text-white">
               {t.phone}
             </p>
           </a>
@@ -677,7 +677,7 @@ const busColumns = [
                 {t.note}
               </p>
             )}
-            <p class="mt-4 font-mono text-[0.8rem] uppercase tracking-[0.15em] text-sand transition-all duration-300 group-hover:text-[0.95rem] group-hover:text-white">
+            <p class="mt-4 font-mono-num text-[0.8rem] uppercase tracking-[0.15em] text-sand transition-all duration-300 group-hover:text-[0.95rem] group-hover:text-white">
               {t.phone}
             </p>
           </a>
@@ -715,9 +715,9 @@ const busColumns = [
                   <div>
                     <p class="flex items-baseline gap-1.5">
                       <span class="text-base font-semibold text-ink">{leg.place}</span>
-                      <span class="font-mono text-[0.6rem] font-bold uppercase tracking-[0.1em] text-sand">{leg.route}</span>
+                      <span class="font-mono-num text-[0.6rem] font-bold uppercase tracking-[0.1em] text-sand">{leg.route}</span>
                     </p>
-                    <div class="mt-2 flex flex-col gap-1.5 font-mono text-base tabular-nums text-ink">
+                    <div class="mt-2 flex flex-col gap-1.5 font-mono-num text-base tabular-nums text-ink">
                       {leg.pairs.map((p) => (
                         <span class="whitespace-nowrap">
                           {p.dep} <span class="text-mute">→</span> {p.arr}{(p as any).demand ? <span class="text-sand">&sup1;</span> : p.ms && <span class="text-sand">*</span>}
@@ -743,11 +743,11 @@ const busColumns = [
           <div class="flex flex-col gap-4 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
             <div class="space-y-2 text-sm text-ink">
               <p>
-                <span class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.18em] text-atlantic">Route 966</span>
+                <span class="font-mono-num text-[0.82rem] font-bold uppercase tracking-[0.18em] text-atlantic">Route 966</span>
                 <span class="ml-2 text-mute">An Fál Carrach (Falcarragh) ↔ An Clochán Liath (Dungloe), via the airport</span>
               </p>
               <p>
-                <span class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.18em] text-atlantic">Route 992</span>
+                <span class="font-mono-num text-[0.82rem] font-bold uppercase tracking-[0.18em] text-atlantic">Route 992</span>
                 <span class="ml-2 text-mute">Crolly ↔ Dungloe, via the airport</span>
               </p>
             </div>
@@ -762,13 +762,13 @@ const busColumns = [
               </a>
               <a
                 href="tel:+353749741644"
-                class="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-mute transition-colors hover:text-ink"
+                class="font-mono-num text-[0.68rem] uppercase tracking-[0.18em] text-mute transition-colors hover:text-ink"
               >
                 074 974 1644
               </a>
               <a
                 href="mailto:donegal@locallink.ie"
-                class="font-mono text-[0.68rem] uppercase tracking-[0.18em] text-mute transition-colors hover:text-ink"
+                class="font-mono-num text-[0.68rem] uppercase tracking-[0.18em] text-mute transition-colors hover:text-ink"
               >
                 donegal@locallink.ie
               </a>
@@ -828,7 +828,7 @@ const busColumns = [
                   on those days. */}
               <div class="absolute bottom-[8%] left-[7%] z-10 space-y-0.5 font-mono text-[0.68rem] uppercase leading-snug tracking-[0.13em] text-[#6a5142]">
                 {cafeRows.map((row) => (
-                  <p>{row.days} <span class="font-bold text-[#905f2f]">{row.hours}</span></p>
+                  <p>{row.days} <span class="font-mono-num font-bold text-[#905f2f]">{row.hours}</span></p>
                 ))}
               </div>
 
@@ -852,7 +852,7 @@ const busColumns = [
               <h2 data-animate="fade-up" data-animate-delay="0.05" class="cafe-name mt-2 text-[clamp(1.9rem,8vw,2.6rem)] leading-[1.02] text-[#2b1a10]">The Airport Café</h2>
               <div data-animate="fade-up" data-animate-delay="0.1" class="mt-3 space-y-1 font-mono text-[0.68rem] uppercase tracking-[0.16em] text-[#6a5142]">
                 {cafeRows.map((row) => (
-                  <p>{row.days} <span class="font-bold text-[#905f2f]">{row.hours}</span></p>
+                  <p>{row.days} <span class="font-mono-num font-bold text-[#905f2f]">{row.hours}</span></p>
                 ))}
               </div>
               <div id="cafe-mobile-list" class="mt-8 divide-y divide-line border-y border-line">

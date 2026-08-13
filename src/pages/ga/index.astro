@@ -258,14 +258,14 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
             <div class="flex flex-col items-end gap-[3px]">
               <span
                 id="ops-clock"
-                class="font-mono text-[13.5px] tracking-[0.08em]"
+                class="font-mono-num text-[13.5px] tracking-[0.08em]"
                 style="color: var(--hi)"
               >
                 — — : — —
               </span>
               <span
                 id="ops-clock-utc"
-                class="font-mono text-[11.5px] tracking-[0.06em]"
+                class="font-mono-num text-[11.5px] tracking-[0.06em]"
                 style="color: var(--hi)"
               >
                 — — : — — <span style="opacity:0.75">UTC</span>
@@ -286,7 +286,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
               >{heroWeather.condition}</span>
             </div>
             <div
-              class="mt-[7px] flex items-baseline gap-[8px] font-mono text-[13px] tracking-[0.04em]"
+              class="mt-[7px] flex items-baseline gap-[8px] font-mono-num text-[13px] tracking-[0.04em]"
               style="color: var(--hi-soft)"
             >
               <span id="wx-wind">{heroWeather.windDir} {heroWeather.windKt} kt</span>
@@ -979,7 +979,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
     }
     .nc__date {
       margin: 1.3rem 0 0.7rem;
-      font-family: var(--font-mono);
+      font-family: var(--font-mono-num);
       font-size: 0.72rem;
       letter-spacing: 0.06em;
       color: var(--color-mute, #56605a);

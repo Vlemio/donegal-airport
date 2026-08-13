@@ -213,14 +213,14 @@ const droneZones = [
         {stats.map((s, i) => (
           <div class={`group bg-surface px-5 py-6 transition-colors duration-300 ${i % 2 === 0 ? "hover:bg-[var(--color-atlantic)]" : "hover:bg-[var(--color-sand)]"}`}>
             <p class="inline-block origin-left font-display text-[clamp(1.5rem,2.4vw,2rem)] leading-none text-ink transition-all duration-300 group-hover:scale-110 group-hover:text-white">{s.big}{s.unit && <span class="ml-0.5 font-mono text-[0.5em] font-medium tracking-tight">{s.unit}</span>}</p>
-            <p class="mt-2.5 whitespace-nowrap font-mono text-[0.72rem] uppercase tracking-[-0.02em] text-mute transition-colors duration-300 group-hover:text-white/80 sm:tracking-[0.14em]">{s.small}</p>
+            <p class="mt-2.5 whitespace-nowrap font-mono-num text-[0.72rem] uppercase tracking-[-0.02em] text-mute transition-colors duration-300 group-hover:text-white/80 sm:tracking-[0.14em]">{s.small}</p>
           </div>
         ))}
       </div>
 
       {/* Runway diagram — horizontal schematic, lengths to scale */}
       <div data-animate="fade-up" class="mt-12">
-        <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-sand">Runway 02 / 20</p>
+        <p class="font-mono-num text-[0.82rem] font-bold uppercase tracking-[0.2em] text-sand">Runway 02 / 20</p>
         <div class="mt-4 rounded-2xl border border-line bg-[color-mix(in_srgb,var(--color-atlantic)_4%,var(--color-surface))] px-10 py-6 sm:px-20 sm:py-8">
           {/* Aerodrome chart (Photoshop-edited AIP figure), rotated to read left-to-right
              on desktop. On mobile it's rotated again, in the browser, to a portrait
@@ -308,7 +308,7 @@ const droneZones = [
                           <span class="w-9 shrink-0 font-mono text-[0.7rem] font-bold text-ink">{it.key}</span>
                           <div class="relative h-6 flex-1 overflow-hidden rounded bg-[color-mix(in_srgb,var(--color-ink)_5%,transparent)]">
                             <div class="dd-fill flex h-full items-center justify-end rounded pr-2" style={`--w:${(v / DDMAX) * 100}%;background:${it.color}`}>
-                              <span class="font-mono text-[0.68rem] font-bold text-white">{v} m</span>
+                              <span class="font-mono-num text-[0.68rem] font-bold text-white">{v} m</span>
                             </div>
                           </div>
                         </div>
@@ -344,9 +344,9 @@ const droneZones = [
                 <p class="font-mono text-[0.72rem] font-bold uppercase tracking-[0.2em] text-sand">{season}</p>
                 <div class="mt-3 space-y-2">
                   {days.map((d) => (
-                    <div class="flex items-baseline justify-between gap-3 font-mono text-[0.72rem]">
-                      <span class="font-bold text-ink">{d.day}</span>
-                      <span class="text-mute">{d.blocks.map((b) => `${b[0]}–${b[1]}`).join("  ")}</span>
+                    <div class="flex items-baseline justify-between gap-3 text-[0.72rem]">
+                      <span class="font-mono font-bold text-ink">{d.day}</span>
+                      <span class="font-mono-num text-mute">{d.blocks.map((b) => `${b[0]}–${b[1]}`).join("  ")}</span>
                     </div>
                   ))}
                 </div>
@@ -374,8 +374,8 @@ const droneZones = [
             <dl class="mt-5 divide-y divide-line">
               {a.rows.map(([k, v]) => (
                 <div class="flex items-baseline justify-between gap-3 py-3 sm:gap-6">
-                  <dt class="shrink-0 font-mono text-[0.66rem] font-semibold uppercase tracking-[0.1em] text-[#414942]">{k}</dt>
-                  <dd class:list={[k === "Approach lgt" ? "text-left sm:text-right" : "text-right", "font-mono text-[0.82rem] text-ink", tightRows[k]]}>
+                  <dt class="shrink-0 font-mono-num text-[0.66rem] font-semibold uppercase tracking-[0.1em] text-[#414942]">{k}</dt>
+                  <dd class:list={[k === "Approach lgt" ? "text-left sm:text-right" : "text-right", "font-mono-num text-[0.82rem] text-ink", tightRows[k]]}>
                     {v.includes("\n") ? (
                       <>
                         {v.split("\n")[0]}
@@ -416,15 +416,15 @@ const droneZones = [
       <div data-animate="fade-up" class="mt-12 grid gap-px overflow-hidden rounded-xl bg-white/15 sm:grid-cols-3">
         <div class="group bg-black/35 p-7 transition-colors duration-300 hover:bg-black/50">
           <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">ATC</p>
-          <p class="mt-3 inline-block origin-left font-mono text-lg text-white transition-transform duration-300 group-hover:scale-110">+353 74 9548604</p>
+          <p class="mt-3 inline-block origin-left font-mono-num text-lg text-white transition-transform duration-300 group-hover:scale-110">+353 74 9548604</p>
         </div>
         <div class="group bg-black/35 p-7 transition-colors duration-300 hover:bg-black/50">
           <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">Email</p>
-          <a href="mailto:atc@donegalairport.ie" class="mt-3 inline-block origin-left font-mono text-lg text-white transition-transform duration-300 group-hover:scale-110 hover:underline">atc@donegalairport.ie</a>
+          <a href="mailto:atc@donegalairport.ie" class="mt-3 inline-block origin-left font-mono-num text-lg text-white transition-transform duration-300 group-hover:scale-110 hover:underline">atc@donegalairport.ie</a>
         </div>
         <div class="group bg-black/35 p-7 transition-colors duration-300 hover:bg-black/50">
           <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">ATIS</p>
-          <p class="mt-3 inline-block origin-left font-mono text-lg text-white transition-transform duration-300 group-hover:scale-110">129.930 MHz</p>
+          <p class="mt-3 inline-block origin-left font-mono-num text-lg text-white transition-transform duration-300 group-hover:scale-110">129.930 MHz</p>
           <p class="mt-1 font-mono text-sm text-white/70">Listen before first call</p>
         </div>
       </div>
@@ -467,7 +467,7 @@ const droneZones = [
                 return (
                   <div class="flex items-baseline justify-between gap-6 py-3">
                     <dt class="text-sm text-ink">{k}</dt>
-                    <dd class="text-right font-mono text-[0.82rem]">
+                    <dd class="text-right font-mono-num text-[0.82rem]">
                       {free ? (
                         <span class="font-bold uppercase text-[#2e7d5b]">{v}</span>
                       ) : m ? (
@@ -512,7 +512,7 @@ const droneZones = [
             <path class="uas-ring" data-zone="EIU70" style="--zc:#e0a81e" fill="#e0a81e" fill-opacity="0.18" fill-rule="evenodd" stroke="#e0a81e" stroke-width="1.5" d="M150 58 A92 92 0 1 1 150 242 A92 92 0 1 1 150 58 Z M150 112 A38 38 0 1 1 150 188 A38 38 0 1 1 150 112 Z" />
             <path class="uas-ring" data-zone="EIU69" style="--zc:#c0392b" fill="#c0392b" fill-opacity="0.2" stroke="#c0392b" stroke-width="1.5" d="M150 112 A38 38 0 1 1 150 188 A38 38 0 1 1 150 112 Z" />
             <circle cx="150" cy="150" r="3.5" fill="var(--color-ink)" pointer-events="none" />
-            <g id="uas-labels" pointer-events="none" font-family="var(--font-mono)" font-weight="700" text-anchor="middle">
+            <g id="uas-labels" pointer-events="none" font-family="var(--font-mono-num)" font-weight="700" text-anchor="middle">
               <text class="uas-label" data-l="g" x="157" y="41" font-size="11" fill="#3a7a48">EIU35 · 18.5 km</text>
               <text class="uas-label" data-l="a" x="155" y="94" font-size="10" fill="#a5731a">EIU70 · 11.8 km</text>
               <text class="uas-label" data-l="r1" x="151" y="135" font-size="11" fill="#c0392b">EIU69</text>
@@ -524,7 +524,7 @@ const droneZones = [
               <div class="uas-card flex gap-4 rounded-xl border border-line bg-surface p-5" data-zone={z.id} style={`--zc:${z.color}`} tabindex="0">
                 <span class="mt-1 h-3.5 w-3.5 shrink-0 rounded-full" style={`background:${z.color}`}></span>
                 <div>
-                  <p class="font-mono text-[0.7rem] font-bold uppercase tracking-[0.16em] text-ink">{z.id} <span class="text-mute">· {z.tag}</span></p>
+                  <p class="font-mono-num text-[0.7rem] font-bold uppercase tracking-[0.16em] text-ink">{z.id} <span class="text-mute">· {z.tag}</span></p>
                   <p class="mt-0.5 text-sm font-semibold text-ink">{z.cond}</p>
                   <p class="mt-1 text-sm leading-relaxed text-mute">{z.note}</p>
                 </div>
@@ -556,9 +556,9 @@ const droneZones = [
       <div data-animate="fade-up" class="mt-10 flex flex-col gap-6 border-t border-line pt-8 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-sand">Aerodrome reference point</p>
-          <p class="mt-2 font-mono text-sm text-ink">55°02′39″N 008°20′28″W</p>
+          <p class="mt-2 font-mono-num text-sm text-ink">55°02′39″N 008°20′28″W</p>
         </div>
-        <div class="flex flex-wrap gap-x-8 gap-y-3 font-mono text-[0.72rem] uppercase tracking-[0.16em]">
+        <div class="flex flex-wrap gap-x-8 gap-y-3 font-mono-num text-[0.72rem] uppercase tracking-[0.16em]">
           <a href="https://www.iaa.ie/general-aviation/drones/uas-geographic-zones" target="_blank" rel="noopener" class="text-atlantic hover:underline">IAA UAS zones ↗</a>
           <a href="mailto:atc@donegalairport.ie" class="text-atlantic hover:underline">atc@donegalairport.ie ↗</a>
         </div>
@@ -707,12 +707,12 @@ const droneZones = [
               const s = parseHM(b[0]), e = parseHM(b[1]);
               const left = (s - AX0) / SPAN * 100, width = (e - s) / SPAN * 100, mid = ((s + e) / 2 - AX0) / SPAN * 100;
               return `<div style="position:absolute;top:7px;height:22px;left:${left}%;width:${width}%;background:${fill};border-radius:8px;box-shadow:0 1px 2px rgba(0,0,0,.14)"></div>`
-                + `<div style="position:absolute;top:34px;left:${mid}%;transform:translateX(-50%);white-space:nowrap;font-family:var(--font-mono);font-size:10.5px;color:var(--color-mute)">${b[0]}–${b[1]}</div>`;
+                + `<div style="position:absolute;top:34px;left:${mid}%;transform:translateX(-50%);white-space:nowrap;font-family:var(--font-mono-num);font-size:10.5px;color:var(--color-mute)">${b[0]}–${b[1]}</div>`;
             }).join("");
             const showNow = isToday && nowMin >= AX0 && nowMin <= AX0 + SPAN;
             const nowPos = (nowMin - AX0) / SPAN * 100;
             const nowHtml = showNow
-              ? `<div style="position:absolute;top:2px;height:32px;width:2px;left:${nowPos}%;background:#b4462f;border-radius:2px;z-index:5"><div style="position:absolute;top:-15px;left:50%;transform:translateX(-50%);white-space:nowrap;font-family:var(--font-mono);font-size:9px;font-weight:600;letter-spacing:.06em;color:#b4462f">${pad2(now.getUTCHours()) + pad2(now.getUTCMinutes())}Z</div></div>`
+              ? `<div style="position:absolute;top:2px;height:32px;width:2px;left:${nowPos}%;background:#b4462f;border-radius:2px;z-index:5"><div style="position:absolute;top:-15px;left:50%;transform:translateX(-50%);white-space:nowrap;font-family:var(--font-mono-num);font-size:9px;font-weight:600;letter-spacing:.06em;color:#b4462f">${pad2(now.getUTCHours()) + pad2(now.getUTCMinutes())}Z</div></div>`
               : "";
             const todayTagStyle = isMobile
               ? "font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:#b4462f;white-space:nowrap"
@@ -730,7 +730,7 @@ const droneZones = [
 
           const ticksHtml = tickHours.map((h) => {
             const left = (h * 60 - AX0) / SPAN * 100;
-            return `<div style="position:absolute;top:5px;left:${left}%;transform:translateX(-50%);font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;color:var(--color-mute)">${pad2(h)}</div>`;
+            return `<div style="position:absolute;top:5px;left:${left}%;transform:translateX(-50%);font-family:var(--font-mono-num);font-size:10px;letter-spacing:.08em;color:var(--color-mute)">${pad2(h)}</div>`;
           }).join("");
 
           const btn = (label: string, on: boolean, col: string) =>
@@ -738,7 +738,7 @@ const droneZones = [
 
           const statusPill = `<div style="display:flex;align-items:center;gap:11px;background:var(--color-surface-lo);border:1px solid var(--color-line);border-radius:12px;padding:11px 16px">`
             + `<span style="position:relative;width:9px;height:9px;flex:0 0 auto">${open ? `<span style="position:absolute;inset:0;border-radius:50%;background:${statusCol};animation:pulseDot 2s ease-out infinite"></span>` : ""}<span style="position:absolute;inset:0;border-radius:50%;background:${statusCol}"></span></span>`
-            + `<div style="line-height:1.15"><div style="font-size:14px;font-weight:700;letter-spacing:-.01em;color:var(--color-ink)">${statusText}</div><div style="font-family:var(--font-mono);font-size:11px;color:var(--color-mute);margin-top:2px">${statusSub}</div></div></div>`;
+            + `<div style="line-height:1.15"><div style="font-size:14px;font-weight:700;letter-spacing:-.01em;color:var(--color-ink)">${statusText}</div><div style="font-family:var(--font-mono-num);font-size:11px;color:var(--color-mute);margin-top:2px">${statusSub}</div></div></div>`;
 
           const seasonNote = season === curSeason ? "Current schedule in effect" : "Preview — not in effect now";
           const noteCol = season === curSeason ? "var(--color-ink)" : "#b4462f";
@@ -809,8 +809,8 @@ const droneZones = [
             + `<p style="margin:0;font-family:var(--font-mono);font-size:13px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--color-atlantic)">Live weather · TAF</p>`
             + `</div>`
             + `<div>`
-            + `<p style="margin:0;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-mute)">TAF · valid ${fmtZ(taf.validTimeFrom)} – ${fmtZ(taf.validTimeTo)}</p>`
-            + `<p style="margin:12px 0 0;font-family:var(--font-mono);font-size:13px;line-height:1.6;color:var(--color-ink);word-break:break-word">${taf.rawTAF ? escapeHtml(taf.rawTAF) : "—"}</p>`
+            + `<p style="margin:0;font-family:var(--font-mono-num);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-mute)">TAF · valid ${fmtZ(taf.validTimeFrom)} – ${fmtZ(taf.validTimeTo)}</p>`
+            + `<p style="margin:12px 0 0;font-family:var(--font-mono-num);font-size:13px;line-height:1.6;color:var(--color-ink);word-break:break-word">${taf.rawTAF ? escapeHtml(taf.rawTAF) : "—"}</p>`
             + `</div>`;
         }
 
@@ -900,13 +900,13 @@ const droneZones = [
     .map-item { white-space: nowrap; z-index: 20; }
     /* Space Mono's "0" glyph has a dot through the middle — fine for prose,
        but every label on this runway map is a number (bearings, clearway
-       and threshold distances), so skip it and fall straight to the system
-       mono stack, which draws a plain zero. Targets .map-txt too: the
-       209m/129m threshold labels put Tailwind's font-mono directly on that
-       inner span rather than on .map-item, and a directly-matched
-       declaration always wins over one only inherited from a parent,
-       regardless of cascade order. Applied on both mobile and desktop. */
-    .map-item, .map-item .map-txt { font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace; }
+       and threshold distances) — see --font-mono-num in global.css.
+       Targets .map-txt too: the 209m/129m threshold labels put Tailwind's
+       font-mono directly on that inner span rather than on .map-item, and
+       a directly-matched declaration always wins over one only inherited
+       from a parent, regardless of cascade order. Applied on both mobile
+       and desktop. */
+    .map-item, .map-item .map-txt { font-family: var(--font-mono-num); }
     .uas-ring { transition: fill-opacity .2s ease, stroke-width .2s ease; cursor: pointer; }
     .uas-ring.is-hot { fill-opacity: .4; stroke-width: 4; }
     .uas-card { transition: background-color .2s ease, border-color .2s ease; outline: none; }

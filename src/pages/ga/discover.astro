@@ -425,7 +425,7 @@ const islands = [
                 />
               )}
               <div data-drag-overlay class="pointer-events-none absolute inset-0"></div>
-              <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono text-[0.6rem] text-white backdrop-blur-sm">
+              <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono-num text-[0.6rem] text-white backdrop-blur-sm">
                 {h.srcPos}
               </div>
               <figcaption class="pointer-events-none absolute bottom-3 left-4 font-mono text-[0.58rem] uppercase tracking-[0.2em] text-white" style="text-shadow:0 1px 6px rgba(0,0,0,0.85)">
@@ -505,7 +505,7 @@ const islands = [
                 {d.tagline}
               </p>
               <div data-drag-overlay class="pointer-events-none absolute inset-0"></div>
-              <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono text-[0.6rem] text-white backdrop-blur-sm">
+              <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono-num text-[0.6rem] text-white backdrop-blur-sm">
                 {d.srcPos}
               </div>
               <figcaption class="pointer-events-none absolute bottom-3 right-3 font-mono text-[0.52rem] uppercase tracking-[0.15em] text-white" style="text-shadow:0 1px 6px rgba(0,0,0,0.85)">
@@ -518,7 +518,7 @@ const islands = [
                 <h3 class="font-display text-[1.5rem] font-bold leading-tight">
                   {d.title}
                 </h3>
-                <p data-odometer class="mt-1 font-mono text-[0.65rem] uppercase tracking-[0.2em] text-mute">
+                <p data-odometer class="mt-1 font-mono-num text-[0.65rem] uppercase tracking-[0.2em] text-mute">
                   {d.drive}
                 </p>
               </div>
@@ -584,7 +584,7 @@ const islands = [
                     {a.tagline}
                   </p>
                   <div data-drag-overlay class="pointer-events-none absolute inset-0"></div>
-                  <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono text-[0.6rem] text-white backdrop-blur-sm"></div>
+                  <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono-num text-[0.6rem] text-white backdrop-blur-sm"></div>
                 </figure>
               </a>
             ) : (
@@ -611,7 +611,7 @@ const islands = [
                   {a.tagline}
                 </p>
                 <div data-drag-overlay class="pointer-events-none absolute inset-0"></div>
-                <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono text-[0.6rem] text-white backdrop-blur-sm"></div>
+                <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono-num text-[0.6rem] text-white backdrop-blur-sm"></div>
               </figure>
             )}
 
@@ -632,7 +632,7 @@ const islands = [
               <div class="mt-auto border-t border-line pt-3 min-h-[4rem] space-y-2.5">
                 {a.code === "01" ? (
                   <a href="#golf-panel" class="group/golf flex items-center justify-between gap-2">
-                    <span class="font-mono text-[0.72rem] tracking-[0.04em] text-ink/55 transition-colors group-hover/golf:text-atlantic">
+                    <span class="font-mono-num text-[0.72rem] tracking-[0.04em] text-ink/55 transition-colors group-hover/golf:text-atlantic">
                       10 gcúrsa craobhchomórtais
                     </span>
                     <span class="shrink-0 font-mono text-[0.7rem] text-atlantic/70">↓</span>
@@ -658,13 +658,13 @@ const islands = [
                         </span>
                       )}
                       {a.providers.length === 1 && (p.phone ? (
-                        <span class="block font-mono text-[0.68rem] tracking-[0.03em] text-mute/70 mt-0.5">
+                        <span class="block font-mono-num text-[0.68rem] tracking-[0.03em] text-mute/70 mt-0.5">
                           {p.phone}
                         </span>
                       ) : p.email ? (
                         <a
                           href={`mailto:${p.email}`}
-                          class="block font-mono text-[0.68rem] tracking-[0.03em] text-mute/70 hover:text-atlantic transition-colors mt-0.5"
+                          class="block font-mono-num text-[0.68rem] tracking-[0.03em] text-mute/70 hover:text-atlantic transition-colors mt-0.5"
                         >
                           {p.email}
                         </a>
@@ -693,14 +693,14 @@ const islands = [
       <div id="golf-panel" class="mt-14 scroll-mt-[calc(var(--header-h)+1rem)] border-t border-line">
         <div class="pt-12 pb-2 flex items-end justify-between gap-6">
           <div>
-            <p data-animate="fade-up" class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.26em] text-atlantic">
+            <p data-animate="fade-up" class="font-mono-num text-[0.82rem] font-bold uppercase tracking-[0.26em] text-atlantic">
               Galf · 10 gcúrsa craobhchomórtais
             </p>
             <h3 data-animate="fade-up" data-animate-delay="0.1" class="mt-3 font-display text-[clamp(1.6rem,3vw,2.6rem)] font-normal leading-[1.02]">
               Deich gcúrsa. Aon chontae amháin.
             </h3>
           </div>
-          <span id="golf-counter" class="font-mono text-[0.62rem] text-mute tabular-nums shrink-0">3 / {golfClubs.length}</span>
+          <span id="golf-counter" class="font-mono-num text-[0.62rem] text-mute tabular-nums shrink-0">3 / {golfClubs.length}</span>
         </div>
 
         <div data-animate="fade-up" data-animate-delay="0.22" class="mt-8 flex items-center gap-6">
@@ -730,11 +730,11 @@ const islands = [
                   </h4>
                   <a
                     href={`mailto:${c.contact}`}
-                    class="mt-2 block font-mono text-[0.72rem] tracking-[0.08em] text-atlantic transition-colors hover:text-ink"
+                    class="mt-2 block font-mono-num text-[0.72rem] tracking-[0.08em] text-atlantic transition-colors hover:text-ink"
                   >
                     {c.contact}
                   </a>
-                  <span class="block font-mono text-[0.72rem] tracking-[0.06em] text-mute/70 mt-0.5">
+                  <span class="block font-mono-num text-[0.72rem] tracking-[0.06em] text-mute/70 mt-0.5">
                     {c.phone}
                   </span>
                   {c.website && (
@@ -784,7 +784,7 @@ const islands = [
             Tá na hoileáin ag fanacht<br />leo siúd a thrasnaíonn.
           </h2>
         </div>
-        <span id="isl-counter" class="font-mono text-[0.62rem] text-mute tabular-nums shrink-0">
+        <span id="isl-counter" class="font-mono-num text-[0.62rem] text-mute tabular-nums shrink-0">
           4 / {islands.length}
         </span>
       </div>
@@ -817,7 +817,7 @@ const islands = [
                   )}
                   <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/75 via-ink/10 to-transparent"></div>
                   <div class="absolute bottom-5 left-5 right-4">
-                    <p class="font-mono text-[0.55rem] uppercase tracking-[0.22em] text-white/60">
+                    <p class="font-mono-num text-[0.55rem] uppercase tracking-[0.22em] text-white/60">
                       {isl.ferry}
                     </p>
                     <h3 class="mt-1 font-display text-[1.6rem] font-normal leading-tight text-white">
@@ -826,7 +826,7 @@ const islands = [
                     <p class="font-display text-[0.9rem] italic text-white/55">{isl.name}</p>
                   </div>
                   <div data-drag-overlay class="pointer-events-none absolute inset-0"></div>
-                  <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono text-[0.6rem] text-white backdrop-blur-sm">
+                  <div data-drag-readout class="pointer-events-none absolute left-3 top-3 hidden rounded bg-black/60 px-2 py-1 font-mono-num text-[0.6rem] text-white backdrop-blur-sm">
                     {isl.srcPos}
                   </div>
                   {isl.credit && isl.creditUrl && (
@@ -846,7 +846,7 @@ const islands = [
                   )}
                 </figure>
                 <div class="mt-4">
-                  <p class="font-mono text-[0.65rem] uppercase tracking-[0.2em] text-mute">
+                  <p class="font-mono-num text-[0.65rem] uppercase tracking-[0.2em] text-mute">
                     {isl.drive}
                   </p>
                   <p class="mt-2 text-[0.88rem] leading-relaxed text-mute">

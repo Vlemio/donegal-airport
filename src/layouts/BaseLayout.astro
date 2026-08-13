@@ -189,6 +189,19 @@ const localeTag: Record<Locale, string> = {
       href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap"
       rel="stylesheet"
     />
+    {/* Xanh Mono — used only where digits are the point (phone numbers,
+        times, frequencies, fees): Space Mono draws "0" with a dot through
+        the middle, fine for uppercase labels but reads oddly in a number.
+        Xanh Mono's "0" is a plain, empty oval — see --font-mono-num in
+        global.css and the .font-mono-num utility it generates. Only ships
+        as weight 400 (confirmed against Google's own stylesheet response —
+        no 700 file exists); anywhere that asks for bold gets the browser's
+        synthetic-bold fallback, a minor cosmetic tradeoff next to the
+        dotted zero it replaces. */}
+    <link
+      href="https://fonts.googleapis.com/css2?family=Xanh+Mono&display=swap"
+      rel="stylesheet"
+    />
     <link
       href="https://api.fontshare.com/v2/css?f[]=switzer@200,300,400,500,600,700,800,900&display=swap"
       rel="stylesheet"
