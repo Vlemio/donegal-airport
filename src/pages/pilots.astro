@@ -249,7 +249,7 @@ const droneZones = [
               <span class="map-counter-rotate rotate-[90deg] inline-block sm:rotate-0">203°</span>
             </span>
             {/* displaced-threshold dimension arrows — to scale, draggable as a unit */}
-            <span class="map-item absolute left-[8.8%] top-[81.9%] flex -translate-x-1/2 flex-col items-center gap-0.5" style="width:12.1%">
+            <span class="map-item absolute left-[8.8%] top-[90.5%] flex -translate-x-1/2 flex-col items-center gap-0.5 sm:left-[8.8%] sm:top-[81.9%]" style="width:12.1%">
               <svg class="w-full" viewBox="0 0 200 24" preserveAspectRatio="none" style="height:11px" fill="none" aria-hidden="true">
                 <g stroke="var(--color-atlantic)" stroke-width="1.6" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="2" y1="2" x2="2" y2="22" /><line x1="198" y1="2" x2="198" y2="22" />
@@ -259,7 +259,7 @@ const droneZones = [
               </svg>
               <span class="map-txt map-counter-rotate rotate-[90deg] font-mono text-[0.58rem] font-bold uppercase tracking-[0.06em] text-atlantic sm:rotate-0 sm:text-[0.7rem]">209 m</span>
             </span>
-            <span class="map-item absolute left-[86.1%] top-[87.04%] flex -translate-x-1/2 flex-col items-center gap-0.5 sm:left-[86.2%] sm:top-[60.3%]" style="width:7.5%">
+            <span class="map-item absolute left-[86.1%] top-[95.6%] flex -translate-x-1/2 flex-col items-center gap-0.5 sm:left-[86.2%] sm:top-[60.3%]" style="width:7.5%">
               <svg class="w-full" viewBox="0 0 200 24" preserveAspectRatio="none" style="height:11px" fill="none" aria-hidden="true">
                 <g stroke="var(--color-atlantic)" stroke-width="1.6" vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round">
                   <line x1="2" y1="2" x2="2" y2="22" /><line x1="198" y1="2" x2="198" y2="22" />
@@ -270,8 +270,8 @@ const droneZones = [
               <span class="map-txt map-counter-rotate rotate-[90deg] font-mono text-[0.58rem] font-bold uppercase tracking-[0.06em] text-atlantic sm:rotate-0 sm:text-[0.7rem]">129 m</span>
             </span>
             {/* clearways */}
-            <span class="map-item absolute left-[90.13%] top-[-58.99%] -translate-x-1/2 font-mono text-[0.58rem] font-bold uppercase tracking-[0.08em] text-atlantic sm:left-[90.6%] sm:top-[5.3%] sm:text-[0.68rem]"><span class="map-txt map-counter-rotate rotate-[90deg] inline-block sm:rotate-0">CWY 279 m × 150 m</span></span>
-            <span class="map-item absolute left-[10.22%] top-[-59.08%] -translate-x-1/2 font-mono text-[0.58rem] font-bold uppercase tracking-[0.08em] text-atlantic sm:left-[10.5%] sm:top-[2.4%] sm:text-[0.68rem]"><span class="map-txt map-counter-rotate rotate-[90deg] inline-block sm:rotate-0">CWY 74 m × 150 m</span></span>
+            <span class="map-item absolute left-[90.13%] top-[-90%] -translate-x-1/2 font-mono text-[0.58rem] font-bold uppercase tracking-[0.08em] text-atlantic sm:left-[90.6%] sm:top-[5.3%] sm:text-[0.68rem]"><span class="map-txt map-counter-rotate rotate-[90deg] inline-block sm:rotate-0">CWY 279 m × 150 m</span></span>
+            <span class="map-item absolute left-[10.22%] top-[-87%] -translate-x-1/2 font-mono text-[0.58rem] font-bold uppercase tracking-[0.08em] text-atlantic sm:left-[10.5%] sm:top-[2.4%] sm:text-[0.68rem]"><span class="map-txt map-counter-rotate rotate-[90deg] inline-block sm:rotate-0">CWY 74 m × 150 m</span></span>
           </div>
           </div>
 
@@ -898,6 +898,15 @@ const droneZones = [
     .hero-display :global(.f-fix) { font-size: 0.91em; }
     [data-nav-link].is-active { border-color: var(--color-atlantic); color: var(--color-ink); }
     .map-item { white-space: nowrap; z-index: 20; }
+    /* Space Mono's "0" glyph has a dot through the middle — fine for prose,
+       but every label on this runway map is a number (bearings, clearway
+       and threshold distances), so skip it and fall straight to the system
+       mono stack, which draws a plain zero. Targets .map-txt too: the
+       209m/129m threshold labels put Tailwind's font-mono directly on that
+       inner span rather than on .map-item, and a directly-matched
+       declaration always wins over one only inherited from a parent,
+       regardless of cascade order. Applied on both mobile and desktop. */
+    .map-item, .map-item .map-txt { font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace; }
     .uas-ring { transition: fill-opacity .2s ease, stroke-width .2s ease; cursor: pointer; }
     .uas-ring.is-hot { fill-opacity: .4; stroke-width: 4; }
     .uas-card { transition: background-color .2s ease, border-color .2s ease; outline: none; }
