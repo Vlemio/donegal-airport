@@ -758,17 +758,23 @@ const busColumns = [
                 lg:order-none restores its natural first-column position once
                 the lg: grid-cols kicks in. */}
             <div class="relative order-2 mx-auto aspect-[9/16] w-full max-w-[340px] overflow-hidden shadow-[0_34px_64px_-28px_rgba(0,0,0,0.55)] lg:order-none lg:mx-0 lg:aspect-auto lg:h-full lg:max-w-none lg:shadow-none">
+              {/* No `autoplay`/`<source>` here on purpose — `autoplay` makes
+                  the browser fetch the whole 3.5 MB file the moment the page
+                  loads, even though this section sits well below the fold
+                  (it was the single biggest thing on this page's Lighthouse
+                  Performance report, ~3.5 MB of a ~3.6 MB total). JS below
+                  assigns the real src and calls play() once the video is
+                  about to scroll into view instead. */}
               <video
                 id="cafe-video"
                 class="h-full w-full object-cover"
-                autoplay
                 muted
                 loop
                 playsinline
-                preload="metadata"
+                preload="none"
                 poster="/photos/plan/cafe-video-poster.jpg"
+                data-src="/photos/plan/cafe-video.mp4"
               >
-                <source src="/photos/plan/cafe-video.mp4" type="video/mp4" />
               </video>
             </div>
 
@@ -1057,20 +1063,31 @@ const busColumns = [
     window.addEventListener("resize", () => { if (open) panel.style.maxHeight = panel.scrollHeight + "px"; });
   }
 
-  // The `autoplay` attribute alone silently fails on some mobile browsers
-  // (iOS Low Power Mode, or the page not yet counted as "engaged" at the
-  // moment the video would start) with no error and no visual sign why —
-  // it just sits on the poster frame. Re-attempt .play() once the element
-  // is actually in view; still muted, so it stays within autoplay policy.
+  // No `src` in the markup (see the video tag) so the 3.5 MB file is never
+  // fetched until this section is about to scroll into view — rootMargin
+  // starts the fetch a little early so playback is already running by the
+  // time the poster would otherwise be visible. Once loaded, the same
+  // IntersectionObserver keeps re-attempting .play() — the `autoplay`
+  // attribute alone silently fails on some mobile browsers (iOS Low Power
+  // Mode, or the page not yet counted as "engaged") with no error and no
+  // visual sign why, it just sits on the poster frame — still muted, so
+  // this stays within autoplay policy.
   function initCafeVideo() {
     const video = document.getElementById("cafe-video");
     if (!video || !(video instanceof HTMLVideoElement)) return;
-    if (!video.paused) return;
 
-    const tryPlay = () => { video.play().catch(() => {}); };
+    let loaded = false;
+    const tryPlay = () => {
+      if (!loaded) {
+        loaded = true;
+        video.src = video.dataset.src || "";
+        video.load();
+      }
+      video.play().catch(() => {});
+    };
     const obs = new IntersectionObserver((entries) => {
       entries.forEach((e) => { if (e.isIntersecting) tryPlay(); });
-    }, { threshold: 0.25 });
+    }, { threshold: 0.25, rootMargin: "200px 0px" });
     obs.observe(video);
   }
 
