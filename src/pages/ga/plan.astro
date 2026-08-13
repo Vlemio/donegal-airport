@@ -21,15 +21,23 @@ function relLuminance(hex: string): number {
 function contrastVsWhite(hex: string): number {
   return (1.05) / (relLuminance(hex) + 0.05);
 }
+function darkenHex(hex: string, pct: number): string {
+  return "#" + hex.replace("#", "").match(/../g)!
+    .map((h) => Math.round(parseInt(h, 16) * (1 - pct)).toString(16).padStart(2, "0"))
+    .join("");
+}
 function cardTextOverlay(hex: string): number {
   if (contrastVsWhite(hex) >= 4.6) return 0;
   for (let pct = 2; pct <= 50; pct += 2) {
-    const darkened = hex.replace("#", "").match(/../g)!
-      .map((h) => Math.round(parseInt(h, 16) * (1 - pct / 100)).toString(16).padStart(2, "0"))
-      .join("");
-    if (contrastVsWhite("#" + darkened) >= 4.6) return pct / 100;
+    if (contrastVsWhite(darkenHex(hex, pct / 100)) >= 4.6) return pct / 100;
   }
   return 0.5;
+}
+// The whole card's background — see en/plan.astro for the full explanation
+// (previously only the text half was darkened, leaving a visible two-tone
+// cut against the logo half's untouched brand colour).
+function cardBg(hex: string): string {
+  return darkenHex(hex, cardTextOverlay(hex));
 }
 
 const carHire = [
@@ -506,13 +514,10 @@ const busColumns = [
                   rel="noopener"
                   data-idx={i}
                   class="ch-card relative flex items-stretch overflow-hidden rounded-xl md:opacity-0"
-                  style={`background-color:${c.bg};`}
+                  style={`background-color:${cardBg(c.bg)};`}
                 >
-                  {/* Per-brand overlay — see en/plan.astro. */}
-                  <div
-                    class="relative z-[2] flex flex-1 flex-col justify-between p-7"
-                    style={`background-color: rgba(0,0,0,${cardTextOverlay(c.bg)});`}
-                  >
+                  {/* One flat colour across the whole card — see en/plan.astro. */}
+                  <div class="relative z-[2] flex flex-1 flex-col justify-between p-7">
                     <ul class="space-y-0.5">
                       {c.details.map((d) => (
                         <li class="text-sm leading-relaxed text-white [text-shadow:0_1px_8px_rgba(0,0,0,.5)]">{d}</li>
