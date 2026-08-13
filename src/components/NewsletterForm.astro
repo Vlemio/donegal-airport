@@ -13,24 +13,18 @@ import { t, type Locale } from "../i18n";
 
 interface Props {
   locale: Locale;
-  variant?: "footer" | "card" | "plain";
-  // Skip the form's own heading/description — for pages that already render
-  // their own section title above the form (e.g. /news's "Newsletter"
-  // eyebrow + heading), so the copy isn't duplicated.
-  hideHead?: boolean;
+  variant?: "footer" | "card";
 }
 
-const { locale, variant = "card", hideHead = false } = Astro.props;
+const { locale, variant = "card" } = Astro.props;
 const prefix = locale === "ga" ? "/ga" : "";
 ---
 
 <div class:list={["nf", `nf--${variant}`]} data-newsletter-form>
-  {!hideHead && (
-    <div class="nf-head">
-      <p class="nf-heading">{t("newsletter.heading", locale)}</p>
-      <p class="nf-desc">{t("newsletter.description", locale)}</p>
-    </div>
-  )}
+  <div class="nf-head">
+    <p class="nf-heading">{t("newsletter.heading", locale)}</p>
+    <p class="nf-desc">{t("newsletter.description", locale)}</p>
+  </div>
 
   <form
     class="nf-form"
@@ -153,11 +147,6 @@ const prefix = locale === "ga" ? "/ga" : "";
     padding: 1.75rem 2rem;
     background: color-mix(in srgb, var(--color-atlantic) 4%, var(--color-surface));
   }
-
-  /* Plain variant: no box — for a page that already frames the form with
-     its own section eyebrow/heading (e.g. /news), so the form only needs
-     to supply the input row + consent line. */
-  .nf--plain .nf-row { max-width: 30rem; }
 </style>
 
 <script>
