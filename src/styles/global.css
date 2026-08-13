@@ -487,7 +487,10 @@
 }
 .ops-board-row .b-time {
   grid-row: span 2;
-  font-family: var(--font-mono);
+  /* Space Mono's "0" glyph has a dot through the middle by design — fine for
+     labels, but reads oddly in a HH:MM clock. Skip it for just this element
+     and fall straight to the system mono stack, which draws a plain zero. */
+  font-family: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
   font-size: 21px;
   color: var(--hi);
 }
