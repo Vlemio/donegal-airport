@@ -41,6 +41,7 @@
     "manage": "Socruithe fianán"
   },
   "newsletter": {
+    "eyebrow": "Newsletter",
     "heading": "Fan ar an eolas",
     "description": "Nuacht eitiltí, nuashonruithe bealaí agus tairiscintí — díreach chuig do bhosca isteach.",
     "emailPlaceholder": "tusa@riomhphost.com",

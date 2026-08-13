@@ -22,6 +22,7 @@ const prefix = locale === "ga" ? "/ga" : "";
 
 <div class:list={["nf", `nf--${variant}`]} data-newsletter-form>
   <div class="nf-head">
+    <p class="nf-eyebrow">{t("newsletter.eyebrow", locale)}</p>
     <p class="nf-heading">{t("newsletter.heading", locale)}</p>
     <p class="nf-desc">{t("newsletter.description", locale)}</p>
   </div>
@@ -72,15 +73,22 @@ const prefix = locale === "ga" ? "/ga" : "";
 
 <style>
   .nf { color: inherit; }
-  .nf-heading {
+  .nf-eyebrow {
     font-family: var(--font-mono);
-    font-size: 0.68rem;
+    font-size: 0.64rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.22em;
     color: var(--color-sand);
   }
-  .nf-desc { margin-top: 0.4rem; font-size: 0.85rem; color: var(--color-mute); max-width: 32rem; }
+  .nf-heading {
+    margin-top: 0.3rem;
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    line-height: 1.15;
+    color: inherit;
+  }
+  .nf-desc { margin-top: 0.35rem; font-size: 0.85rem; color: var(--color-mute); max-width: 32rem; }
 
   .nf-form { margin-top: 1rem; }
   .nf-row { display: flex; flex-wrap: wrap; gap: 0.6rem; }

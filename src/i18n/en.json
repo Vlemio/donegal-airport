@@ -41,6 +41,7 @@
     "manage": "Cookie settings"
   },
   "newsletter": {
+    "eyebrow": "Newsletter",
     "heading": "Stay in the loop",
     "description": "Flight news, route updates and offers — straight to your inbox.",
     "emailPlaceholder": "you@email.com",
