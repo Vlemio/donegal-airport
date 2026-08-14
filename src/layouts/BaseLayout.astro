@@ -30,6 +30,12 @@ interface Props {
       of the default transparent-over-hero white text. Server-rendered so
       it's correct even before JS runs. */
   solidHeader?: boolean;
+  /** Path (relative to /public) of this page's LCP image — its full-bleed
+      hero photo, when it has one. fetchpriority="high" on the <img> itself
+      already tells the browser to prioritise it once discovered, but a
+      <link rel="preload"> here lets the preload scanner find it in <head>,
+      before it would otherwise reach that <img> tag further down the page. */
+  preloadImage?: string;
 }
 
 const {
@@ -39,6 +45,7 @@ const {
   ogImage = "/og-default.png",
   noindex = false,
   solidHeader = false,
+  preloadImage,
 } = Astro.props;
 
 const locale: Locale = getLocale(Astro.url.pathname);
@@ -230,6 +237,9 @@ const localeTag: Record<Locale, string> = {
       <link href="https://fonts.googleapis.com/css2?family=Chivo+Mono:wght@400;700&display=swap" rel="stylesheet" />
       <link href="https://api.fontshare.com/v2/css?f[]=switzer@200,300,400,500,600,700,800,900&display=swap" rel="stylesheet" />
     </noscript>
+    {preloadImage && (
+      <link rel="preload" as="image" href={preloadImage} fetchpriority="high" />
+    )}
     <title>{title}</title>
     {siteDescription && <meta name="description" content={siteDescription} />}
     <link rel="canonical" href={canonical} />
