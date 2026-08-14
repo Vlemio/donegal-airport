@@ -171,10 +171,6 @@ const localeTag: Record<Locale, string> = {
     {/* Playfair Display — used for the café-menu names on /plan */}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,500;1,600&display=swap"
-      rel="stylesheet"
-    />
     {/* Space Mono + Switzer — used site-wide, previously loaded via @import
         inside global.css. A runtime @import for an external URL isn't
         inlined at build time, so the browser had to download and start
@@ -185,9 +181,28 @@ const localeTag: Record<Locale, string> = {
         everything else instead of after it. */}
     <link rel="preconnect" href="https://api.fontshare.com" />
     <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin />
+    {/* All four font stylesheets below use the media="print" trick: a
+        <link rel="stylesheet"> for a non-matching media type still fetches
+        (at a normal priority the preload scanner picks up immediately) but
+        does NOT block rendering, since the browser only needs it before
+        paint if it currently applies. onload flips media to "all" once it's
+        in, applying the real fonts — font-display:swap in each of these
+        Google/Fontshare stylesheets means text already painted in the
+        fallback font swaps to the web font, same as it always would once
+        the font file itself loads. <noscript> covers JS-disabled visitors,
+        who'd otherwise never get the "all" swap. Flagged by Lighthouse as
+        "Eliminate render-blocking resources" — these were it. */}
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,500;1,600&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
     <link
       href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap"
       rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
     />
     {/* Chivo Mono — used only where digits are the point (phone numbers,
         times, frequencies, fees): Space Mono draws "0" with a dot through
@@ -200,11 +215,21 @@ const localeTag: Record<Locale, string> = {
     <link
       href="https://fonts.googleapis.com/css2?family=Chivo+Mono:wght@400;700&display=swap"
       rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
     />
     <link
       href="https://api.fontshare.com/v2/css?f[]=switzer@200,300,400,500,600,700,800,900&display=swap"
       rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
     />
+    <noscript>
+      <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;1,500;1,600&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Chivo+Mono:wght@400;700&display=swap" rel="stylesheet" />
+      <link href="https://api.fontshare.com/v2/css?f[]=switzer@200,300,400,500,600,700,800,900&display=swap" rel="stylesheet" />
+    </noscript>
     <title>{title}</title>
     {siteDescription && <meta name="description" content={siteDescription} />}
     <link rel="canonical" href={canonical} />
