@@ -19,7 +19,7 @@ const carHire = [
     website: "https://www.enterprise.ie/en/car-hire-locations/ie/donegal-airport-i128.html",
     bg: "#089759",
     logo: "/photos/plan/cars/logo-enterprise-white.png",
-    car: "/photos/plan/cars/car-enterprise.png",
+    car: "/photos/plan/cars/car-enterprise.webp",
     roof: "/photos/plan/cars/logo-enterprise-white.png",
     side: "left", logoW: 54, logoLeft: 44,
     // Mobile-only card layout, tuned via /plan?edit (see initCarHireEditor).
@@ -31,7 +31,7 @@ const carHire = [
     website: "https://letterkenny.kellystoyota.com/car-rentals-at-kellys-toyota",
     bg: "#E62334",
     logo: "/photos/plan/cars/logo-yuko-decal.png",
-    car: "/photos/plan/cars/car-yuko.png",
+    car: "/photos/plan/cars/car-yuko.webp",
     roof: "/photos/plan/cars/logo-yuko-decal.png",
     side: "right", logoW: 38, logoLeft: 56,
     cardH: 230, logoPct: 37,
@@ -42,7 +42,7 @@ const carHire = [
     website: "https://www.europcar.ie/en-ie/places/car-rental-ireland/carrickfinn/donegal-airport",
     bg: "#009B01",
     logo: "/photos/plan/cars/logo-europcar-white.png",
-    car: "/photos/plan/cars/car-europcar.png",
+    car: "/photos/plan/cars/car-europcar.webp",
     roof: "/photos/plan/cars/logo-europcar-white.png",
     side: "left", logoW: 44, logoLeft: 43,
     cardH: 230, logoPct: 10,
@@ -53,7 +53,7 @@ const carHire = [
     website: "https://www.gocar.ie/",
     bg: "#8DC73F",
     logo: "/photos/plan/cars/logo-gocar-white.png",
-    car: "/photos/plan/cars/car-gocar.png",
+    car: "/photos/plan/cars/car-gocar.webp",
     roof: "/photos/plan/cars/logo-gocar-white.png",
     side: "right", logoW: 38, logoLeft: 56,
     cardH: 230, logoPct: 43,
@@ -109,10 +109,10 @@ const cardTints = [
 // Café menu — each cup (transparent, top-down) arcs in on scroll in the
 // "At the airport" section. img is the beans-less cutout the animation rotates.
 const coffees = [
-  { name: "Flat White",  desc: "A double ristretto under silky steamed milk. No froth, no fuss.",   img: "/photos/plan/coffees/cup-flatwhite.png" },
-  { name: "Cappuccino",  desc: "Espresso, steamed milk and a deep foam crown, dusted with cocoa.",  img: "/photos/plan/coffees/cup-cappuccino.png" },
-  { name: "Americano",   desc: "A shot of espresso loosened with hot water. Long, black and easy.", img: "/photos/plan/coffees/cup-americano.png" },
-  { name: "Latte",       desc: "Steamed milk poured over espresso — foam, with the coffee below.",  img: "/photos/plan/coffees/cup-latte.png" },
+  { name: "Flat White",  desc: "A double ristretto under silky steamed milk. No froth, no fuss.",   img: "/photos/plan/coffees/cup-flatwhite.webp" },
+  { name: "Cappuccino",  desc: "Espresso, steamed milk and a deep foam crown, dusted with cocoa.",  img: "/photos/plan/coffees/cup-cappuccino.webp" },
+  { name: "Americano",   desc: "A shot of espresso loosened with hot water. Long, black and easy.", img: "/photos/plan/coffees/cup-americano.webp" },
+  { name: "Latte",       desc: "Steamed milk poured over espresso — foam, with the coffee below.",  img: "/photos/plan/coffees/cup-latte.webp" },
 ];
 
 // Local Link bus times at Donegal Airport. Each pair is depart → arrive.
@@ -559,12 +559,14 @@ const busColumns = [
                 alt=""
                 class="ch-car-body block w-[200px] [filter:drop-shadow(0_12px_14px_rgba(0,0,0,.28))]"
                 style={c.side === "right" ? "transform:scaleX(-1)" : ""}
+                loading="lazy"
               />
               <img
                 src={c.roof}
                 alt=""
                 class="ch-car-roof absolute top-1/2"
                 style={`width:${c.logoW}px;left:${c.logoLeft}%;transform:translate(-50%,-50%);`}
+                loading="lazy"
               />
             </div>
           ))}
@@ -1109,7 +1111,7 @@ const busColumns = [
     if (!COFFEES.length) return;
 
     const N = COFFEES.length;
-    const BEAN = "/photos/plan/coffees/bean.png";
+    const BEAN = "/photos/plan/coffees/bean.webp";
     const M_BEANS = 8, HOLD = 0.26, SPIN = 190, GAP = 0.06;
     const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
     const smooth = t => t*t*(3 - 2*t);
