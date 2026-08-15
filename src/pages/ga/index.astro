@@ -91,6 +91,7 @@ const destinations = [
     schedule: "Gach lá · 2× fillte",
     carrier: "Aer Lingus Regional",
     hero: "/photos/dest-dub.webp",
+    heroMobile: "/photos/dest-dub-mobile.webp",
     photoPos: "center center",
     bookUrl: "https://www.aerlingus.com",
   },
@@ -102,6 +103,7 @@ const destinations = [
     schedule: "Bliain ar fad",
     carrier: "Loganair",
     hero: "/photos/dest-gla.webp",
+    heroMobile: "/photos/dest-gla-mobile.webp",
     photoPos: "center 20%",
     bookUrl: "https://www.loganair.co.uk",
   },
@@ -693,7 +695,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
           >
             <div class="relative aspect-[4/5] w-full overflow-hidden">
               <img
-                src={d.hero}
+                src={d.heroMobile || d.hero}
                 alt={d.city}
                 class="absolute inset-0 h-full w-full object-cover"
                 style={`object-position: ${d.photoPos}`}

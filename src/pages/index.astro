@@ -88,6 +88,7 @@ const destinations = [
     schedule: "Daily · 2× return",
     carrier: "Aer Lingus Regional",
     hero: "/photos/dest-dub.webp",
+    heroMobile: "/photos/dest-dub-mobile.webp",
     photoPos: "center center",
     caption: "An overnight bag and you're halfway to the city by lunch.",
     bookUrl: "https://www.aerlingus.com",
@@ -100,6 +101,7 @@ const destinations = [
     schedule: "Year-round",
     carrier: "Loganair",
     hero: "/photos/dest-gla.webp",
+    heroMobile: "/photos/dest-gla-mobile.webp",
     photoPos: "center 20%",
     caption: "Weekend in the Highlands. Home before bedtime.",
     bookUrl: "https://www.loganair.co.uk",
@@ -731,7 +733,7 @@ const allNews = _newsSorted.map(_mapNews);
           >
             <div class="relative aspect-[4/5] w-full overflow-hidden">
               <img
-                src={d.hero}
+                src={d.heroMobile || d.hero}
                 alt={d.city}
                 class="absolute inset-0 h-full w-full object-cover"
                 style={`object-position: ${d.photoPos}`}
