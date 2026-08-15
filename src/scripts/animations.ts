@@ -1094,7 +1094,16 @@ document.addEventListener("astro:page-load", () => {
   window.scrollTo(0, 0);
   initSmoothScroll();
   lenis?.scrollTo(0, { immediate: true, force: true });
-  build();
+  // build() ends with ScrollTrigger.refresh(), which forces a full-page
+  // layout read across every registered trigger (682+ DOM elements on the
+  // homepage) — a real, measured contributor to LCP "element render delay"
+  // (PageSpeed: the hero poster's bytes were ready in ~160ms, but it wasn't
+  // actually painted for another ~410ms). The poster <img> loads and decodes
+  // independently of any of this JS, so there's nothing lost by giving the
+  // browser one paint frame to show it before running the heavier setup —
+  // double rAF (one alone doesn't reliably land after a paint) is the
+  // standard "wait until after next paint" pattern.
+  requestAnimationFrame(() => requestAnimationFrame(build));
   // Hash anchor (e.g. /#news) — jump shortly after layouts settle.
   // immediate:true avoids the visible scroll journey through the whole page.
   //
