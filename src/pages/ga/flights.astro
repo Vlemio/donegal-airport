@@ -263,8 +263,12 @@ const flightsToday = flightsPayload.flights;
        within that oversized invisible strut, "EI340" rendered visibly below
        "Dublin" even though both cells share align-items:start. Matching the
        font metrics to the tiles' own 11px/line-height:1 collapses the strut
-       so the two sit level. */
-    .eidl-row > span:nth-child(4) { grid-area: flight; font-size: 11px; line-height: 1; }
+       so the two sit level. The remaining 3px gap is line-height:1 itself
+       leaving no leading above the tiles' glyphs, while "Dublin" keeps its
+       normal leading — padding-top makes up that difference (measured via
+       Range.getBoundingClientRect() on both glyphs' actual ink, not just
+       their line boxes). */
+    .eidl-row > span:nth-child(4) { grid-area: flight; font-size: 11px; line-height: 1; padding-top: 3px; }
     .eidl-row > span:nth-child(5) { grid-area: status; align-self: center; justify-self: end; }
     .eidl-city { font-size: 11px; }
     .eidl-row > span:nth-child(4)::before { content: "·"; margin-right: 5px; color: #6f6b61; }
