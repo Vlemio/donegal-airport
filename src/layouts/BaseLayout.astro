@@ -237,6 +237,11 @@ const localeTag: Record<Locale, string> = {
       <link href="https://fonts.googleapis.com/css2?family=Chivo+Mono:wght@400;700&display=swap" rel="stylesheet" />
       <link href="https://api.fontshare.com/v2/css?f[]=switzer@200,300,400,500,600,700,800,900&display=swap" rel="stylesheet" />
     </noscript>
+    {/* For a page-specific font/stylesheet that only that one page needs
+        (e.g. /flights' IBM Plex Mono) — same media="print" non-blocking
+        pattern as above, passed in via slot="head" from the page itself
+        rather than loaded sitewide from here. */}
+    <slot name="head" />
     {preloadImage && (
       <link rel="preload" as="image" href={preloadImage} fetchpriority="high" />
     )}

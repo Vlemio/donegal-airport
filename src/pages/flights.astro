@@ -17,9 +17,39 @@ const description = "Live arrivals and departures for Donegal Airport (CFN) — 
 // isn't configured/reachable, same as the API route.
 const { payload: flightsPayload } = await readFlights();
 const flightsToday = flightsPayload.flights;
+
+// The board's rows are built entirely client-side (buildRow()/renderSection()
+// below — the split-flap tile markup isn't something worth replicating
+// server-side), so #eidl-dep-rows/#eidl-arr-rows start as empty <div>s and
+// only gain height once that script runs — a measured CLS culprit (0.2+ on
+// mobile PageSpeed) as the page grows underneath the fold on load. We
+// already have the flight counts at SSR time, so reserve the space upfront
+// instead: min-height = row count × the row height for the active
+// breakpoint (98px stacked-card mobile / 54px single-row desktop, both
+// measured directly off the rendered board, not guessed).
+const depRowCount = flightsToday.filter((f) => f.type === "departure").length;
+const arrRowCount = flightsToday.filter((f) => f.type === "arrival").length;
 ---
 
 <BaseLayout title={title} description={description} pageTheme="ops-theme">
+  {/* Was a CSS @import inside the <style> block below — an @import is
+      only discovered once the importing stylesheet itself has already been
+      fetched and parsed, adding a full extra blocking round-trip on top of
+      an already-render-blocking resource (measured: ~760ms on mobile
+      PageSpeed for this specific font alone). A <link> can't fix the
+      sequencing on its own, but combined with the same media="print"
+      non-blocking trick used sitewide (see BaseLayout.astro) it at least
+      stops blocking first paint. */}
+  <link
+    slot="head"
+    href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap"
+    rel="stylesheet"
+    media="print"
+    onload="this.media='all'"
+  />
+  <noscript slot="head">
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  </noscript>
   {/* ─── LIVE FLIGHTS BOARD — Solari split-flap design (handoff: design_handoff_flights) ─── */}
   <section class="eidl-page">
     <div class="eidl-inner">
@@ -59,7 +89,7 @@ const flightsToday = flightsPayload.flights;
           <div class="eidl-colhead">
             <span>Time</span><span>Airline</span><span>To</span><span>Flight</span><span class="eidl-col-status">Status</span>
           </div>
-          <div id="eidl-dep-rows"></div>
+          <div id="eidl-dep-rows" class="eidl-rows" style={`--eidl-row-count:${depRowCount}`}></div>
         </div>
 
         <div id="eidl-arr-section" class="eidl-section eidl-section--arr">
@@ -71,7 +101,7 @@ const flightsToday = flightsPayload.flights;
           <div class="eidl-colhead">
             <span>Time</span><span>Airline</span><span>From</span><span>Flight</span><span class="eidl-col-status">Status</span>
           </div>
-          <div id="eidl-arr-rows"></div>
+          <div id="eidl-arr-rows" class="eidl-rows" style={`--eidl-row-count:${arrRowCount}`}></div>
         </div>
       </div>
 
@@ -127,8 +157,6 @@ const flightsToday = flightsPayload.flights;
 </BaseLayout>
 
 <style>
-  @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&display=swap");
-
   .eidl-page {
     background: #EDE9DE;
     color: #1A1915;
@@ -174,11 +202,18 @@ const flightsToday = flightsPayload.flights;
   .eidl-footnote { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; letter-spacing: 0.04em; color: #57534a; margin-top: 18px; }
   .eidl-next-wrap { background: #EDE9DE; }
 
+  /* Reserves the board's real height before the client-side row-building
+     script runs — see the depRowCount/arrRowCount comment in the frontmatter
+     above. 54px/98px measured directly off a rendered row at each
+     breakpoint, not guessed. */
+  .eidl-rows { min-height: calc(var(--eidl-row-count, 0) * 54px); }
+
   @media (max-width: 720px) {
     /* Rows below become a 3-line card (see .eidl-row override) so a single
        label bar can no longer line up with the data underneath it —
        drop the header bar on mobile rather than have it misalign. */
     .eidl-colhead { display: none; }
+    .eidl-rows { min-height: calc(var(--eidl-row-count, 0) * 98px); }
     .eidl-page { padding-bottom: 24px; }
     .eidl-footnote { margin-top: 28px; }
 
