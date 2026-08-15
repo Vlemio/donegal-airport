@@ -427,15 +427,22 @@ function setupScrubVideo(): void {
       }
     };
 
-    // Kick the first frame, then eagerly queue the rest of the range.
-    // Frames are ~59 KB WebP on average (re-encoded at quality 80), so the
-    // whole 121-frame set (~7 MB) loads in the background well before the
-    // user finishes reading the hero. They'd previously drifted up to
-    // ~155 KB/frame (~18 MB total) from a re-export that didn't carry the
-    // original quality setting — caught by a Lighthouse "avoid large
-    // network payloads" audit. Re-encode with: sharp(buf).webp({quality:80}).
+    // Kick the first frame, then queue the rest of the trimmed range once
+    // the browser is idle. Firing the whole range (dozens of frames,
+    // several MB) synchronously on page load competes for bandwidth with
+    // the LCP image, fonts and API calls — measured as the dominant hit to
+    // LCP. draw()/ready() already fall back to the nearest loaded frame, so
+    // scrubbing plays gracefully with whatever has arrived so far while the
+    // rest streams in behind it.
     load(startFrame);
-    for (let i = startFrame; i <= endFrame; i++) load(i);
+    const loadRest = (): void => {
+      for (let i = startFrame; i <= endFrame; i++) load(i);
+    };
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(loadRest, { timeout: 2000 });
+    } else {
+      setTimeout(loadRest, 300);
+    }
 
     window.addEventListener("resize", resize);
     document.addEventListener("astro:after-swap", () => window.removeEventListener("resize", resize));
@@ -568,7 +575,24 @@ function setupMobileHeroLoop(): void {
         };
       }
     };
-    for (let i = startFrame; i <= endFrame; i++) load(i);
+    // Firing all 121 frame requests (several MB) in one synchronous loop
+    // right on page load competes for mobile bandwidth with the actual LCP
+    // image, fonts and API calls — measured as the dominant hit to mobile
+    // LCP (PageSpeed). Only the poster frame is needed immediately; the
+    // rest of the boomerang sequence can start arriving once the browser
+    // is idle (or after a timeout on Safari, which lacks
+    // requestIdleCallback) — draw()/ready() already fall back to the
+    // nearest loaded frame, so the loop plays gracefully with whatever
+    // has arrived so far.
+    load(startFrame);
+    const loadRest = (): void => {
+      for (let i = startFrame + 1; i <= endFrame; i++) load(i);
+    };
+    if ("requestIdleCallback" in window) {
+      window.requestIdleCallback(loadRest, { timeout: 2000 });
+    } else {
+      setTimeout(loadRest, 300);
+    }
 
     // Boomerang clock — advances by real elapsed time (not a fixed
     // per-frame step), so playback speed stays correct regardless of the
