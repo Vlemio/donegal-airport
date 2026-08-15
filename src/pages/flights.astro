@@ -251,7 +251,16 @@ const flightsToday = flightsPayload.flights;
     .eidl-row > span:nth-child(1) { grid-area: time; }
     .eidl-row > span:nth-child(2) { grid-area: airline; }
     .eidl-row > span:nth-child(3) { grid-area: city; }
-    .eidl-row > span:nth-child(4) { grid-area: flight; }
+    /* This wrapper <span> (built in JS with no class of its own — see
+       buildRow() in the script below) holds only the flap-tile field, but
+       as a bare grid item it inherits the page's default font-size/line-height
+       for its own (empty) line box, taller than the 11px tiles inside it.
+       Since the default vertical-align:baseline then sinks those tiles low
+       within that oversized invisible strut, "EI340" rendered visibly below
+       "Dublin" even though both cells share align-items:start. Matching the
+       font metrics to the tiles' own 11px/line-height:1 collapses the strut
+       so the two sit level. */
+    .eidl-row > span:nth-child(4) { grid-area: flight; font-size: 11px; line-height: 1; }
     .eidl-row > span:nth-child(5) { grid-area: status; align-self: center; justify-self: end; }
     .eidl-city { font-size: 11px; }
     .eidl-row > span:nth-child(4)::before { content: "·"; margin-right: 5px; color: #6f6b61; }
