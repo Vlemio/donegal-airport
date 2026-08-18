@@ -241,10 +241,18 @@ const WEB3FORMS_KEY = "REPLACE_WITH_REAL_ACCESS_KEY";
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       if (!status) return;
+      // Checked fresh at submit time, not baked into which file's script
+      // happens to be executing — Astro's View Transitions only run an
+      // inline <script>'s top-level code the first time its content is
+      // seen, so this and the /ga twin's script can each end up with a
+      // submit listener still attached to this same #contact-form element
+      // after a morph. Re-checking document.documentElement.lang here means
+      // the status text always matches whatever page is actually on screen.
+      const GA = document.documentElement.lang === "ga";
       const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]');
       submitBtn?.setAttribute("disabled", "true");
       status.className = "text-sm text-mute";
-      status.textContent = "Sending…";
+      status.textContent = GA ? "Á sheoladh…" : "Sending…";
 
       try {
         const res = await fetch(form.action, {
@@ -255,14 +263,18 @@ const WEB3FORMS_KEY = "REPLACE_WITH_REAL_ACCESS_KEY";
         const data = await res.json();
         if (data.success) {
           status.className = "text-sm text-atlantic";
-          status.textContent = "Thanks — your message is on its way. We'll reply within one working day.";
+          status.textContent = GA
+            ? "Go raibh maith agat — tá do theachtaireacht ar an mbealach. Freagróimid laistigh de lá oibre amháin."
+            : "Thanks — your message is on its way. We'll reply within one working day.";
           form.reset();
         } else {
           throw new Error(data.message || "Unknown error");
         }
       } catch {
         status.className = "text-sm text-[#b23b3b]";
-        status.textContent = "Something went wrong — please email us directly at info@donegalairport.ie.";
+        status.textContent = GA
+          ? "Tharla earráid — seol ríomhphost chugainn go díreach ag info@donegalairport.ie le do thoil."
+          : "Something went wrong — please email us directly at info@donegalairport.ie.";
       } finally {
         submitBtn?.removeAttribute("disabled");
       }
@@ -279,6 +291,7 @@ const WEB3FORMS_KEY = "REPLACE_WITH_REAL_ACCESS_KEY";
     const el = document.getElementById("contact-map");
     if (!el) return;
     map?.remove();
+    const GA = document.documentElement.lang === "ga";
 
     (L.Map as any).addInitHook("addHandler", "gestureHandling", GestureHandling);
 
@@ -301,6 +314,6 @@ const WEB3FORMS_KEY = "REPLACE_WITH_REAL_ACCESS_KEY";
     // drops it and the marker ends up with no accessible name at all
     // (axe: aria-command-name). `title` sets a real title attribute on
     // the marker element itself regardless of icon type.
-    L.marker(coords, { icon, title: "Donegal Airport" }).addTo(map);
+    L.marker(coords, { icon, title: GA ? "Aerfort Dhún na nGall" : "Donegal Airport" }).addTo(map);
   }
 </script>

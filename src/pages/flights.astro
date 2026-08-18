@@ -200,6 +200,12 @@ const arrRowCount = flightsToday.filter((f) => f.type === "arrival").length;
   .eidl-col-status { text-align: right; }
 
   .eidl-footnote { font-family: 'IBM Plex Mono', monospace; font-size: 13px; font-weight: 600; letter-spacing: 0.04em; color: #57534a; margin-top: 18px; }
+  /* #eidl-updated is the only digit-bearing part of this footnote (the
+     "· Updated HH:MM" timestamp) — IBM Plex Mono's "0" has a dot through
+     the middle, same class of bug as Space Mono's fixed sitewide via
+     --font-mono-num (see global.css). Scoped to the span alone so the
+     surrounding prose keeps IBM Plex Mono. */
+  #eidl-updated { font-family: var(--font-mono-num); }
   .eidl-next-wrap { background: #EDE9DE; }
 
   /* Reserves the board's real height before the client-side row-building
@@ -252,8 +258,11 @@ const arrRowCount = flightsToday.filter((f) => f.type === "arrival").length;
      the row downward, it never nudges the tiles (or the other columns)
      out of their original position. */
   .eidl-row > span:first-child { display: flex; flex-direction: column; align-items: flex-start; justify-self: start; }
-  .eidl-est-time { display: none; margin-top: 2px; align-self: flex-end; font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 700; letter-spacing: 0.03em; white-space: nowrap; }
-  .eidl-status { display: inline-flex; align-items: center; gap: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; justify-self: end; white-space: nowrap; }
+  /* Both can show a "HH:MM" value — .eidl-est-time is always a time; .eidl-status
+     shows one for a delayed flight's new ETA ("→ 14:35") — so both need the
+     zero-safe font, not IBM Plex Mono (dotted "0"), same as #eidl-updated above. */
+  .eidl-est-time { display: none; margin-top: 2px; align-self: flex-end; font-family: var(--font-mono-num); font-size: 12px; font-weight: 700; letter-spacing: 0.03em; white-space: nowrap; }
+  .eidl-status { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-mono-num); font-size: 12.5px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; justify-self: end; white-space: nowrap; }
   .eidl-status-dot { width: 8px; height: 8px; border-radius: 50%; flex: 0 0 auto; }
   .eidl-empty { padding: 26px 4px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.08em; color: #6f6b61; text-align: center; }
 
@@ -330,16 +339,26 @@ const arrRowCount = flightsToday.filter((f) => f.type === "arrival").length;
   // this whole board only ever renders on the very first hard load, and
   // reaching /flights via a client-side nav shows an empty board until you
   // reload the page by hand.
-  var flightsTimer = null;
-  var clockTimer = null;
   var rollAudio = new Audio('/audio/flap-roll.mp3');
   rollAudio.preload = 'auto';
   document.addEventListener('astro:page-load', init);
 
   function init() {
   if (!document.getElementById('eidl-dep-rows') && !document.getElementById('eidl-arr-rows')) return;
-  if (flightsTimer) clearInterval(flightsTimer);
-  if (clockTimer) clearInterval(clockTimer);
+  // Window-level keys, not closure-local vars: this whole script re-executes
+  // fresh on every navigation to this page (its content differs from
+  // /ga/flights, so View Transitions treats it as a different script each
+  // time), so a closure-local flightsTimer/clockTimer starts back at null
+  // on each visit and can never find/clear a PREVIOUS visit's still-running
+  // interval — they'd silently accumulate on repeated navigation to and
+  // from this page. Same fix as the home hero panel's __cfnPollTimer.
+  if (window.__cfnBoardFlightsTimer) clearInterval(window.__cfnBoardFlightsTimer);
+  if (window.__cfnBoardClockTimer) clearInterval(window.__cfnBoardClockTimer);
+  // Guards the one-off fetchFlights()/render() calls below the same way:
+  // if a previous visit's fetch is still in flight when this page (or the
+  // GA twin) loads again, its .then() would otherwise still fire and
+  // render using its own stale closure once the response lands.
+  var myGen = (window.__cfnBoardGen = (window.__cfnBoardGen || 0) + 1);
 
   var ACCENT = '#E0A94D';
   // Exact match to the FIDS kiosk board's own palette (donegal-fids/public/board.css)
@@ -370,6 +389,35 @@ const arrRowCount = flightsToday.filter((f) => f.type === "arrival").length;
     return s;
   }
   function dirCode(f) { return f.type === 'departure' ? 'dep' : 'arr'; }
+
+  // Checks the CURRENT page's lang attribute at call time, not which file's
+  // script happens to be running — Astro's View Transitions only execute an
+  // inline <script>'s top-level code the first time its content is seen (see
+  // the astro:page-load comment above); this and its /ga twin's script can
+  // each end up registered as a permanent astro:page-load listener that
+  // keeps firing on every navigation from then on, including on the OTHER
+  // language's page. A closure-captured language (e.g. always-English text
+  // baked in here, or the GA file's always-Irish labels) would then leak
+  // across languages depending on which listener happened to run last —
+  // exactly the "some flight rows stay in Irish after switching to English"
+  // bug this was found from. Re-checking document.documentElement.lang
+  // fresh on every call means whichever listener fires, the output always
+  // matches whatever page is actually on screen.
+  function isGa() { return document.documentElement.lang === 'ga'; }
+  // Irish labels for the FIDS feed's English status text — same mapping as
+  // /ga/flights, kept in sync by hand (see that page's STATUS_LABELS_GA).
+  var STATUS_LABELS_GA = {
+    scheduled: 'Sceidealta', checkin: 'Seiceáil isteach', ontime: 'In am',
+    boarding: 'Ag cur ar bord', departed: 'Imithe', landed: 'Tuirlingthe',
+    enroute: 'Ar an mbealach', onapproach: 'Ag druidim isteach',
+    finalcall: 'Glao deiridh', delayed: 'Moillithe', approaching: 'Ag druidim isteach',
+    gateclosed: 'Geata dúnta', cancelled: 'Cealaithe', diverted: 'Atreoraithe',
+  };
+  function statusLabel(s) {
+    if (!isGa()) return s || 'Scheduled';
+    var k = String(s || '').toLowerCase().replace(/[^a-z]/g, '');
+    return STATUS_LABELS_GA[k] || s || 'Sceidealta';
+  }
 
   // Scheduled time only ever shows the timetable slot — with a real ADS-B
   // feed, the estimate can slide well past that, so show it as a small
@@ -529,7 +577,7 @@ const arrRowCount = flightsToday.filter((f) => f.type === "arrival").length;
     var statusCell = document.createElement('span');
     var statusInner = document.createElement('span'); statusInner.className = 'eidl-status';
     var dot = document.createElement('span'); dot.className = 'eidl-status-dot';
-    var statusText = document.createElement('span'); statusText.textContent = displayStatus(f);
+    var statusText = document.createElement('span'); statusText.textContent = statusLabel(displayStatus(f));
     var c = statusColor(displayStatus(f));
     dot.style.background = c; dot.style.boxShadow = '0 0 0 3px ' + c + '2b';
     statusInner.style.color = c;
@@ -553,7 +601,9 @@ const arrRowCount = flightsToday.filter((f) => f.type === "arrival").length;
         wrap.innerHTML = '';
         var empty = document.createElement('div');
         empty.className = 'eidl-empty';
-        empty.textContent = type === 'departure' ? 'No departures scheduled' : 'No arrivals scheduled';
+        empty.textContent = isGa()
+          ? (type === 'departure' ? 'Níl aon imeacht sceidealta' : 'Níl aon teacht sceidealta')
+          : (type === 'departure' ? 'No departures scheduled' : 'No arrivals scheduled');
         wrap.appendChild(empty);
       }
       map.forEach(function (v) { v.row.remove(); });
@@ -579,7 +629,7 @@ const arrRowCount = flightsToday.filter((f) => f.type === "arrival").length;
         entry.iataEl.textContent = f.airlineCode || '';
         entry.airlineEl.textContent = f.airline || '';
         entry.cityEl.textContent = f.city || '';
-        entry.statusText.textContent = displayStatus(f);
+        entry.statusText.textContent = statusLabel(displayStatus(f));
         var c = statusColor(displayStatus(f));
         entry.statusDot.style.background = c; entry.statusDot.style.boxShadow = '0 0 0 3px ' + c + '2b';
         entry.statusInner.style.color = c;
@@ -609,6 +659,7 @@ const arrRowCount = flightsToday.filter((f) => f.type === "arrival").length;
   }
 
   function applyData(data) {
+    if (myGen !== window.__cfnBoardGen) return; // a newer page load has since run — drop this stale response
     if (data && Array.isArray(data.flights)) {
       FLIGHTS = data.flights;
       render();
@@ -618,7 +669,7 @@ const arrRowCount = flightsToday.filter((f) => f.type === "arrival").length;
     var updatedEl = document.getElementById('eidl-updated');
     var isLive = !!(data && data.live);
     if (dot) dot.classList.toggle('is-stale', !isLive);
-    if (label) label.textContent = isLive ? 'Live' : 'Last known';
+    if (label) label.textContent = isGa() ? (isLive ? 'Beo' : 'Eolas is déanaí') : (isLive ? 'Live' : 'Last known');
     // lastTick is when the FIDS's sync last ran (~every 1-2 min); `updated`
     // only moves when a flight's own data actually changes, so on a quiet
     // day (nothing due for hours) it can sit still for a long stretch even
@@ -628,7 +679,7 @@ const arrRowCount = flightsToday.filter((f) => f.type === "arrival").length;
     var stamp = (data && (data.lastTick || data.updated));
     if (updatedEl && stamp) {
       var t = new Date(stamp).toLocaleTimeString('en-IE', { timeZone: 'Europe/Dublin', hour12: false, hour: '2-digit', minute: '2-digit' });
-      updatedEl.textContent = '· Updated ' + t;
+      updatedEl.textContent = (isGa() ? '· Nuashonraithe ' : '· Updated ') + t;
     }
   }
 
@@ -638,7 +689,7 @@ const arrRowCount = flightsToday.filter((f) => f.type === "arrival").length;
       .then(applyData)
       .catch(function () {});
   }
-  flightsTimer = setInterval(fetchFlights, 15000);
+  window.__cfnBoardFlightsTimer = setInterval(fetchFlights, 15000);
 
   // ---------- Clock ----------
   function tick() {
@@ -663,7 +714,7 @@ const arrRowCount = flightsToday.filter((f) => f.type === "arrival").length;
         : datePart + ' · Local time';
     }
   }
-  tick(); clockTimer = setInterval(tick, 1000);
+  tick(); window.__cfnBoardClockTimer = setInterval(tick, 1000);
 
   // ---------- Tabs ----------
   var tabsEl = document.getElementById('eidl-tabs');

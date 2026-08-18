@@ -661,7 +661,17 @@ const droneZones = [
           day === "Sun" ? dow === 0 : day === "Sat" ? dow === 6 : day === "Mon–Fri" ? dow >= 1 && dow <= 5 : day === "Mon–Sun" ? true : dow >= 1 && dow <= 6;
 
         let view: string | null = null;
+        // Checked fresh on every render() call, not baked into which file's
+        // script happens to be executing — Astro's View Transitions only run
+        // an inline <script>'s top-level code the first time its content is
+        // seen, so this widget's script (and the /ga twin's) can each end up
+        // registered as a permanent astro:page-load-triggered interval that
+        // keeps firing on every navigation from then on, including on the
+        // OTHER language's page — a hardcoded language here would then leak
+        // across pages depending on which one happened to run last. Same
+        // fix as the flights board / hero panel's statusLabel().
         const render = () => {
+          const GA = document.documentElement.lang === "ga";
           const now = new Date();
           const nowMin = now.getUTCHours() * 60 + now.getUTCMinutes();
           const dow = now.getUTCDay();
@@ -675,14 +685,25 @@ const droneZones = [
           const gridCols = isMobile ? "1fr" : "112px 1fr";
           const rowGap = isMobile ? 6 : 16;
 
-          let statusText = "Closed — scheduled", statusSub = "", open = false;
+          let statusText = GA ? "Dúnta — sceidealta" : "Closed — scheduled", statusSub = "", open = false;
           const todayRow = (DATA[curSeason] || []).find((r) => matches(r.day, dow));
           if (todayRow) {
             const blks = todayRow.blocks.map((b) => ({ s: parseHM(b[0]), e: parseHM(b[1]), s0: b[0], e0: b[1] }));
             const cur = blks.find((b) => nowMin >= b.s && nowMin < b.e);
-            if (cur) { open = true; statusText = "Open — scheduled"; statusSub = "closes " + cur.e0 + "Z · confirm by NOTAM"; }
-            else { const next = blks.find((b) => b.s > nowMin); statusText = "Closed — scheduled"; statusSub = (next ? "opens " + next.s0 + "Z" : "reopens tomorrow") + " · confirm by NOTAM"; }
-          } else { statusSub = "no scheduled service today · confirm by NOTAM"; }
+            if (cur) {
+              open = true;
+              statusText = GA ? "Oscailte — sceidealta" : "Open — scheduled";
+              statusSub = GA ? "dúnann ag " + cur.e0 + "Z · deimhnigh le NOTAM" : "closes " + cur.e0 + "Z · confirm by NOTAM";
+            } else {
+              const next = blks.find((b) => b.s > nowMin);
+              statusText = GA ? "Dúnta — sceidealta" : "Closed — scheduled";
+              statusSub = GA
+                ? (next ? "osclaíonn ag " + next.s0 + "Z" : "athosclaíonn amárach") + " · deimhnigh le NOTAM"
+                : (next ? "opens " + next.s0 + "Z" : "reopens tomorrow") + " · confirm by NOTAM";
+            }
+          } else {
+            statusSub = GA ? "níl seirbhís sceidealta inniu · deimhnigh le NOTAM" : "no scheduled service today · confirm by NOTAM";
+          }
           const statusCol = open ? "#0e7c66" : "var(--color-mute)";
 
           // Bar axis: fit tightly to the season's actual open blocks with equal
@@ -717,7 +738,7 @@ const droneZones = [
             const todayTagStyle = isMobile
               ? "font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:#b4462f;white-space:nowrap"
               : "font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;color:#b4462f;margin-top:4px";
-            const todayTag = isToday ? `<div style="${todayTagStyle}">● TODAY</div>` : "";
+            const todayTag = isToday ? `<div style="${todayTagStyle}">● ${GA ? "INNIU" : "TODAY"}</div>` : "";
             const labelWrapStyle = isMobile
               ? "display:flex;align-items:baseline;justify-content:space-between;gap:10px"
               : "padding-top:5px";
@@ -733,33 +754,63 @@ const droneZones = [
             return `<div style="position:absolute;top:5px;left:${left}%;transform:translateX(-50%);font-family:var(--font-mono-num);font-size:10px;letter-spacing:.08em;color:var(--color-mute)">${pad2(h)}</div>`;
           }).join("");
 
+          const SEASON_GA: Record<string, string> = { Winter: "Geimhreadh", Summer: "Samhradh" };
           const btn = (label: string, on: boolean, col: string) =>
-            `<button data-season="${label}" style="cursor:pointer;border:none;border-radius:999px;padding:8px 20px;font-family:var(--font-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;background:${on ? "var(--color-surface)" : "transparent"};color:${on ? col : "var(--color-mute)"};font-weight:${on ? 600 : 400};box-shadow:${on ? "0 1px 2px rgba(0,0,0,.1)" : "none"};transition:all .15s ease">${label}</button>`;
+            `<button data-season="${label}" style="cursor:pointer;border:none;border-radius:999px;padding:8px 20px;font-family:var(--font-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;background:${on ? "var(--color-surface)" : "transparent"};color:${on ? col : "var(--color-mute)"};font-weight:${on ? 600 : 400};box-shadow:${on ? "0 1px 2px rgba(0,0,0,.1)" : "none"};transition:all .15s ease">${GA ? (SEASON_GA[label] ?? label) : label}</button>`;
 
           const statusPill = `<div style="display:flex;align-items:center;gap:11px;background:var(--color-surface-lo);border:1px solid var(--color-line);border-radius:12px;padding:11px 16px">`
             + `<span style="position:relative;width:9px;height:9px;flex:0 0 auto">${open ? `<span style="position:absolute;inset:0;border-radius:50%;background:${statusCol};animation:pulseDot 2s ease-out infinite"></span>` : ""}<span style="position:absolute;inset:0;border-radius:50%;background:${statusCol}"></span></span>`
             + `<div style="line-height:1.15"><div style="font-size:14px;font-weight:700;letter-spacing:-.01em;color:var(--color-ink)">${statusText}</div><div style="font-family:var(--font-mono-num);font-size:11px;color:var(--color-mute);margin-top:2px">${statusSub}</div></div></div>`;
 
-          const seasonNote = season === curSeason ? "Current schedule in effect" : "Preview — not in effect now";
+          const seasonNote = GA
+            ? (season === curSeason ? "Sceideal reatha i bhfeidhm" : "Réamhamharc — níl i bhfeidhm faoi láthair")
+            : (season === curSeason ? "Current schedule in effect" : "Preview — not in effect now");
           const noteCol = season === curSeason ? "var(--color-ink)" : "#b4462f";
+
+          // All static widget copy in one place, picked once per render() by
+          // the fresh GA check above — see that comment for why this can't
+          // just be two separate files each hardcoding their own language.
+          const T = GA ? {
+            atc: "Rialú Aerthráchta",
+            title: "Uaireanta oscailte an túir",
+            subtitle: "Dún na nGall · EIDL · gach am UTC (Z)",
+            closedNote: `Tá an túr <strong style="color:var(--color-ink);font-weight:600">dúnta idir na bloic a thaispeántar</strong> (sosanna rialtóra) agus lasmuigh díobh. Is trí shocrú lasmuigh d'uaireanta a dhéantar gluaiseachtaí lasmuigh de na huaireanta foilsithe — fógra 48 uair.`,
+            summerLabel: "SAMHRADH",
+            summerText: "I bhfeidhm ón Domhnach deireanach de mhí an Mhárta go dtí an Domhnach deireanach de mhí Dheireadh Fómhair (am sábhála soilse na hÉireann).",
+            winterLabel: "GEIMHREADH",
+            winterText: "I bhfeidhm ón Domhnach deireanach de mhí Dheireadh Fómhair go dtí an Domhnach deireanach de mhí an Mhárta (gnáth-am).",
+            variations: "Fógraítear athruithe trí NOTAM.",
+            notamLink: "NOTAManna Reatha — AirNav Ireland ↗",
+          } : {
+            atc: "Air Traffic Control",
+            title: "Tower opening hours",
+            subtitle: "Donegal · EIDL · all times UTC (Z)",
+            closedNote: `The tower is <strong style="color:var(--color-ink);font-weight:600">closed between the blocks shown</strong> (controller rest breaks) and outside them. Movements outside published hours are by out-of-hours arrangement — 48 h notice.`,
+            summerLabel: "SUMMER",
+            summerText: "Applies from the last Sunday of March to the last Sunday of October (Irish daylight-saving time).",
+            winterLabel: "WINTER",
+            winterText: "Applies from the last Sunday of October to the last Sunday of March (standard time).",
+            variations: "Variations are promulgated by NOTAM.",
+            notamLink: "Current NOTAMs — AirNav Ireland ↗",
+          };
 
           host.innerHTML =
             `<div style="display:flex;flex-wrap:wrap;gap:16px 20px;align-items:flex-start;justify-content:space-between;margin-bottom:24px">`
-            + `<div><div style="font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--color-sand);margin-bottom:9px">Air Traffic Control</div>`
-            + `<h3 style="font-family:var(--font-display);font-size:clamp(22px,3vw,27px);font-weight:400;letter-spacing:-.02em;line-height:1.05;margin:0;color:var(--color-ink)">Tower opening hours</h3>`
-            + `<div style="font-family:var(--font-mono);font-size:11.5px;letter-spacing:.06em;color:var(--color-mute);margin-top:7px">Donegal · EIDL · all times UTC (Z)</div></div>`
+            + `<div><div style="font-family:var(--font-mono);font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--color-sand);margin-bottom:9px">${T.atc}</div>`
+            + `<h3 style="font-family:var(--font-display);font-size:clamp(22px,3vw,27px);font-weight:400;letter-spacing:-.02em;line-height:1.05;margin:0;color:var(--color-ink)">${T.title}</h3>`
+            + `<div style="font-family:var(--font-mono);font-size:11.5px;letter-spacing:.06em;color:var(--color-mute);margin-top:7px">${T.subtitle}</div></div>`
             + statusPill + `</div>`
             + `<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:26px">`
             + `<div style="display:inline-flex;background:var(--color-surface-lo);border-radius:999px;padding:4px;gap:2px">${btn("Winter", season === "Winter", "var(--color-atlantic)")}${btn("Summer", season === "Summer", "var(--color-sand)")}</div>`
             + `<div style="font-family:var(--font-mono);font-size:11px;font-weight:600;letter-spacing:.04em;color:${noteCol}">${seasonNote}</div></div>`
             + `<div>${rowsHtml}<div style="display:grid;grid-template-columns:${gridCols};gap:${rowGap}px;margin-top:6px"><div></div><div style="position:relative;height:18px;border-top:1px solid var(--color-line)">${ticksHtml}</div></div></div>`
             + `<div style="margin:26px 0 0;padding-top:20px;border-top:1px solid var(--color-line)">`
-            + `<p style="font-size:13.5px;line-height:1.6;color:var(--color-mute);margin:0">The tower is <strong style="color:var(--color-ink);font-weight:600">closed between the blocks shown</strong> (controller rest breaks) and outside them. Movements outside published hours are by out-of-hours arrangement — 48 h notice.</p>`
+            + `<p style="font-size:13.5px;line-height:1.6;color:var(--color-mute);margin:0">${T.closedNote}</p>`
             + `<div style="display:flex;flex-direction:column;gap:9px;margin-top:16px">`
-            + `<div style="display:grid;grid-template-columns:78px 1fr;gap:12px;align-items:baseline"><span style="font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.14em;color:var(--color-sand)">SUMMER</span><span style="font-size:13.5px;line-height:1.5;color:var(--color-mute)">Applies from the last Sunday of March to the last Sunday of October (Irish daylight-saving time).</span></div>`
-            + `<div style="display:grid;grid-template-columns:78px 1fr;gap:12px;align-items:baseline"><span style="font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.14em;color:var(--color-atlantic)">WINTER</span><span style="font-size:13.5px;line-height:1.5;color:var(--color-mute)">Applies from the last Sunday of October to the last Sunday of March (standard time).</span></div></div>`
-            + `<p style="font-size:13.5px;font-weight:700;color:var(--color-ink);margin:16px 0 0">Variations are promulgated by NOTAM.</p>`
-            + `<a href="https://www.airnav.ie/air-traffic-management/notam-notice-to-airmen-24e348473e7b0153452e634c36c72213" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;font-family:var(--font-mono);font-size:11.5px;font-weight:600;letter-spacing:.06em;color:var(--color-atlantic);text-decoration:underline;text-underline-offset:2px">Current NOTAMs — AirNav Ireland ↗</a></div>`;
+            + `<div style="display:grid;grid-template-columns:78px 1fr;gap:12px;align-items:baseline"><span style="font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.14em;color:var(--color-sand)">${T.summerLabel}</span><span style="font-size:13.5px;line-height:1.5;color:var(--color-mute)">${T.summerText}</span></div>`
+            + `<div style="display:grid;grid-template-columns:78px 1fr;gap:12px;align-items:baseline"><span style="font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:.14em;color:var(--color-atlantic)">${T.winterLabel}</span><span style="font-size:13.5px;line-height:1.5;color:var(--color-mute)">${T.winterText}</span></div></div>`
+            + `<p style="font-size:13.5px;font-weight:700;color:var(--color-ink);margin:16px 0 0">${T.variations}</p>`
+            + `<a href="https://www.airnav.ie/air-traffic-management/notam-notice-to-airmen-24e348473e7b0153452e634c36c72213" target="_blank" rel="noopener" style="display:inline-block;margin-top:8px;font-family:var(--font-mono);font-size:11.5px;font-weight:600;letter-spacing:.06em;color:var(--color-atlantic);text-decoration:underline;text-underline-offset:2px">${T.notamLink}</a></div>`;
 
           host.querySelectorAll<HTMLElement>("[data-season]").forEach((b) =>
             b.addEventListener("click", () => { view = b.dataset.season || null; render(); }),

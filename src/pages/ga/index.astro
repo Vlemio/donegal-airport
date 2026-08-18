@@ -1126,6 +1126,15 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
   // Shared window-level key — see the clock script's comment for why a
   // closure-local timer var can't clear the other locale page's timer.
   if (window.__cfnPollTimer) clearInterval(window.__cfnPollTimer);
+  // The 60s interval above is correctly cleared on navigation, but the
+  // one-off fetchFlights() call at the bottom of init() is not: if it's
+  // still in flight when the user navigates to the other locale page (e.g.
+  // GA -> EN), its .then() callback closes over THIS page's updateHero/
+  // FLIGHTS/status-label logic and still fires once the response lands —
+  // silently overwriting the new page's hero panel with the old page's
+  // language a moment after it looked correct. A shared generation counter
+  // lets a stale response recognise a newer init() has since run and bail.
+  var myGen = (window.__cfnHeroGen = (window.__cfnHeroGen || 0) + 1);
 
   function statusKey(s) { return String(s || '').toLowerCase().replace(/[^a-z]/g, ''); }
 
@@ -1138,7 +1147,21 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
     finalcall: 'Glao deiridh', delayed: 'Moillithe', approaching: 'Ag druidim isteach',
     gateclosed: 'Geata dúnta', cancelled: 'Cealaithe', diverted: 'Atreoraithe',
   };
-  function statusLabel(s) { return STATUS_LABELS_GA[statusKey(s)] || s || 'Sceidealta'; }
+  // Checks the CURRENT page's lang attribute at call time, not which file's
+  // script happens to be running — Astro's View Transitions only execute an
+  // inline <script>'s top-level code the first time its content is seen, so
+  // this and the EN twin's script can each end up registered as a
+  // permanent astro:page-load listener that keeps firing on every
+  // navigation from then on, including on the OTHER language's page.
+  // Always-Irish labels baked in here (or the EN file's always-English
+  // text) would then leak across languages depending on which listener
+  // happened to run last — exactly the "some flight rows stay in Irish
+  // after switching to English" bug this was found from. Re-checking
+  // document.documentElement.lang fresh on every call means whichever
+  // listener fires, the output always matches whatever page is actually on
+  // screen.
+  function isGa() { return document.documentElement.lang === 'ga'; }
+  function statusLabel(s) { if (!isGa()) return s || 'Scheduled'; return STATUS_LABELS_GA[statusKey(s)] || s || 'Sceidealta'; }
 
   // Same palette as the live information display (/flights): grey =
   // check-in, green = on time/landed/boarding, blue = departed, amber =
@@ -1176,7 +1199,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
         var empty = document.createElement('li');
         empty.className = 'py-2 font-mono text-[11px] uppercase tracking-[0.1em]';
         empty.style.color = 'var(--hi-soft)';
-        empty.textContent = 'Níl aon imeacht eile inniu';
+        empty.textContent = isGa() ? 'Níl aon imeacht eile inniu' : 'No more departures today';
         ul.appendChild(empty);
       }
       deps.forEach(function (f) {
@@ -1203,7 +1226,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
         var emptyArr = document.createElement('li');
         emptyArr.className = 'py-2 font-mono text-[11px] uppercase tracking-[0.1em]';
         emptyArr.style.color = 'var(--hi-soft)';
-        emptyArr.textContent = 'Níl aon teacht eile inniu';
+        emptyArr.textContent = isGa() ? 'Níl aon teacht eile inniu' : 'No more arrivals today';
         arrUl.appendChild(emptyArr);
       }
       arrs.forEach(function (f) {
@@ -1227,6 +1250,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
     fetch('/api/flights-today.json?_=' + Date.now())
       .then(function (r) { return r.json(); })
       .then(function (data) {
+        if (myGen !== window.__cfnHeroGen) return; // a newer page load has since run — drop this stale response
         if (data && data.live === true && Array.isArray(data.flights)) {
           FLIGHTS = data.flights;
           updateHero();

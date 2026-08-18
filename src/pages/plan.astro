@@ -1044,19 +1044,27 @@ const busColumns = [
     const label = btn.querySelector("[data-tariff-label]");
     const arrow = btn.querySelector("[data-tariff-arrow]");
     let open = false;
+    // Checked fresh, not baked into which file's script happens to be
+    // executing — Astro's View Transitions only run an inline <script>'s
+    // top-level code the first time its content is seen, so this and the
+    // /ga twin's script can each end up registered as a permanent
+    // astro:page-load listener that keeps firing on every navigation from
+    // then on, including on the OTHER language's page. Same class of bug as
+    // the flights board / hero panel's statusLabel().
+    const GA = document.documentElement.lang === "ga";
 
     const setState = () => {
       if (open) {
         panel.style.maxHeight = panel.scrollHeight + "px";
         panel.style.opacity = "1";
         btn.setAttribute("aria-expanded", "true");
-        if (label) label.textContent = "Hide full tariff";
+        if (label) label.textContent = GA ? "Folaigh an táille iomlán" : "Hide full tariff";
         if (arrow) arrow.textContent = "↑";
       } else {
         panel.style.maxHeight = "0";
         panel.style.opacity = "0";
         btn.setAttribute("aria-expanded", "false");
-        if (label) label.textContent = "Show full tariff";
+        if (label) label.textContent = GA ? "Taispeáin an táille iomlán" : "Show full tariff";
         if (arrow) arrow.textContent = "↓";
       }
     };

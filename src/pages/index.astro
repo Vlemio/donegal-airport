@@ -1187,6 +1187,15 @@ const allNews = _newsSorted.map(_mapNews);
   // Shared window-level key — see the clock script's comment for why a
   // closure-local timer var can't clear the other locale page's timer.
   if (window.__cfnPollTimer) clearInterval(window.__cfnPollTimer);
+  // The 60s interval above is correctly cleared on navigation, but the
+  // one-off fetchFlights() call at the bottom of init() is not: if it's
+  // still in flight when the user navigates to the other locale page (e.g.
+  // GA -> EN), its .then() callback closes over THIS page's updateHero/
+  // FLIGHTS/status-label logic and still fires once the response lands —
+  // silently overwriting the new page's hero panel with the old page's
+  // language a moment after it looked correct. A shared generation counter
+  // lets a stale response recognise a newer init() has since run and bail.
+  var myGen = (window.__cfnHeroGen = (window.__cfnHeroGen || 0) + 1);
 
   // FIDS sends human-readable status strings (e.g. "On Approach"); this key
   // matches the .b-status tone classes below.
@@ -1216,6 +1225,35 @@ const allNews = _newsSorted.map(_mapNews);
     return s;
   }
 
+  // Checks the CURRENT page's lang attribute at call time, not which file's
+  // script happens to be running — Astro's View Transitions only execute an
+  // inline <script>'s top-level code the first time its content is seen, so
+  // this and the /ga twin's script can each end up registered as a
+  // permanent astro:page-load listener that keeps firing on every
+  // navigation from then on, including on the OTHER language's page.
+  // Always-English text baked in here (or the GA file's always-Irish
+  // labels) would then leak across languages depending on which listener
+  // happened to run last — exactly the "some flight rows stay in Irish
+  // after switching to English" bug this was found from. Re-checking
+  // document.documentElement.lang fresh on every call means whichever
+  // listener fires, the output always matches whatever page is actually on
+  // screen.
+  function isGa() { return document.documentElement.lang === 'ga'; }
+  // Irish labels for the FIDS feed's English status text — same mapping as
+  // /ga (and /ga/flights), kept in sync by hand.
+  var STATUS_LABELS_GA = {
+    scheduled: 'Sceidealta', checkin: 'Seiceáil isteach', ontime: 'In am',
+    boarding: 'Ag cur ar bord', departed: 'Imithe', landed: 'Tuirlingthe',
+    enroute: 'Ar an mbealach', onapproach: 'Ag druidim isteach',
+    finalcall: 'Glao deiridh', delayed: 'Moillithe', approaching: 'Ag druidim isteach',
+    gateclosed: 'Geata dúnta', cancelled: 'Cealaithe', diverted: 'Atreoraithe',
+  };
+  function statusLabel(s) {
+    if (!isGa()) return s || 'Scheduled';
+    var key = statusKey(s);
+    return STATUS_LABELS_GA[key] || s || 'Sceidealta';
+  }
+
   // Seed from SSR so the hero panel is instant on first paint.
   // Subsequent updates come from polling /api/flights-today.json.
   var FLIGHTS = boardFlights;
@@ -1233,13 +1271,13 @@ const allNews = _newsSorted.map(_mapNews);
         var empty = document.createElement('li');
         empty.className = 'py-2 font-mono text-[11px] uppercase tracking-[0.1em]';
         empty.style.color = 'var(--hi-soft)';
-        empty.textContent = 'No more departures today';
+        empty.textContent = isGa() ? 'Níl aon imeacht eile inniu' : 'No more departures today';
         ul.appendChild(empty);
       }
       deps.forEach(function (f) {
         var s = displayStatus(f);
         var key = statusKey(s);
-        var lbl = key === 'delayed' && f.estTime ? '→ ' + f.estTime : s;
+        var lbl = key === 'delayed' && f.estTime ? '→ ' + f.estTime : statusLabel(s);
         var tone = toneFor(s);
         var li = document.createElement('li');
         li.className = 'ops-board-row';
@@ -1262,13 +1300,13 @@ const allNews = _newsSorted.map(_mapNews);
         var emptyArr = document.createElement('li');
         emptyArr.className = 'py-2 font-mono text-[11px] uppercase tracking-[0.1em]';
         emptyArr.style.color = 'var(--hi-soft)';
-        emptyArr.textContent = 'No more arrivals today';
+        emptyArr.textContent = isGa() ? 'Níl aon teacht eile inniu' : 'No more arrivals today';
         arrUl.appendChild(emptyArr);
       }
       arrs.forEach(function (f) {
         var s = displayStatus(f);
         var key = statusKey(s);
-        var lbl = key === 'delayed' && f.estTime ? '→ ' + f.estTime : s;
+        var lbl = key === 'delayed' && f.estTime ? '→ ' + f.estTime : statusLabel(s);
         var tone = toneFor(s);
         var li = document.createElement('li');
         li.className = 'ops-board-row';
@@ -1291,6 +1329,7 @@ const allNews = _newsSorted.map(_mapNews);
     fetch('/api/flights-today.json?_=' + Date.now())
       .then(function (r) { return r.json(); })
       .then(function (data) {
+        if (myGen !== window.__cfnHeroGen) return; // a newer page load has since run — drop this stale response
         if (data && data.live === true && Array.isArray(data.flights)) {
           FLIGHTS = data.flights;
           updateHero();
