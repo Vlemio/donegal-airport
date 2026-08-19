@@ -366,10 +366,10 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
       >
         Scrollaigh síos
         {/* See the English page's identical comment on why this is an SVG
-            chevron, not the "↓" glyph, and why margin-top corrects a
-            measured 5px optical-centre gap against the all-caps text. */}
-        <svg width="13" height="17" viewBox="0 0 13 17" fill="none" aria-hidden="true" style="margin-top: -10px">
-          <path d="M6.5 1V15M6.5 15L1 9.5M6.5 15L12 9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+            chevron sized to the text's own cap-height, not the "↓" glyph
+            with a measured-but-unreliable margin correction. */}
+        <svg width="10" height="13" viewBox="0 0 10 13" fill="none" aria-hidden="true">
+          <path d="M5 1V11M5 11L1 7.3M5 11L9 7.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       </div>
     </div>

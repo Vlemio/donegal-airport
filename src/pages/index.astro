@@ -389,16 +389,17 @@ const allNews = _newsSorted.map(_mapNews);
         {/* The "↓" glyph itself rendered with a flat, cut-off tip at this
             size/font — a font-rendering issue, not the animation clipping
             it. A hand-drawn SVG chevron always renders crisp regardless of
-            font/size. flex's items-center aligns this box against the
-            all-caps text's full line box, which reserves descender space
-            the caps never use — pulling the icon 5px below the text's
-            actual optical centre (measured: canvas-rasterised glyph ink
-            centre vs the SVG's own rendered centre). Flex re-centering
-            only carries through half of a cross-axis margin change, so
-            -10px margin-top was needed to close a measured 5px gap —
-            confirmed empirically (0px residual), not assumed 1:1. */}
-        <svg width="13" height="17" viewBox="0 0 13 17" fill="none" aria-hidden="true" style="margin-top: -10px">
-          <path d="M6.5 1V15M6.5 15L1 9.5M6.5 15L12 9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+            font/size. A prior attempt (17px icon + a negative margin-top
+            "correction" measured via headless canvas text rasterization)
+            looked right in that measurement but wrong in a real browser —
+            canvas fillText and live DOM text layout don't always hint/
+            rasterize identically, so that number can't be trusted. Sized
+            closer to the text's own cap-height instead (no margin hack) so
+            flex's plain items-center has proportionate boxes to centre in
+            the first place, rather than relying on an offset this
+            environment can't visually confirm. */}
+        <svg width="10" height="13" viewBox="0 0 10 13" fill="none" aria-hidden="true">
+          <path d="M5 1V11M5 11L1 7.3M5 11L9 7.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       </div>
     </div>
