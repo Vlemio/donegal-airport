@@ -364,7 +364,12 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
         style="color: var(--hi-faint)"
         aria-hidden="true"
       >
-        Scrollaigh síos <span class="text-[18px]">↓</span>
+        Scrollaigh síos
+        {/* See the English page's identical comment on why this is an SVG
+            chevron, not the "↓" glyph. */}
+        <svg width="13" height="17" viewBox="0 0 13 17" fill="none" aria-hidden="true">
+          <path d="M6.5 1V15M6.5 15L1 9.5M6.5 15L12 9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
       </div>
     </div>
 
