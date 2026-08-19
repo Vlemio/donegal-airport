@@ -389,8 +389,15 @@ const allNews = _newsSorted.map(_mapNews);
         {/* The "↓" glyph itself rendered with a flat, cut-off tip at this
             size/font — a font-rendering issue, not the animation clipping
             it. A hand-drawn SVG chevron always renders crisp regardless of
-            font/size. */}
-        <svg width="13" height="17" viewBox="0 0 13 17" fill="none" aria-hidden="true">
+            font/size. flex's items-center aligns this box against the
+            all-caps text's full line box, which reserves descender space
+            the caps never use — pulling the icon 5px below the text's
+            actual optical centre (measured: canvas-rasterised glyph ink
+            centre vs the SVG's own rendered centre). Flex re-centering
+            only carries through half of a cross-axis margin change, so
+            -10px margin-top was needed to close a measured 5px gap —
+            confirmed empirically (0px residual), not assumed 1:1. */}
+        <svg width="13" height="17" viewBox="0 0 13 17" fill="none" aria-hidden="true" style="margin-top: -10px">
           <path d="M6.5 1V15M6.5 15L1 9.5M6.5 15L12 9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       </div>
