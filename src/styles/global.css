@@ -584,9 +584,14 @@
 /* ── Scroll-hint bob ─────────────────────────────────────────── */
 /* A single slow 4px sine bob read as background motion, not an
    instruction — barely visible against the busy cloud footage behind it.
-   Two sharper hops (with a pause before repeating) plus a bigger arrow
-   reads as an actual nudge — "hey, scroll" — instead of ambient drift. */
-.hero-bob { display: inline-block; font-size: 1.35em; }
+   Two sharper hops (with a pause before repeating) reads as an actual
+   nudge — "hey, scroll" — instead of ambient drift. Applied to the whole
+   "Scroll to reveal ↓" row (not just the arrow span) so the words move
+   with it — text-only movement alone was easy to miss, and animating
+   just the arrow at a bumped-up font-size clipped its own tip against its
+   tight line-box. padding-block gives the translateY room without
+   nudging the row's flex siblings (gap/gridline in the layout above it). */
+.hero-bob { padding-block: 6px; }
 @media (prefers-reduced-motion: no-preference) {
   .hero-bob { animation: hero-bob 2s ease-in-out infinite; }
 }
