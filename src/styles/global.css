@@ -582,13 +582,20 @@
 }
 
 /* ── Scroll-hint bob ─────────────────────────────────────────── */
-.hero-bob { display: inline-block; }
+/* A single slow 4px sine bob read as background motion, not an
+   instruction — barely visible against the busy cloud footage behind it.
+   Two sharper hops (with a pause before repeating) plus a bigger arrow
+   reads as an actual nudge — "hey, scroll" — instead of ambient drift. */
+.hero-bob { display: inline-block; font-size: 1.35em; }
 @media (prefers-reduced-motion: no-preference) {
-  .hero-bob { animation: hero-bob 2.4s ease-in-out infinite; }
+  .hero-bob { animation: hero-bob 2s ease-in-out infinite; }
 }
 @keyframes hero-bob {
-  0%, 100% { transform: translateY(0);   }
-  50%      { transform: translateY(4px); }
+  0%, 100% { transform: translateY(0);    }
+  20%      { transform: translateY(10px); }
+  40%      { transform: translateY(0);    }
+  55%      { transform: translateY(6px);  }
+  70%      { transform: translateY(0);    }
 }
 /* Hide Ken Burns fallback once the frame-sequence canvas is playing —
    desktop (scroll-scrubbed) and mobile (boomerang-looped) both reveal it
