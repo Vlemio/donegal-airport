@@ -56,7 +56,7 @@ type Chapter = {
    why these are needed: without them the photo has no reserved height on
    mobile and loading it mid-scroll was cutting touch-scroll gestures short. */
 const PHOTO_DIMS: Record<string, [number, number]> = {
-  "/photos/story/story-ch01.webp": [2000, 1490],
+  "/photos/story/story-ch01.webp": [1800, 1341],
   "/photos/story/story-ch02.webp": [1331, 601],
   "/photos/story/story-ch03.webp": [323, 350],
   "/photos/story/story-ch04.webp": [1400, 1059],
@@ -251,11 +251,12 @@ const airlines: Airline[] = [
     {/* Background photo */}
     <div class="absolute inset-0" aria-hidden="true">
       <img
-        src="/photos/story/story-hero.jpg"
+        src="/photos/story/story-hero.webp"
         alt=""
         class="h-full w-full object-cover object-center"
         loading="eager"
         decoding="async"
+        fetchpriority="high"
       />
     </div>
 
