@@ -69,6 +69,19 @@ const PHOTO_DIMS: Record<string, [number, number]> = {
   "/photos/story/story-ch06.webp": [2048, 1365],
 };
 
+/* Below 1024px this photo sits in normal flow at ~full card width (measured
+   ~618px CSS on a phone); at ≥1024px it's absolutely positioned up to
+   clamp(28rem, 52%, 54rem) = 864px CSS. A single file sized for the
+   desktop case (so it stays sharp there) is ~3x more pixels than mobile
+   ever displays — PageSpeed flagged story-ch01 for exactly this. Only
+   chapters whose full-size file is far bigger than the mobile box need the
+   smaller companion; the others are already close enough in size that a
+   second file wouldn't be worth the upkeep. */
+const PHOTO_SM: Record<string, { src: string; width: number }> = {
+  "/photos/story/story-ch01.webp": { src: "/photos/story/story-ch01-sm.webp", width: 1050 },
+};
+const PHOTO_SIZES = "(min-width: 1024px) 864px, 100vw";
+
 const chapters: Chapter[] = [
   {
     year: "1978",
@@ -539,6 +552,8 @@ const airlines: Airline[] = [
                   <div class="photo-painted-wrapper">
                     <img
                       src={c.photo}
+                      srcset={PHOTO_SM[c.photo!] ? `${PHOTO_SM[c.photo!].src} ${PHOTO_SM[c.photo!].width}w, ${c.photo} ${PHOTO_DIMS[c.photo!]?.[0]}w` : undefined}
+                      sizes={PHOTO_SM[c.photo!] ? PHOTO_SIZES : undefined}
                       alt={c.photoAlt ?? ""}
                       width={PHOTO_DIMS[c.photo!]?.[0]}
                       height={PHOTO_DIMS[c.photo!]?.[1]}
