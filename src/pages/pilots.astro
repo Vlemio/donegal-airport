@@ -182,7 +182,13 @@ const droneZones = [
 <BaseLayout title={title} description={description}>
   {/* ─── HERO ─────────────────────────────────────────────────── */}
   <section class="relative isolate flex min-h-[82vh] w-full items-center overflow-hidden">
-    <img src="/photos/pilots/pilots-hero.webp" alt="" aria-hidden="true" class="absolute inset-0 h-full w-full object-cover object-center" />
+    <img
+      src="/photos/pilots/pilots-hero.webp"
+      alt=""
+      aria-hidden="true"
+      class="absolute inset-0 h-full w-full object-cover object-center"
+      fetchpriority="high"
+    />
     <div class="relative z-10 mx-auto w-full max-w-7xl px-6 py-28 [text-shadow:0_2px_10px_rgba(0,0,0,0.55),0_1px_30px_rgba(0,0,0,0.4)]">
       <p data-animate="fade-up" class="font-mono text-[0.9rem] font-bold uppercase tracking-[0.28em] text-white">Pilots &amp; drones</p>
       <h1 data-split class="hero-display mt-6 max-w-4xl font-display text-[clamp(2.75rem,7vw,6.5rem)] font-normal leading-[0.95] text-white">Operations at CFN.</h1>
@@ -232,10 +238,10 @@ const droneZones = [
           <div class="relative overflow-visible" id="map-canvas-wrap">
           <div class="relative" id="map-canvas">
             <img
-              src="/photos/pilots/aerodrome-chart.png?v=5"
+              src="/photos/pilots/aerodrome-chart.webp?v=6"
               alt="Donegal Airport aerodrome chart — runway 02/20 with displaced thresholds, turning areas and PAPI"
-              width="2896"
-              height="392"
+              width="1800"
+              height="244"
               loading="lazy"
               class="w-full"
             />
