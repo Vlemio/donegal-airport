@@ -1,7 +1,5 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import "leaflet/dist/leaflet.css";
-import "leaflet-gesture-handling/dist/leaflet-gesture-handling.css";
 import { readHours } from "../lib/siteContent";
 
 const title = "Contact · Donegal Airport";
@@ -22,13 +20,14 @@ const WEB3FORMS_KEY = "REPLACE_WITH_REAL_ACCESS_KEY";
       {/* Landscape hero crops awkwardly on a portrait phone viewport —
           swap to a dedicated vertical photo below sm:, same as the other
           hero-photo pages. */}
-      <source media="(max-width: 639px)" srcset="/photos/contact/contact-hero-mobile.jpg" />
+      <source media="(max-width: 639px)" srcset="/photos/contact/contact-hero-mobile.webp" type="image/webp" />
       <img
         src="/photos/contact/contact-hero.jpg"
         alt="Donegal Airport ground, fire and terminal staff on the runway"
         class="absolute inset-0 h-full w-full object-cover object-[center_40%]"
         loading="eager"
         decoding="async"
+        fetchpriority="high"
       />
     </picture>
     <div class="cfn-hero-content relative z-10 mx-auto w-full max-w-7xl px-6 py-28">
@@ -218,19 +217,21 @@ const WEB3FORMS_KEY = "REPLACE_WITH_REAL_ACCESS_KEY";
 </BaseLayout>
 
 <script>
-  import L from "leaflet";
-  import { GestureHandling } from "leaflet-gesture-handling";
+  import type L_ from "leaflet";
 
-  let map: L.Map | null = null;
+  let map: L_.Map | null = null;
+  let mapObserver: IntersectionObserver | null = null;
 
   document.addEventListener("astro:before-swap", () => {
+    mapObserver?.disconnect();
+    mapObserver = null;
     map?.remove();
     map = null;
   });
 
   document.addEventListener("astro:page-load", () => {
     initContactForm();
-    initContactMap();
+    watchContactMap();
   });
 
   function initContactForm() {
@@ -281,22 +282,63 @@ const WEB3FORMS_KEY = "REPLACE_WITH_REAL_ACCESS_KEY";
     });
   }
 
+  // The map sits well below the fold, so Leaflet's JS + CSS (~50 KiB + 7
+  // KiB, previously loaded render-blocking on every visit) only get fetched
+  // once the map section is about to scroll into view — cuts contact's LCP
+  // critical path without touching the map itself.
+  function watchContactMap() {
+    const el = document.getElementById("contact-map");
+    if (!el) return;
+    mapObserver = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        mapObserver?.disconnect();
+        mapObserver = null;
+        initContactMap(el);
+      },
+      { rootMargin: "600px 0px" },
+    );
+    mapObserver.observe(el);
+  }
+
+  // `?url` keeps Vite from bundling these as page CSS (which Astro hoists
+  // into a render-blocking <link> even for a dynamic import() — the async
+  // import above doesn't actually defer it). Resolving to a plain asset URL
+  // lets us attach the <link> ourselves, only once the map is really needed.
+  function loadStylesheet(href: string): Promise<void> {
+    if (document.querySelector(`link[href="${href}"]`)) return Promise.resolve();
+    return new Promise((resolve) => {
+      const link = document.createElement("link");
+      link.rel = "stylesheet";
+      link.href = href;
+      link.onload = () => resolve();
+      document.head.appendChild(link);
+    });
+  }
+
   // CartoDB Voyager tiles + a custom pin in the brand atlantic blue, instead
   // of the plain default-style OpenStreetMap embed (bright cartoon colours,
   // "Export"-page chrome baked into the iframe) — same map stack as the
   // rest of the agency's sites. leaflet-gesture-handling requires a second
   // finger to pan on touch, so one careless swipe over the map doesn't trap
   // the page's own scroll.
-  function initContactMap() {
-    const el = document.getElementById("contact-map");
-    if (!el) return;
+  async function initContactMap(el: HTMLElement) {
     map?.remove();
     const GA = document.documentElement.lang === "ga";
+
+    const [{ default: L }, { GestureHandling }, leafletCssUrl, gestureCssUrl] = await Promise.all([
+      import("leaflet"),
+      import("leaflet-gesture-handling"),
+      import("leaflet/dist/leaflet.css?url").then((m) => m.default),
+      import("leaflet-gesture-handling/dist/leaflet-gesture-handling.css?url").then((m) => m.default),
+    ]);
+    await Promise.all([loadStylesheet(leafletCssUrl), loadStylesheet(gestureCssUrl)]);
+    if (!document.getElementById("contact-map")) return; // navigated away while loading
 
     (L.Map as any).addInitHook("addHandler", "gestureHandling", GestureHandling);
 
     const coords: [number, number] = [55.0442, -8.341];
-    map = L.map(el, { gestureHandling: true, scrollWheelZoom: false } as L.MapOptions).setView(coords, 13);
+    map = L.map(el, { gestureHandling: true, scrollWheelZoom: false } as L_.MapOptions).setView(coords, 13);
 
     L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
       attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> © <a href="https://carto.com/attributions">CARTO</a>',
