@@ -109,10 +109,10 @@ const cardTints = [
 // Café menu — each cup (transparent, top-down) arcs in on scroll in the
 // "At the airport" section. img is the beans-less cutout the animation rotates.
 const coffees = [
-  { name: "Flat White",  desc: "A double ristretto under silky steamed milk. No froth, no fuss.",   img: "/photos/plan/coffees/cup-flatwhite.webp" },
-  { name: "Cappuccino",  desc: "Espresso, steamed milk and a deep foam crown, dusted with cocoa.",  img: "/photos/plan/coffees/cup-cappuccino.webp" },
-  { name: "Americano",   desc: "A shot of espresso loosened with hot water. Long, black and easy.", img: "/photos/plan/coffees/cup-americano.webp" },
-  { name: "Latte",       desc: "Steamed milk poured over espresso — foam, with the coffee below.",  img: "/photos/plan/coffees/cup-latte.webp" },
+  { name: "Flat White",  desc: "A double ristretto under silky steamed milk. No froth, no fuss.",   img: "/photos/plan/coffees/cup-flatwhite.webp", w: 550, h: 553 },
+  { name: "Cappuccino",  desc: "Espresso, steamed milk and a deep foam crown, dusted with cocoa.",  img: "/photos/plan/coffees/cup-cappuccino.webp", w: 550, h: 553 },
+  { name: "Americano",   desc: "A shot of espresso loosened with hot water. Long, black and easy.", img: "/photos/plan/coffees/cup-americano.webp", w: 550, h: 553 },
+  { name: "Latte",       desc: "Steamed milk poured over espresso — foam, with the coffee below.",  img: "/photos/plan/coffees/cup-latte.webp", w: 550, h: 448 },
 ];
 
 // Local Link bus times at Donegal Airport. Each pair is depart → arrive.
@@ -214,7 +214,7 @@ const busColumns = [
         background colour as a hard seam underneath. */}
     <div id="parking-bg" class="absolute inset-x-0 top-0 -z-10 h-[88vh] sm:inset-0 sm:h-auto" aria-hidden="true">
       <img
-        src="/photos/plan/plan-parking-aerial.jpg"
+        src="/photos/plan/plan-parking-aerial.webp"
         alt="Aerial view of Donegal Airport terminal and its car park beside the runway"
         class="h-full w-full object-cover object-center"
         loading="lazy"
@@ -775,7 +775,7 @@ const busColumns = [
                 loop
                 playsinline
                 preload="none"
-                poster="/photos/plan/cafe-video-poster.jpg"
+                poster="/photos/plan/cafe-video-poster.webp"
                 data-src="/photos/plan/cafe-video.mp4"
               >
               </video>
@@ -829,7 +829,7 @@ const busColumns = [
               <div id="cafe-mobile-list" class="mt-8 divide-y divide-line border-y border-line">
                 {coffees.map((c) => (
                   <div class="flex items-center gap-5 py-5">
-                    <img src={c.img} alt={`${c.name} at the Donegal Airport Café`} class="w-20 shrink-0" loading="lazy" />
+                    <img src={c.img} alt={`${c.name} at the Donegal Airport Café`} width={c.w} height={c.h} class="w-20 shrink-0" loading="lazy" />
                     <div>
                       <h3 class="cafe-name text-[1.5rem] leading-none text-[#2b1a10]">{c.name}</h3>
                       <p class="mt-1.5 text-sm leading-relaxed text-[#6a5142]">{c.desc}</p>

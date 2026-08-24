@@ -103,10 +103,10 @@ const cardTints = [
 ];
 
 const coffees = [
-  { name: "Flat White",  desc: "Ristretto dúbailte faoi bhainne galaithe síodúil. Gan chúr, gan trioblóid.",   img: "/photos/plan/coffees/cup-flatwhite.webp" },
-  { name: "Cappuccino",  desc: "Espresso, bainne galaithe agus barr cúir domhain, cócó dusta air.",  img: "/photos/plan/coffees/cup-cappuccino.webp" },
-  { name: "Americano",   desc: "Deoch espresso scaoilte le huisce te. Fada, dubh agus éasca.", img: "/photos/plan/coffees/cup-americano.webp" },
-  { name: "Latte",       desc: "Bainne galaithe doirte ar espresso — cúr, leis an gcaife thíos.",  img: "/photos/plan/coffees/cup-latte.webp" },
+  { name: "Flat White",  desc: "Ristretto dúbailte faoi bhainne galaithe síodúil. Gan chúr, gan trioblóid.",   img: "/photos/plan/coffees/cup-flatwhite.webp", w: 550, h: 553 },
+  { name: "Cappuccino",  desc: "Espresso, bainne galaithe agus barr cúir domhain, cócó dusta air.",  img: "/photos/plan/coffees/cup-cappuccino.webp", w: 550, h: 553 },
+  { name: "Americano",   desc: "Deoch espresso scaoilte le huisce te. Fada, dubh agus éasca.", img: "/photos/plan/coffees/cup-americano.webp", w: 550, h: 553 },
+  { name: "Latte",       desc: "Bainne galaithe doirte ar espresso — cúr, leis an gcaife thíos.",  img: "/photos/plan/coffees/cup-latte.webp", w: 550, h: 448 },
 ];
 
 // Local Link bus times at Donegal Airport. Each pair is depart → arrive.
@@ -208,7 +208,7 @@ const busColumns = [
         content height, which can run taller on a real phone. */}
     <div id="parking-bg" class="absolute inset-x-0 top-0 -z-10 h-[88vh] sm:inset-0 sm:h-auto" aria-hidden="true">
       <img
-        src="/photos/plan/plan-parking-aerial.jpg"
+        src="/photos/plan/plan-parking-aerial.webp"
         alt="Radharc aeriúil ar theirminéal Aerfort Dhún na nGall agus a charrchlós in aice leis an rúidbhealach"
         class="h-full w-full object-cover object-center"
         loading="lazy"
@@ -727,7 +727,7 @@ const busColumns = [
                 loop
                 playsinline
                 preload="none"
-                poster="/photos/plan/cafe-video-poster.jpg"
+                poster="/photos/plan/cafe-video-poster.webp"
                 data-src="/photos/plan/cafe-video.mp4"
               >
               </video>
@@ -772,7 +772,7 @@ const busColumns = [
               <div id="cafe-mobile-list" class="mt-8 divide-y divide-line border-y border-line">
                 {coffees.map((c) => (
                   <div class="flex items-center gap-5 py-5">
-                    <img src={c.img} alt={`${c.name} ag Caife Aerfort Dhún na nGall`} class="w-20 shrink-0" loading="lazy" />
+                    <img src={c.img} alt={`${c.name} ag Caife Aerfort Dhún na nGall`} width={c.w} height={c.h} class="w-20 shrink-0" loading="lazy" />
                     <div>
                       <h3 class="cafe-name text-[1.5rem] leading-none text-[#2b1a10]">{c.name}</h3>
                       <p class="mt-1.5 text-sm leading-relaxed text-[#6a5142]">{c.desc}</p>
