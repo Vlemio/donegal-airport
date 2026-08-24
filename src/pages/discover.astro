@@ -10,7 +10,7 @@ const highlights = [
     label: "Coast & Ocean",
     text: "Blue-flag beaches, sea stacks, cliff walks. Ireland's most dramatic coastline is ten minutes from baggage claim. Carrickfinn beach starts at the runway threshold.",
     link: "#destinations",
-    src: "/photos/discover-carrickfinn.jpg",
+    src: "/photos/discover-carrickfinn.webp",
     srcPos: "90% 38%",
     caption: "Carrickfinn beach · CFN",
   },
@@ -18,7 +18,7 @@ const highlights = [
     label: "Mountain & Lough",
     text: "Errigal, Slieve League and Glenveagh National Park sit within an hour's drive. No queues. No crowds. The park's 16,000 hectares of blanket bog and oak wood are free.",
     link: "#destinations",
-    src: "/photos/discover-mountain-lough.jpg",
+    src: "/photos/discover-mountain-lough.webp",
     srcPos: "50% 70%",
     caption: "Errigal · Co. Donegal",
   },
@@ -344,11 +344,12 @@ const islands = [
   <section class="relative h-[88vh] min-h-[540px] overflow-hidden border-b border-line">
 
     <img
-      src="/photos/discover-hero.jpg"
+      src="/photos/discover-hero.webp"
       alt="Sunset from Errigal, Donegal"
       class="absolute inset-0 h-full w-full object-cover object-[50%_42%]"
       loading="eager"
       decoding="sync"
+      fetchpriority="high"
     />
 
     {/* Overall darkening scrim — subtle, lets colours through */}
@@ -899,6 +900,7 @@ const islands = [
       title="Donegal interactive map"
       style="display:block;width:100%;height:min(88vh,860px);min-height:600px;border:none;"
       allow="fullscreen"
+      loading="lazy"
     ></iframe>
   </section>
 

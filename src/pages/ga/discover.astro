@@ -10,7 +10,7 @@ const highlights = [
     label: "Cósta agus Aigéan",
     text: "Tránna brat gorm, cairn mara, siúlóidí aille. Tá an cladach is drámatúla in Éirinn deich nóiméad ón éileamh bagáiste. Tosaíonn trá Charraig Fhinn ag tairseach an rúidbhealaigh.",
     link: "#destinations",
-    src: "/photos/discover-carrickfinn.jpg",
+    src: "/photos/discover-carrickfinn.webp",
     srcPos: "90% 38%",
     caption: "Trá Charraig Fhinn · CFN",
   },
@@ -18,7 +18,7 @@ const highlights = [
     label: "Sliabh agus Loch",
     text: "Tá an Earagail, Sliabh Liag agus Páirc Náisiúnta Ghleann Bheatha laistigh d'uair an chloig sa charr. Gan scuaine. Gan slua. Tá 16,000 heicteár de phortach agus coill dharach na páirce saor in aisce.",
     link: "#destinations",
-    src: "/photos/discover-mountain-lough.jpg",
+    src: "/photos/discover-mountain-lough.webp",
     srcPos: "50% 70%",
     caption: "An Earagail · Co. Dhún na nGall",
   },
@@ -342,11 +342,12 @@ const islands = [
   <section class="relative h-[88vh] min-h-[540px] overflow-hidden border-b border-line">
 
     <img
-      src="/photos/discover-hero.jpg"
+      src="/photos/discover-hero.webp"
       alt="Luí na gréine ón Earagail, Dún na nGall"
       class="absolute inset-0 h-full w-full object-cover object-[50%_42%]"
       loading="eager"
       decoding="sync"
+      fetchpriority="high"
     />
 
     <div class="pointer-events-none absolute inset-0 bg-ink/25" aria-hidden="true"></div>
@@ -878,6 +879,7 @@ const islands = [
       title="Léarscáil idirghníomhach Dhún na nGall"
       style="display:block;width:100%;height:min(88vh,860px);min-height:600px;border:none;"
       allow="fullscreen"
+      loading="lazy"
     ></iframe>
   </section>
 
