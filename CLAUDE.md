@@ -329,7 +329,7 @@ Kling usa el drone-frame como end-keyframe → el aeropuerto que aparece es el R
 
 - [ ] **Formulario de contacto no funciona** — `WEB3FORMS_KEY` en `contact.astro`/`ga/contact.astro` sigue en `"REPLACE_WITH_REAL_ACCESS_KEY"`. Conectar cuando el aeropuerto confirme el buzón de destino (ya estaba anotado como TODO en el propio código)
 - [ ] **Analíticas (GA4) sin configurar** — `GA4_MEASUREMENT_ID` en `BaseLayout.astro` sigue en `"REPLACE_WITH_REAL_GA4_ID"`. Google Consent Mode v2 + banner de cookies ya están montados y esperando; solo falta el ID real
-- [ ] **Imagen de Open Graph no existe** — todas las páginas apuntan a `/og-default.png` (usado en `BaseLayout.astro`) y ese archivo no existe; ninguna página lo sobreescribe con `ogImage=`. Las previews al compartir en WhatsApp/Facebook/LinkedIn/iMessage salen sin imagen. Pendiente: que Jose Manuel elija la foto (1200×630 recomendado)
+- [x] ~~Imagen de Open Graph no existe~~ — resuelto 2026-09-01: `public/og-default.png` creado (logo del aeropuerto sobre `--color-surface`, 1200×630)
 - [ ] **Quitar el `noindex` antes del lanzamiento real** — `<meta name="robots" content="noindex, nofollow">` en `BaseLayout.astro` + `Disallow: /` en `public/robots.txt`, a propósito mientras vive en vercel.app. Recordatorio para el día que se mueva al dominio real (donegalairport.ie)
 - [ ] `.env.example` incompleto — no documenta `MAILCHIMP_API_KEY`/`MAILCHIMP_AUDIENCE_ID` que usa `api/newsletter-subscribe.ts` (las claves en sí están bien — solo en variables de entorno, no hardcodeadas)
 - [ ] Favicon solo tiene un PNG — sin `apple-touch-icon` ni `manifest.json`. Menor, no urgente
