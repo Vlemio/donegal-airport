@@ -325,6 +325,18 @@ Kling usa el drone-frame como end-keyframe → el aeropuerto que aparece es el R
 - [ ] Playwright MCP — pendiente de instalar
 - [ ] **Story page redesign** — handoff entregado al designer en `Downloads/Aerofot/design_handoff_story/`. Esperar nuevo HTML reference antes de implementar
 
+### De la auditoría "20 errores de una web con IA" (2026-09-01)
+
+- [ ] **Formulario de contacto no funciona** — `WEB3FORMS_KEY` en `contact.astro`/`ga/contact.astro` sigue en `"REPLACE_WITH_REAL_ACCESS_KEY"`. Conectar cuando el aeropuerto confirme el buzón de destino (ya estaba anotado como TODO en el propio código)
+- [ ] **Analíticas (GA4) sin configurar** — `GA4_MEASUREMENT_ID` en `BaseLayout.astro` sigue en `"REPLACE_WITH_REAL_GA4_ID"`. Google Consent Mode v2 + banner de cookies ya están montados y esperando; solo falta el ID real
+- [ ] **Imagen de Open Graph no existe** — todas las páginas apuntan a `/og-default.png` (usado en `BaseLayout.astro`) y ese archivo no existe; ninguna página lo sobreescribe con `ogImage=`. Las previews al compartir en WhatsApp/Facebook/LinkedIn/iMessage salen sin imagen. Pendiente: que Jose Manuel elija la foto (1200×630 recomendado)
+- [ ] **Quitar el `noindex` antes del lanzamiento real** — `<meta name="robots" content="noindex, nofollow">` en `BaseLayout.astro` + `Disallow: /` en `public/robots.txt`, a propósito mientras vive en vercel.app. Recordatorio para el día que se mueva al dominio real (donegalairport.ie)
+- [ ] `.env.example` incompleto — no documenta `MAILCHIMP_API_KEY`/`MAILCHIMP_AUDIENCE_ID` que usa `api/newsletter-subscribe.ts` (las claves en sí están bien — solo en variables de entorno, no hardcodeadas)
+- [ ] Favicon solo tiene un PNG — sin `apple-touch-icon` ni `manifest.json`. Menor, no urgente
+- [ ] Limpieza opcional: `public/proto/` (~15 MB — coches y tazas de prototipo, no referenciados en ningún sitio), `discover-map-bg.png` (7,2 MB), `video/clouds-start.png` (4,4 MB), `plan/cafe-flatwhite.png` (1 MB) y `plan-aircraft-*.jpg`/`plan-cafe-*.jpg`/`plan-landscape-*.jpg` — todos huérfanos, no los sirve ninguna página, pero siguen desplegándose
+- [ ] Probar en Safari real — el sitio usa `color-mix()` (21 veces) y `backdrop-filter` (10 veces); bien soportados en navegadores modernos pero no verificado en un Safari real
+- [ ] Link-check completo — solo se auditaron los `href` literales del nav/footer (sin roturas). Un crawl completo de todas las páginas queda pendiente
+
 ## Design handoff workflow
 
 Proceso establecido en jun-2026:
