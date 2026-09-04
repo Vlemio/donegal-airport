@@ -327,9 +327,10 @@ Kling usa el drone-frame como end-keyframe → el aeropuerto que aparece es el R
 
 ### De la auditoría "20 errores de una web con IA" (2026-09-01)
 
-- [ ] **Formulario de contacto no funciona** — `WEB3FORMS_KEY` en `contact.astro`/`ga/contact.astro` sigue en `"REPLACE_WITH_REAL_ACCESS_KEY"`. Conectar cuando el aeropuerto confirme el buzón de destino (ya estaba anotado como TODO en el propio código)
+- [ ] **Formularios sin conectar (contacto + PPR)** — `WEB3FORMS_KEY` sigue en `"REPLACE_WITH_REAL_ACCESS_KEY"` en `contact.astro`/`ga/contact.astro` **y ahora también** en `pilots.astro`/`ga/pilots.astro` (el nuevo formulario de solicitud PPR, ver más abajo). Un solo access key de Web3Forms sirve a los dos — conectar cuando el aeropuerto confirme el buzón de destino
 - [ ] **Analíticas (GA4) sin configurar** — `GA4_MEASUREMENT_ID` en `BaseLayout.astro` sigue en `"REPLACE_WITH_REAL_GA4_ID"`. Google Consent Mode v2 + banner de cookies ya están montados y esperando; solo falta el ID real
 - [x] ~~Imagen de Open Graph no existe~~ — resuelto 2026-09-01: `public/og-default.png` creado (logo del aeropuerto sobre `--color-surface`, 1200×630)
+- [x] ~~GAR & PPR request~~ — resuelto 2026-09-04: nueva sección en `pilots.astro`/`ga/pilots.astro` (dentro del mismo `#ppr`/"PPR & procedures", banda clara debajo de la foto oscura existente) con el aviso de plazos GAR (24h/48h según pasaporte) + formulario de solicitud PPR con adjuntar-arrastrar del GAR/pasaportes, dentro de un `<details class="acc">` plegable. PDF real en `public/documents/gar-form-donegal.pdf`. Validación propia en rojo (no bubbles nativos, son dependientes del idioma del navegador) — pendiente de la misma `WEB3FORMS_KEY` de arriba para enviar de verdad
 - [ ] **Quitar el `noindex` antes del lanzamiento real** — `<meta name="robots" content="noindex, nofollow">` en `BaseLayout.astro` + `Disallow: /` en `public/robots.txt`, a propósito mientras vive en vercel.app. Recordatorio para el día que se mueva al dominio real (donegalairport.ie)
 - [ ] `.env.example` incompleto — no documenta `MAILCHIMP_API_KEY`/`MAILCHIMP_AUDIENCE_ID` que usa `api/newsletter-subscribe.ts` (las claves en sí están bien — solo en variables de entorno, no hardcodeadas)
 - [ ] Favicon solo tiene un PNG — sin `apple-touch-icon` ni `manifest.json`. Menor, no urgente

@@ -11,6 +11,10 @@ const towerHoursCms = await readTowerHours();
 const aero = await readAerodromeData();
 const fees = await readFees();
 
+// Same Web3Forms account as contact.astro's WEB3FORMS_KEY — TODO: swap
+// for the real access key at the same time as that one.
+const WEB3FORMS_KEY = "REPLACE_WITH_REAL_ACCESS_KEY";
+
 /* Figures from AIP Ireland — EIDL AD 2 (AIRAC Amdt 004/26, eff 16 APR 2026). Cross-check current AIP & NOTAMs. */
 
 const nav = [
@@ -465,6 +469,135 @@ const droneZones = [
         </div>
       </div>
     </div>
+
+    {/* ─── GAR agus iarratas PPR — mirrors pilots.astro (EN) section-for-
+         section. See that file for the full rationale comment. ─── */}
+    <div class="relative z-10 border-t border-line bg-surface px-6 py-20">
+      <div class="mx-auto max-w-4xl">
+        <p data-animate="fade-up" class="font-mono text-base font-bold uppercase tracking-[0.3em] text-atlantic">Sula dtagann tú</p>
+        <h3 data-split class="mt-3 font-display text-[clamp(1.8rem,3vw,2.6rem)] font-normal leading-[1.05] text-ink">GAR agus iarratas PPR.</h3>
+
+        <div data-animate="fade-up" class="mt-10 rounded-2xl border border-line bg-[color-mix(in_srgb,#ffffff_55%,var(--color-surface))] p-6 shadow-[0_1px_2px_rgba(24,29,22,0.05)] sm:p-8">
+          <p class="text-[0.95rem] leading-relaxed text-ink">
+            Is féidir PPR a iarraidh freisin tríd an bhfoirm thíos, d'aon eitilt.
+          </p>
+          <p class="mt-4 text-[0.95rem] leading-relaxed text-ink"><strong>Ag teacht ó lasmuigh d'Éirinn?</strong> Beidh Tuairisc Eitlíochta Ginearálta (GAR) ag teastáil uait freisin — braitheann an fad ama ar na pasanna ar bord:</p>
+          <ul class="mt-4 space-y-2 pl-5 text-[0.95rem] leading-relaxed text-ink [list-style:disc]">
+            <li>Sealbhóirí pas <strong>ÉIRE / RA</strong> (an chriú san áireamh) — GAR comhlánaithe, 24 uair an chloig roimh imeacht.</li>
+            <li>Sealbhóirí pas an <strong>AE</strong> (an chriú san áireamh) — GAR comhlánaithe + cóipeanna pas, 24 uair an chloig roimh imeacht.</li>
+            <li>Sealbhóirí pas <strong>nach as an AE</strong> iad (an chriú san áireamh) — GAR comhlánaithe + cóipeanna pas, 48 uair an chloig roimh imeacht, chomh maith le do sheoladh in Éirinn, fad na fanachta agus cuspóir na cuairte.</li>
+          </ul>
+          <p class="mt-4 text-[0.95rem] leading-relaxed text-ink">
+            <a href="/documents/gar-form-donegal.pdf" target="_blank" class="font-semibold text-atlantic underline underline-offset-2 hover:text-atlantic-bright">Íoslódáil an fhoirm GAR bhán</a>
+            — ceangail do chóip chomhlánaithe (agus cóipeanna pas, más gá) leis an bhfoirm thíos, nó seol trí ríomhphost chuig
+            <a href="mailto:atc@donegalairport.ie" class="font-semibold text-atlantic underline underline-offset-2 hover:text-atlantic-bright">atc@donegalairport.ie</a>
+            laistigh den tréimhse sin.
+          </p>
+          <p class="mt-4 text-[0.95rem] leading-relaxed text-ink">
+            <strong>Breosla:</strong> Ní stocálann Dún na nGall ach Jet A1 — níl AVGAS ar fáil ag an aerpháirc. Seiceáil cineál breosla d'aerárthaigh sula bpleanálann tú stad anseo.
+          </p>
+        </div>
+
+        <details data-animate="fade-up" class="acc group mt-8 rounded-2xl border border-line bg-[color-mix(in_srgb,#ffffff_55%,var(--color-surface))] p-6 shadow-[0_1px_2px_rgba(24,29,22,0.05)] sm:p-8">
+          <summary class="flex cursor-pointer items-center justify-between gap-4">
+            <div>
+              <p class="font-mono text-[0.8rem] uppercase tracking-[0.22em] text-sand">Foirm iarratais PPR</p>
+              <h4 class="mt-3 font-display text-2xl leading-snug text-ink">Inis dúinn sula n-eitlíonn tú isteach.</h4>
+            </div>
+            <svg class="acc-chevron mt-1 shrink-0 text-mute" width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+              <path d="M4.5 7 9 11.5 13.5 7" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </summary>
+          <p class="mt-4 text-sm text-mute">Deimhneoimid glacadh agus faomhadh trí ríomhphost. Léiríonn <span class="text-sand">*</span> réimse riachtanach.</p>
+
+          <form id="ppr-form" novalidate action="https://api.web3forms.com/submit" method="POST">
+            <input type="hidden" name="access_key" value={WEB3FORMS_KEY} />
+            <input type="hidden" name="subject" value="Iarratas PPR — suíomh gréasáin Aerfort Dhún na nGall" />
+            <input type="hidden" name="cc" value="info@donegalairport.ie" />
+            <input type="checkbox" name="botcheck" class="hidden" style="display:none" tabindex="-1" autocomplete="off" />
+
+            <div class="mt-7 grid gap-x-8 gap-y-6 sm:grid-cols-2">
+              <label class="block"><span class="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-mute">Ainm <span class="text-sand">*</span></span>
+                <input type="text" name="name" required class="mt-2 w-full border-b border-line bg-transparent pb-2 text-base text-ink outline-none transition-colors focus:border-atlantic" /></label>
+              <label class="block"><span class="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-mute">Ríomhphost <span class="text-sand">*</span></span>
+                <input type="email" name="email" required class="mt-2 w-full border-b border-line bg-transparent pb-2 text-base text-ink outline-none transition-colors focus:border-atlantic" /></label>
+
+              <label class="block"><span class="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-mute">Fón <span class="text-sand">*</span></span>
+                <input type="tel" name="phone" required class="mt-2 w-full border-b border-line bg-transparent pb-2 text-base text-ink outline-none transition-colors focus:border-atlantic" /></label>
+              <label class="block"><span class="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-mute">Clárú an aerárthaigh <span class="text-sand">*</span></span>
+                <input type="text" name="aircraft_registration" placeholder="m.sh. EI-ABC" required class="mt-2 w-full border-b border-line bg-transparent pb-2 text-base text-ink outline-none transition-colors focus:border-atlantic" /></label>
+
+              <label class="block"><span class="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-mute">Cineál an aerárthaigh <span class="text-sand">*</span></span>
+                <input type="text" name="aircraft_type" placeholder="m.sh. Cessna 172" required class="mt-2 w-full border-b border-line bg-transparent pb-2 text-base text-ink outline-none transition-colors focus:border-atlantic" /></label>
+              <label class="block"><span class="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-mute">MTOW an aerárthaigh (tonna) <span class="text-sand">*</span></span>
+                <select name="mtow" required class="mt-2 w-full border-b border-line bg-transparent pb-2 text-base text-ink outline-none transition-colors focus:border-atlantic">
+                  <option value="" selected disabled>Roghnaigh raon</option>
+                  <option>0.00 – 0.99</option><option>1.00 – 1.99</option><option>2.00 – 2.99</option>
+                  <option>3.00 – 3.99</option><option>4.00 – 4.99</option><option>5.00 – 6.00</option>
+                </select></label>
+
+              <label class="block"><span class="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-mute">Cineál gluaiseachta <span class="text-sand">*</span></span>
+                <select name="movement_type" required class="mt-2 w-full border-b border-line bg-transparent pb-2 text-base text-ink outline-none transition-colors focus:border-atlantic">
+                  <option value="" selected disabled>Roghnaigh ceann</option>
+                  <option>Príobháideach</option><option>Oiliúint</option><option>Cairt</option><option>Eile</option>
+                </select></label>
+              <label class="block">
+                <span class="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-mute">An bhfuil breosla ag teastáil? <span class="text-sand">*</span></span>
+                <div id="fuel-radio-row" class="mt-3 flex gap-6 rounded-lg text-base text-ink">
+                  <label class="flex items-center gap-2"><input type="radio" name="fuel_uplift" value="Tá" required class="accent-atlantic" /> Tá</label>
+                  <label class="flex items-center gap-2"><input type="radio" name="fuel_uplift" value="Níl" required class="accent-atlantic" /> Níl</label>
+                </div>
+                <span class="mt-1 block text-xs text-mute">Jet A1 amháin.</span>
+              </label>
+
+              <label class="block"><span class="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-mute">Dáta teachta <span class="text-sand">*</span></span>
+                <input type="date" name="arrival_date" required class="mt-2 w-full border-b border-line bg-transparent pb-2 text-base text-ink outline-none transition-colors focus:border-atlantic" /></label>
+              <label class="block"><span class="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-mute">Am teachta (áitiúil) <span class="text-sand">*</span></span>
+                <input type="time" name="arrival_time" required class="mt-2 w-full border-b border-line bg-transparent pb-2 text-base text-ink outline-none transition-colors focus:border-atlantic" /></label>
+
+              <label class="block"><span class="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-mute">Paisinéirí ag teacht <span class="text-sand">*</span></span>
+                <input type="number" name="pax_arriving" min="0" inputmode="numeric" required class="mt-2 w-full border-b border-line bg-transparent pb-2 text-base text-ink outline-none transition-colors focus:border-atlantic" /></label>
+              <label class="block"><span class="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-mute">Ag teacht ó cén aerpháirc? <span class="text-sand">*</span></span>
+                <input type="text" name="from_airfield" required class="mt-2 w-full border-b border-line bg-transparent pb-2 text-base text-ink outline-none transition-colors focus:border-atlantic" /></label>
+
+              <label class="block"><span class="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-mute">Dáta imeachta <span class="text-sand">*</span></span>
+                <input type="date" name="departure_date" required class="mt-2 w-full border-b border-line bg-transparent pb-2 text-base text-ink outline-none transition-colors focus:border-atlantic" /></label>
+              <label class="block"><span class="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-mute">Am imeachta (áitiúil) <span class="text-sand">*</span></span>
+                <input type="time" name="departure_time" required class="mt-2 w-full border-b border-line bg-transparent pb-2 text-base text-ink outline-none transition-colors focus:border-atlantic" /></label>
+
+              <label class="block"><span class="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-mute">Paisinéirí ag imeacht <span class="text-sand">*</span></span>
+                <input type="number" name="pax_departing" min="0" inputmode="numeric" required class="mt-2 w-full border-b border-line bg-transparent pb-2 text-base text-ink outline-none transition-colors focus:border-atlantic" /></label>
+              <label class="block"><span class="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-mute">Ag imeacht chuig cén aerpháirc? <span class="text-sand">*</span></span>
+                <input type="text" name="to_airfield" required class="mt-2 w-full border-b border-line bg-transparent pb-2 text-base text-ink outline-none transition-colors focus:border-atlantic" /></label>
+
+              <div class="block sm:col-span-2">
+                <span class="font-mono text-[0.62rem] uppercase tracking-[0.16em] text-mute">Foirm GAR / cóipeanna pas <span class="normal-case tracking-normal text-mute/80">— más ag teacht ó lasmuigh d'Éirinn amháin</span></span>
+                <div id="gar-dropzone" class="mt-2 flex cursor-pointer flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-line bg-surface/60 px-6 py-8 text-center transition-colors hover:border-atlantic/50 hover:bg-atlantic/5">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="text-mute" aria-hidden="true">
+                    <path d="M12 16V4M12 4l-4 4M12 4l4 4" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  <p class="text-sm text-ink"><span class="font-semibold text-atlantic">Cliceáil chun uaslódáil</span> nó tarraing comhaid anseo</p>
+                  <p class="text-xs text-mute">PDF, JPG nó PNG</p>
+                  <input id="gar-file-input" type="file" name="attachments" multiple accept=".pdf,.jpg,.jpeg,.png" class="hidden" />
+                </div>
+                <ul id="gar-file-list" class="mt-3 space-y-1.5"></ul>
+              </div>
+
+              <div class="sm:col-span-2 mt-2">
+                <button
+                  type="submit"
+                  class="inline-flex items-center gap-2 rounded-full bg-atlantic px-7 py-3 font-mono text-xs font-bold uppercase tracking-[0.18em] text-atlantic-ink transition-colors hover:bg-atlantic-bright"
+                >
+                  Seol iarratas PPR →
+                </button>
+                <p data-form-status class="mt-4 hidden text-sm"></p>
+              </div>
+            </div>
+          </form>
+        </details>
+      </div>
+    </div>
   </section>
 
   {/* ─── FEES & CHARGES ───────────────────────────────────────── */}
@@ -663,6 +796,9 @@ const droneZones = [
 
       // Live TAF widget
       initEidlWeather();
+
+      // GAR & PPR request form
+      initPPRForm();
 
       function initTowerHours() {
         const host = document.getElementById("tower-hours");
@@ -890,6 +1026,194 @@ const droneZones = [
 
         load();
         eidlWeatherTimer = setInterval(load, 300000);
+      }
+
+      // GAR/passport drag-and-drop + required-field validation for the
+      // PPR request form. novalidate on the <form> (see markup above) +
+      // this script instead of the browser's own validation bubbles —
+      // those, and a plain <input type="file">'s "Choose file(s) / No
+      // file chosen" chrome, render in whatever language the visitor's
+      // browser is set to. Building both ourselves keeps every word on
+      // screen in this page's own copy. Submit itself mirrors
+      // initContactForm() in contact.astro — same fetch/JSON/status-text
+      // pattern, same Web3Forms endpoint.
+      function initPPRForm() {
+        const form = document.getElementById("ppr-form") as HTMLFormElement | null;
+        if (!form) return;
+        const status = form.querySelector<HTMLElement>("[data-form-status]");
+
+        const dropzone = document.getElementById("gar-dropzone");
+        const fileInput = document.getElementById("gar-file-input") as HTMLInputElement | null;
+        const fileListEl = document.getElementById("gar-file-list");
+        let files: File[] = [];
+
+        function renderFiles() {
+          if (!fileListEl || !fileInput) return;
+          // Checked fresh on every render, not baked in at initPPRForm()
+          // call time — see the EN twin's script for why (View
+          // Transitions can leave both languages' listeners attached to
+          // this same #ppr-form after a client-side navigation).
+          const GA = document.documentElement.lang === "ga";
+          fileListEl.innerHTML = "";
+          files.forEach((file, i) => {
+            const li = document.createElement("li");
+            li.className = "flex items-center justify-between gap-3 rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink";
+            const name = document.createElement("span");
+            name.className = "truncate";
+            name.textContent = `${file.name} · ${Math.max(1, Math.round(file.size / 1024))} KB`;
+            const remove = document.createElement("button");
+            remove.type = "button";
+            remove.className = "shrink-0 font-mono text-xs text-mute hover:text-[#b23b3b]";
+            remove.textContent = GA ? "Bain" : "Remove";
+            remove.addEventListener("click", () => {
+              files.splice(i, 1);
+              renderFiles();
+            });
+            li.append(name, remove);
+            fileListEl.appendChild(li);
+          });
+          // Files dropped (not chosen via the native picker) don't reach
+          // the real <input> on their own — FormData(form) below only
+          // sees what's actually on that input, so keep it in sync with
+          // our own list on every change.
+          const dt = new DataTransfer();
+          files.forEach((f) => dt.items.add(f));
+          fileInput.files = dt.files;
+        }
+
+        if (dropzone && fileInput) {
+          dropzone.addEventListener("click", () => fileInput.click());
+          fileInput.addEventListener("change", () => {
+            files = files.concat(Array.from(fileInput.files ?? []));
+            renderFiles();
+          });
+          ["dragover", "dragenter"].forEach((evt) =>
+            dropzone.addEventListener(evt, (e) => {
+              e.preventDefault();
+              dropzone.classList.add("border-atlantic", "bg-atlantic/5");
+            }),
+          );
+          ["dragleave", "dragend"].forEach((evt) =>
+            dropzone.addEventListener(evt, () => {
+              dropzone.classList.remove("border-atlantic", "bg-atlantic/5");
+            }),
+          );
+          dropzone.addEventListener("drop", (e) => {
+            e.preventDefault();
+            dropzone.classList.remove("border-atlantic", "bg-atlantic/5");
+            if (e.dataTransfer?.files?.length) {
+              files = files.concat(Array.from(e.dataTransfer.files));
+              renderFiles();
+            }
+          });
+        }
+
+        function showError(field: HTMLElement, message: string) {
+          field.classList.remove("border-line");
+          field.classList.add("border-[#b23b3b]");
+          let msg = field.parentElement?.querySelector<HTMLElement>(".field-error-msg");
+          if (!msg) {
+            msg = document.createElement("span");
+            msg.className = "field-error-msg mt-1 block text-xs text-[#b23b3b]";
+            field.insertAdjacentElement("afterend", msg);
+          }
+          msg.textContent = message;
+        }
+        function clearError(field: HTMLElement) {
+          field.classList.remove("border-[#b23b3b]");
+          field.classList.add("border-line");
+          field.parentElement?.querySelector(".field-error-msg")?.remove();
+        }
+        function clearRadioError(row: HTMLElement) {
+          row.classList.remove("border", "border-[#b23b3b]", "p-2", "-m-2");
+          row.parentElement?.querySelector(".field-error-msg")?.remove();
+        }
+
+        form.addEventListener("input", (e) => {
+          const t = e.target as HTMLElement;
+          if (t.hasAttribute?.("required")) clearError(t);
+        });
+        form.addEventListener("change", (e) => {
+          const t = e.target as HTMLInputElement;
+          if (t.name === "fuel_uplift") {
+            const row = document.getElementById("fuel-radio-row");
+            if (row) clearRadioError(row);
+          } else if (t.hasAttribute?.("required")) {
+            clearError(t);
+          }
+        });
+
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const GA = document.documentElement.lang === "ga";
+          let firstInvalid: HTMLElement | null = null;
+
+          form.querySelectorAll<HTMLInputElement | HTMLSelectElement>("[required]").forEach((field) => {
+            if (field.name === "fuel_uplift") return; // handled once, below
+            if (!field.value) {
+              showError(field, GA ? "Líon isteach an réimse seo, le do thoil." : "Please fill in this field.");
+              if (!firstInvalid) firstInvalid = field;
+            } else {
+              clearError(field);
+            }
+          });
+
+          const fuelRow = document.getElementById("fuel-radio-row");
+          const fuelChecked = form.querySelector<HTMLInputElement>('input[name="fuel_uplift"]:checked');
+          if (fuelRow) {
+            if (!fuelChecked) {
+              fuelRow.classList.add("border", "border-[#b23b3b]", "p-2", "-m-2");
+              let msg = fuelRow.parentElement?.querySelector<HTMLElement>(".field-error-msg");
+              if (!msg) {
+                msg = document.createElement("span");
+                msg.className = "field-error-msg mt-1 block text-xs text-[#b23b3b]";
+                fuelRow.insertAdjacentElement("afterend", msg);
+              }
+              msg.textContent = GA ? "Roghnaigh tá nó níl, le do thoil." : "Please choose yes or no.";
+              if (!firstInvalid) firstInvalid = fuelRow;
+            } else {
+              clearRadioError(fuelRow);
+            }
+          }
+
+          if (firstInvalid) {
+            (firstInvalid as HTMLElement).scrollIntoView({ behavior: "smooth", block: "center" });
+            return;
+          }
+
+          if (!status) return;
+          const submitBtn = form.querySelector<HTMLButtonElement>('button[type="submit"]');
+          submitBtn?.setAttribute("disabled", "true");
+          status.className = "mt-4 text-sm text-mute";
+          status.textContent = GA ? "Á sheoladh…" : "Sending…";
+
+          try {
+            const res = await fetch(form.action, {
+              method: "POST",
+              body: new FormData(form),
+              headers: { Accept: "application/json" },
+            });
+            const data = await res.json();
+            if (data.success) {
+              status.className = "mt-4 text-sm text-atlantic";
+              status.textContent = GA
+                ? "Go raibh maith agat — tá d'iarratas PPR ar an mbealach. Deimhneoimid trí ríomhphost."
+                : "Thanks — your PPR request is on its way. We'll confirm by email.";
+              form.reset();
+              files = [];
+              renderFiles();
+            } else {
+              throw new Error(data.message || "Unknown error");
+            }
+          } catch {
+            status.className = "mt-4 text-sm text-[#b23b3b]";
+            status.textContent = GA
+              ? "Tharla earráid — seol ríomhphost chugainn go díreach ag atc@donegalairport.ie le do thoil."
+              : "Something went wrong — please email us directly at atc@donegalairport.ie.";
+          } finally {
+            submitBtn?.removeAttribute("disabled");
+          }
+        });
       }
 
     });
