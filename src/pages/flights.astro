@@ -378,14 +378,18 @@ const arrRowCount = flightsToday.filter((f) => f.type === "arrival").length;
   }
   // 'En Route'/'Departed' are real internal states the ADS-B tracker uses
   // for an arrival's own progression (needed for ETA/delay math), but every
-  // passenger-facing display collapses them to 'On Time' before rendering —
-  // see displayStatus() in the FIDS's public/board.js and public/operator.js.
-  // This board was reading f.status raw, so it showed 'En Route' while the
-  // operator panel (which already collapses it) showed 'On Time' for the
-  // same flight. Mirrors those two exactly so all three stay in sync.
+  // passenger-facing display collapses them before rendering — see
+  // displayStatus() in the FIDS's public/board.js (the public kiosk board,
+  // the source of truth here). This board was reading f.status raw, so it
+  // showed 'En Route' while the kiosk board showed 'On Time'/'Delayed' for
+  // the same flight. NOTE: the FIDS's own public/operator.js has a stale
+  // copy of this function that always collapses to 'On Time' regardless of
+  // estLate/estVeryLate — don't copy that one, it's the bug this fixes.
   function displayStatus(f) {
     var s = f.status || 'Scheduled';
-    if (f.type === 'arrival' && (s === 'En Route' || s === 'Departed')) return 'On Time';
+    if (f.type === 'arrival' && (s === 'En Route' || s === 'Departed')) {
+      return (f.estLate || f.estVeryLate) ? 'Delayed' : 'On Time';
+    }
     return s;
   }
   function dirCode(f) { return f.type === 'departure' ? 'dep' : 'arr'; }
