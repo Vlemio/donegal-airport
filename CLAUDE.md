@@ -338,6 +338,11 @@ Kling usa el drone-frame como end-keyframe → el aeropuerto que aparece es el R
 - [ ] Probar en Safari real — el sitio usa `color-mix()` (21 veces) y `backdrop-filter` (10 veces); bien soportados en navegadores modernos pero no verificado en un Safari real
 - [ ] Link-check completo — solo se auditaron los `href` literales del nav/footer (sin roturas). Un crawl completo de todas las páginas queda pendiente
 
+### QR de la revista del aeropuerto (2026-09-10)
+
+- [x] ~~Redirects trackeables para los QR de Aer Lingus/Loganair~~ — resuelto 2026-09-10: `src/pages/fly/[airline].astro` (`/fly/aerlingus`, `/fly/loganair`) registra un evento `qr_scan` vía Vercel Web Analytics (server-side, sin cookies) y redirige 302 a la web real de la aerolínea. Pendiente que reconfiguren el destino de los dos QR (son dinámicos, vía qrgenerator, no hace falta reimprimir)
+- [ ] **Añadir tracking server-side a GA4 (Measurement Protocol) en `/fly/[airline].astro`** — para que el mismo evento `qr_scan` también aparezca en Google Analytics, no solo en Vercel Analytics. Bloqueado por dos cosas que aún no existen: (1) el `GA4_MEASUREMENT_ID` real (sigue en `"REPLACE_WITH_REAL_GA4_ID"` en `BaseLayout.astro`) y su API secret del Measurement Protocol, y (2) el hosting/dominio final de la web (todavía en `donegal-airport.vercel.app`, sin contratar hosting real). Hacerlo cuando ambas cosas estén listas
+
 ## Design handoff workflow
 
 Proceso establecido en jun-2026:
