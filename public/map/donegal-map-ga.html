@@ -232,7 +232,11 @@ function fromCFN(place) {
   const d = hav(airport, place);
   if(place.cat==='islands') return { km:Math.round(d), txt:'díreach · + bád farantóireachta' };
   const road = Math.round(d*1.32);
-  const min = Math.max(5, Math.round(road/68*60));
+  // Urlár 1 (ní 5) — tá Trá Charraig Fhinn díreach in aice leis an rúidbhealach,
+  // faoi bhun nóiméad tiomána i ndáiríre; d'fhág an t-íosmhéid 5 nóim é ag
+  // léamh i bhfad níos faide ná mar atá. Fós ag cosc "0 nóim" a thaispeáint
+  // d'áit atá go bunúsach in airde ar an aerfort.
+  const min = Math.max(1, Math.round(road/68*60));
   return { km:road, txt:'~'+min+' nóim tiomána' };
 }
 

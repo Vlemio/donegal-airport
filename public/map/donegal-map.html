@@ -232,7 +232,11 @@ function fromCFN(place) {
   const d = hav(airport, place);
   if(place.cat==='islands') return { km:Math.round(d), txt:'direct · + ferry' };
   const road = Math.round(d*1.32);
-  const min = Math.max(5, Math.round(road/68*60));
+  // Floor of 1 (not 5) — Carrickfinn Beach sits right beside the runway,
+  // under a minute's drive in reality, and a flat 5-min minimum made it
+  // read as much further than it is. Still guards against showing "0 min"
+  // for anything essentially on top of the airport.
+  const min = Math.max(1, Math.round(road/68*60));
   return { km:road, txt:'~'+min+' min drive' };
 }
 
