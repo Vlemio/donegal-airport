@@ -103,22 +103,22 @@ const CATS = [
 
 const PLACES = [
   { cat:'airport', name:'Aerfort Dhún na nGall',  sub:'Carraig Fhinn · tús',   lng:-8.3410,  lat:55.0442,  desc:'Aerfort Dhún na nGall — ceann de na cuir chuige is áille san Eoraip, idir dumhcha agus an tAigéan Atlantach.', photo:'/photos/map/cfn-airport.jpg' },
-  { cat:'nature',  name:'An Earagail', sub:'Sliabh · 751 m', lng:-8.11237, lat:55.03393, desc:'Buaic chuartzite gheal cháiliúil an chontae.', photo:'/photos/map/errigal.jpg' },
-  { cat:'nature',  name:'Páirc Náisiúnta Ghleann Bheatha', sub:'Páirc agus caisleán',              lng:-7.94518, lat:55.05655, desc:'Gleann oighreach, loch agus caisleán Victeoiriach i measc gairdíní.', photo:'/photos/map/glenveagh.jpg' },
-  { cat:'nature',  name:'Sliabh Liag', sub:'Aillte mara',                 lng:-8.6889,  lat:54.6383,  desc:'Aillte mara beagnach 600 m ar airde — i measc na cinn is airde san Eoraip.', photo:'/photos/map/slieve-league.jpg' },
-  { cat:'nature',  name:'Cionn Mhálanna', sub:'Rinn thuaisceart na hÉireann', lng:-7.3736,  lat:55.3817,  desc:'An pointe is faide ó thuaidh in Éirinn, ar Leithinis Inis Eoghain.', photo:'/photos/map/malin-head.jpg' },
-  { cat:'nature',  name:'Grianán Ailigh', sub:'Ráth cloiche',       lng:-7.4283,  lat:55.0236,  desc:'Fáinne cloiche ag 250 m le radhairc 360° thar na lochanna.', photo:'/photos/map/grianan-of-aileach.jpg' },
-  { cat:'nature',  name:'Páirc Foraoise na hAirde', sub:'Foraois chósta',             lng:-7.90209, lat:55.15435, desc:'480 heicteár d\'fhoraois, dumhcha agus tránna ar Chuan na gCaorach.', photo:'/photos/map/ards-forest-park.jpg' },
-  { cat:'nature',  name:'Caisleán na Dumhcha', sub:'Caisleán ón 15ú haois',             lng:-7.86861, lat:55.13787, desc:'Túr-theach meánaoiseach cois uisce in aice le Craoslach.', photo:'/photos/map/doe-castle.jpg' },
-  { cat:'nature',  name:'Trá Charraig Fhinn', sub:'Trá an aerfoirt',              lng:-8.34978, lat:55.04081, desc:'Trá gainimh bháin faoi Bhrat Gorm díreach in aice leis an rúidbhealach.', photo:'/photos/map/carrickfinn-beach.jpg' },
-  { cat:'nature',  name:'Leithinis Inis Eoghain', sub:'Réigiún thuaisceart',            lng:-7.2900,  lat:55.2500,  desc:'An leithinis is faide ó thuaidh in Éirinn; áit dúchais Chionn Mhálanna.', photo:'/photos/map/inishowen-peninsula.jpg' },
-  { cat:'towns',   name:'Baile Dhún na nGall', sub:'Caisleán agus bá',               lng:-8.1100,  lat:54.6542,  desc:'Croílár an deiscirt, le caisleán agus céibh.', photo:'/photos/map/donegal-town.webp' },
-  { cat:'towns',   name:'Leitir Ceanainn', sub:'Príomhbhaile',                  lng:-7.7344,  lat:54.9558,  desc:'Baile is mó Dhún na nGall agus mol seirbhíse.', photo:'/photos/map/letterkenny.jpg' },
-  { cat:'towns',   name:'Bun Dobhráin', sub:'Marcaíocht toinne agus trá',               lng:-8.2811,  lat:54.4783,  desc:'Príomhchathair marcaíochta toinne na hÉireann, le trá Brat Gorm ar Bhealach Fiáin an Atlantaigh.', photo:'/photos/map/bundoran.jpg' },
-  { cat:'towns',   name:'Na Cealla Beaga', sub:'Calafort iascaireachta',               lng:-8.4500,  lat:54.6333,  desc:'Calafort iascaireachta is mó na hÉireann.', photo:'/photos/map/killybegs.jpg' },
-  { cat:'towns',   name:'Gleann Cholm Cille', sub:'Sráidbhaile dúchais',               lng:-8.74134, lat:54.70806, desc:'Iarsmalann dhúchais faoin aer agus cósta drámatúil an iardheiscirt.', photo:'/photos/map/glencolmcille.jpg' },
-  { cat:'towns',   name:'Ard an Rátha', sub:'Baile oidhreachta',              lng:-8.4100,  lat:54.7700,  desc:'Clúiteach as bréidín agus ceardaíocht olla.', photo:'/photos/map/ardara.jpg' },
-  { cat:'towns',   name:'Béal Átha Seanaidh', sub:'Béal na hÉirne',          lng:-8.1897,  lat:54.5028,  desc:'Ceann de na bailte is sine in Éirinn.', photo:'/photos/map/ballyshannon.jpg' },
+  { cat:'nature',  name:'An Earagail', sub:'Sliabh · 751 m', lng:-8.11237, lat:55.03393, driveKm:21, driveMin:23, desc:'Buaic chuartzite gheal cháiliúil an chontae.', photo:'/photos/map/errigal.jpg' },
+  { cat:'nature',  name:'Páirc Náisiúnta Ghleann Bheatha', sub:'Páirc agus caisleán',              lng:-7.94518, lat:55.05655, driveKm:35, driveMin:36, desc:'Gleann oighreach, loch agus caisleán Victeoiriach i measc gairdíní.', photo:'/photos/map/glenveagh.jpg' },
+  { cat:'nature',  name:'Sliabh Liag', sub:'Aillte mara',                 lng:-8.6889,  lat:54.6383,  driveKm:70, driveMin:91, desc:'Aillte mara beagnach 600 m ar airde — i measc na cinn is airde san Eoraip.', photo:'/photos/map/slieve-league.jpg' },
+  { cat:'nature',  name:'Cionn Mhálanna', sub:'Rinn thuaisceart na hÉireann', lng:-7.3736,  lat:55.3817,  driveKm:140, driveMin:141, desc:'An pointe is faide ó thuaidh in Éirinn, ar Leithinis Inis Eoghain.', photo:'/photos/map/malin-head.jpg' },
+  { cat:'nature',  name:'Grianán Ailigh', sub:'Ráth cloiche',       lng:-7.4283,  lat:55.0236,  driveKm:83, driveMin:85, desc:'Fáinne cloiche ag 250 m le radhairc 360° thar na lochanna.', photo:'/photos/map/grianan-of-aileach.jpg' },
+  { cat:'nature',  name:'Páirc Foraoise na hAirde', sub:'Foraois chósta',             lng:-7.90209, lat:55.15435, driveKm:46, driveMin:49, desc:'480 heicteár d\'fhoraois, dumhcha agus tránna ar Chuan na gCaorach.', photo:'/photos/map/ards-forest-park.jpg' },
+  { cat:'nature',  name:'Caisleán na Dumhcha', sub:'Caisleán ón 15ú haois',             lng:-7.86861, lat:55.13787, driveKm:45, driveMin:49, desc:'Túr-theach meánaoiseach cois uisce in aice le Craoslach.', photo:'/photos/map/doe-castle.jpg' },
+  { cat:'nature',  name:'Trá Charraig Fhinn', sub:'Trá an aerfoirt',              lng:-8.34978, lat:55.04081, driveKm:1, driveMin:1, desc:'Trá gainimh bháin faoi Bhrat Gorm díreach in aice leis an rúidbhealach.', photo:'/photos/map/carrickfinn-beach.jpg' },
+  { cat:'nature',  name:'Leithinis Inis Eoghain', sub:'Réigiún thuaisceart',            lng:-7.2900,  lat:55.2500,  driveKm:120, driveMin:115, desc:'An leithinis is faide ó thuaidh in Éirinn; áit dúchais Chionn Mhálanna.', photo:'/photos/map/inishowen-peninsula.jpg' },
+  { cat:'towns',   name:'Baile Dhún na nGall', sub:'Caisleán agus bá',               lng:-8.1100,  lat:54.6542,  driveKm:69, driveMin:69, desc:'Croílár an deiscirt, le caisleán agus céibh.', photo:'/photos/map/donegal-town.webp' },
+  { cat:'towns',   name:'Leitir Ceanainn', sub:'Príomhbhaile',                  lng:-7.7344,  lat:54.9558,  driveKm:58, driveMin:60, desc:'Baile is mó Dhún na nGall agus mol seirbhíse.', photo:'/photos/map/letterkenny.jpg' },
+  { cat:'towns',   name:'Bun Dobhráin', sub:'Marcaíocht toinne agus trá',               lng:-8.2811,  lat:54.4783,  driveKm:100, driveMin:95, desc:'Príomhchathair marcaíochta toinne na hÉireann, le trá Brat Gorm ar Bhealach Fiáin an Atlantaigh.', photo:'/photos/map/bundoran.jpg' },
+  { cat:'towns',   name:'Na Cealla Beaga', sub:'Calafort iascaireachta',               lng:-8.4500,  lat:54.6333,  driveKm:58, driveMin:64, desc:'Calafort iascaireachta is mó na hÉireann.', photo:'/photos/map/killybegs.jpg' },
+  { cat:'towns',   name:'Gleann Cholm Cille', sub:'Sráidbhaile dúchais',               lng:-8.74134, lat:54.70806, driveKm:68, driveMin:86, desc:'Iarsmalann dhúchais faoin aer agus cósta drámatúil an iardheiscirt.', photo:'/photos/map/glencolmcille.jpg' },
+  { cat:'towns',   name:'Ard an Rátha', sub:'Baile oidhreachta',              lng:-8.4100,  lat:54.7700,  driveKm:40, driveMin:43, desc:'Clúiteach as bréidín agus ceardaíocht olla.', photo:'/photos/map/ardara.jpg' },
+  { cat:'towns',   name:'Béal Átha Seanaidh', sub:'Béal na hÉirne',          lng:-8.1897,  lat:54.5028,  driveKm:92, driveMin:88, desc:'Ceann de na bailte is sine in Éirinn.', photo:'/photos/map/ballyshannon.jpg' },
   { cat:'islands', name:'Árainn Mhór', sub:'Arranmore',      lng:-8.52591, lat:54.98914, desc:'Oileán áitrithe is mó Dhún na nGall, pobal Gaeltachta.', photo:'/photos/map/arranmore.jpg' },
   { cat:'islands', name:'Toraigh', sub:'Tory Island',                    lng:-8.2333,  lat:55.2667,  desc:'Oileán iargúlta lena rí féin agus pobal ealaíontóirí.', photo:'/photos/map/tory-island.jpg' },
   { cat:'islands', name:'Oileán Ghabhla', sub:'Gola Island',        lng:-8.36369, lat:55.09094, desc:'Aillte agus tránna; tóir ag dreapadóirí carraige air.', photo:'/photos/map/gola-island.jpg' },
@@ -128,16 +128,16 @@ const PLACES = [
   { cat:'islands', name:'Inis Caorach', sub:'Inishkerragh',               lng:-8.49415, lat:54.96017, desc:'Oileánín neamháitrithe d\'oileánra na Rosann.', photo:'/photos/map/inishkerragh.jpg' },
   { cat:'islands', name:'Inis Trá Thoill', sub:'Inishtrahull',          lng:-7.2333,  lat:55.4333,  desc:'Oileán is faide ó thuaidh na hÉireann, amach ó Chionn Mhálanna.', photo:'/photos/map/inishtrahull.jpg' },
   { cat:'islands', name:'Oileán Ruaidh', sub:'Island Roy',         lng:-7.79068, lat:55.1922,  desc:'Oileánín i gCuan Mhaoil Ruaidh, in aice le Na Dúnaibh.', photo:'/photos/discover-island-roy.webp' },
-  { cat:'golf',    name:'Rosapenna Golf Resort', sub:'Na Dúnaibh',                   lng:-7.82604, lat:55.18671, photo:'/photos/golf/rosapenna.webp' },
-  { cat:'golf',    name:'Ballyliffin Golf Club', sub:'Baile Uí Fhloinn (Inis Eoghain)',    lng:-7.3708,  lat:55.30551, photo:'/photos/golf/ballyliffin.webp' },
-  { cat:'golf',    name:'Portsalon Golf Club', sub:'Port Salann',                  lng:-7.6217,  lat:55.2056, photo:'/photos/golf/portsalon.webp' },
-  { cat:'golf',    name:'Narin & Portnoo Golf Club', sub:'Port Nua',                lng:-8.44196, lat:54.83649, photo:'/photos/golf/narin-portnoo.webp' },
-  { cat:'golf',    name:'Cruit Island Golf Club', sub:'Cionn Caslach',               lng:-8.42291, lat:55.03688, photo:'/photos/golf/cruit-island.webp' },
-  { cat:'golf',    name:'Dunfanaghy Golf Club', sub:'Dún Fionnachaidh',                lng:-7.9700,  lat:55.1850, photo:'/photos/golf/dunfanaghy.webp' },
-  { cat:'golf',    name:'Gweedore Golf Club', sub:'Gaoth Dobhair',                  lng:-8.31614, lat:55.08554, photo:'/photos/golf/gweedore.webp' },
-  { cat:'golf',    name:'Donegal Golf Club', sub:'Murbhach',                   lng:-8.15838, lat:54.61403, photo:'/photos/golf/donegal-club.webp' },
-  { cat:'golf',    name:'Bundoran Golf Club', sub:'Bun Dobhráin',                  lng:-8.27408, lat:54.48739, photo:'/photos/map/bundoran-golf-club.jpg' },
-  { cat:'golf',    name:'North West Golf Club', sub:'Bun Cranncha',                  lng:-7.45422, lat:55.11766, photo:'/photos/golf/north-west.webp' },
+  { cat:'golf',    name:'Rosapenna Golf Resort', sub:'Na Dúnaibh',                   lng:-7.82604, lat:55.18671, driveKm:57, driveMin:60, photo:'/photos/golf/rosapenna.webp' },
+  { cat:'golf',    name:'Ballyliffin Golf Club', sub:'Baile Uí Fhloinn (Inis Eoghain)',    lng:-7.3708,  lat:55.30551, driveKm:127, driveMin:135, photo:'/photos/golf/ballyliffin.webp' },
+  { cat:'golf',    name:'Portsalon Golf Club', sub:'Port Salann',                  lng:-7.6217,  lat:55.2056, driveKm:72, driveMin:74, photo:'/photos/golf/portsalon.webp' },
+  { cat:'golf',    name:'Narin & Portnoo Golf Club', sub:'Port Nua',                lng:-8.44196, lat:54.83649, driveKm:37, driveMin:39, photo:'/photos/golf/narin-portnoo.webp' },
+  { cat:'golf',    name:'Cruit Island Golf Club', sub:'Cionn Caslach',               lng:-8.42291, lat:55.03688, driveKm:11, driveMin:18, photo:'/photos/golf/cruit-island.webp' },
+  { cat:'golf',    name:'Dunfanaghy Golf Club', sub:'Dún Fionnachaidh',                lng:-7.9700,  lat:55.1850, driveKm:42, driveMin:44, photo:'/photos/golf/dunfanaghy.webp' },
+  { cat:'golf',    name:'Gweedore Golf Club', sub:'Gaoth Dobhair',                  lng:-8.31614, lat:55.08554, driveKm:18, driveMin:23, photo:'/photos/golf/gweedore.webp' },
+  { cat:'golf',    name:'Donegal Golf Club', sub:'Murbhach',                   lng:-8.15838, lat:54.61403, driveKm:84, driveMin:84, photo:'/photos/golf/donegal-club.webp' },
+  { cat:'golf',    name:'Bundoran Golf Club', sub:'Bun Dobhráin',                  lng:-8.27408, lat:54.48739, driveKm:100, driveMin:96, photo:'/photos/map/bundoran-golf-club.jpg' },
+  { cat:'golf',    name:'North West Golf Club', sub:'Bun Cranncha',                  lng:-7.45422, lat:55.11766, driveKm:96, driveMin:96, photo:'/photos/golf/north-west.webp' },
 ];
 
 const WAW = [
@@ -213,9 +213,8 @@ function hav(a, b) {
 
 function driveMin(p) {
   if(!airport || p.cat==='airport') return 0;
-  const d = hav(airport, p);
   if(p.cat==='islands') return null;
-  return Math.round(d*1.32/68*60);
+  return p.driveMin;
 }
 
 function timeOk(p) {
@@ -229,15 +228,11 @@ function placeVisible(p) { return activeCats().has(p.cat) && timeOk(p); }
 
 function fromCFN(place) {
   if(!place || !airport || place.cat==='airport') return null;
-  const d = hav(airport, place);
-  if(place.cat==='islands') return { km:Math.round(d), txt:'díreach · + bád farantóireachta' };
-  const road = Math.round(d*1.32);
-  // Urlár 1 (ní 5) — tá Trá Charraig Fhinn díreach in aice leis an rúidbhealach,
-  // faoi bhun nóiméad tiomána i ndáiríre; d'fhág an t-íosmhéid 5 nóim é ag
-  // léamh i bhfad níos faide ná mar atá. Fós ag cosc "0 nóim" a thaispeáint
-  // d'áit atá go bunúsach in airde ar an aerfort.
-  const min = Math.max(1, Math.round(road/68*60));
-  return { km:road, txt:'~'+min+' nóim tiomána' };
+  if(place.cat==='islands') {
+    const d = hav(airport, place);
+    return { km:Math.round(d), txt:'díreach · + bád farantóireachta' };
+  }
+  return { km:place.driveKm, txt:'~'+place.driveMin+' nóim tiomána' };
 }
 
 function infoRow(name) {
