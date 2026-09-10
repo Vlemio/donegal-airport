@@ -1,0 +1,41 @@
+---
+// Trackable redirect for the two QR codes in the airport's in-terminal
+// magazine (Aer Lingus / Loganair booking links) — /fly/aerlingus and
+// /fly/loganair. A QR code printed straight to aerlingus.com can never be
+// measured; pointing it here instead lets a scan be logged before bouncing
+// on to the real airline site, without changing what the passenger sees
+// (still lands on the airline's own booking page) or the QR image itself,
+// as long as it's reprinted to point at this URL once.
+//
+// Uses Vercel Web Analytics' server-side track() — cookie-less, so it
+// doesn't need the cookie-consent gate GA4 sits behind in BaseLayout.astro
+// (a passenger scanning a poster QR code has never seen that banner, and
+// forcing a consent choice before the redirect would be a bad first
+// impression). Shows up in the Vercel dashboard under Analytics → Events.
+import { track } from "@vercel/analytics/server";
+
+export const prerender = false;
+
+const TARGETS: Record<string, { url: string; label: string }> = {
+  aerlingus: { url: "https://www.aerlingus.com", label: "Aer Lingus" },
+  loganair: { url: "https://www.loganair.co.uk", label: "Loganair" },
+};
+
+const target = TARGETS[Astro.params.airline ?? ""];
+
+if (!target) {
+  return Astro.redirect("/", 302);
+}
+
+try {
+  await track(
+    "qr_scan",
+    { airline: target.label, source: "magazine-qr" },
+    { request: { headers: Astro.request.headers } },
+  );
+} catch {
+  // Never block the redirect on analytics failing.
+}
+
+return Astro.redirect(target.url, 302);
+---
