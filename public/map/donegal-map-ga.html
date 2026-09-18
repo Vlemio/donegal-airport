@@ -722,25 +722,31 @@ function drawSilhouette(f) {
     finishDonegal(f);
   };
 
+  // Safety net: requestAnimationFrame can stall if the iframe goes
+  // off-screen/backgrounded mid-animation (e.g. the user keeps scrolling
+  // right as this section's intro kicks in) — same class of bug as the
+  // idle fallback in startIntro() above. This is a WATCHDOG, not a
+  // one-shot timer: armWatchdog() re-arms it on every real tick, so as
+  // long as frames keep arriving — even slowly, e.g. under leftover load
+  // from tiles still settling — the draw is left to finish naturally
+  // instead of snapping straight to "done". It only force-finishes if no
+  // tick has landed at all for a full 2s (a genuine stall).
+  let watchdog;
+  const armWatchdog = () => { clearTimeout(watchdog); watchdog = setTimeout(finishOnce, 2000); };
+
   const dur = 2300, t0 = performance.now();
   const tick = now => {
     if(myGen !== _silGen) return;
+    armWatchdog();
     const k = Math.min(1, (now-t0)/dur);
     const e = 1 - Math.pow(1-k, 2);
     const n = Math.max(2, Math.floor(e * ring.length));
     if(map.getSource('draw')) map.getSource('draw').setData(lf(ring.slice(0, n)));
     if(k < 1) raf = requestAnimationFrame(tick);
-    else finishOnce();
+    else { clearTimeout(watchdog); finishOnce(); }
   };
   raf = requestAnimationFrame(tick);
-
-  // Safety net: requestAnimationFrame can stall indefinitely if the iframe
-  // goes off-screen/backgrounded mid-animation (e.g. the user keeps
-  // scrolling right as this section's intro kicks in) — same class of bug
-  // as the moveend fallback in startIntro() above. setTimeout still fires
-  // in that case, so force-finish instead of leaving the outline stuck
-  // mid-draw with no markers, no route, and the map unresponsive.
-  setTimeout(finishOnce, dur + 1500);
+  armWatchdog();
 }
 
 function finishDonegal(f) {
@@ -805,7 +811,8 @@ function replayIntro() {
   ['donegal','draw'].forEach(id => { if(map.getSource(id)) map.removeSource(id); });
   map.jumpTo({ center:[-7.74,54.87], zoom:isMobile()?6.7:7.25, pitch:46, bearing:-30 });
   introFly();
-  map.once('moveend', () => drawSilhouette(_donF));
+  // 'idle', not 'moveend' — see the matching comment in startIntro().
+  map.once('idle', () => drawSilhouette(_donF));
 }
 
 // ---- Overrides -----------------------------------------------------------
@@ -882,8 +889,17 @@ function initMap() {
       if(introStarted) return;
       introStarted = true;
       introFly();
-      // Load county after fly completes; fallback after 5s in case moveend misfires off-screen
-      map.once('moveend', () => {
+      // Wait for 'idle' (camera settled AND every requested tile has
+      // finished loading/rendering), not just 'moveend' (camera settled,
+      // tiles for the new view may still be mid-flight). Starting the
+      // county-outline draw while tiles are still streaming in — heavy,
+      // synchronous WebGL/decode work — was starving its rAF loop of main
+      // thread time on a cold cache: it drew a few frames, stalled for a
+      // couple of seconds, then the drawSilhouette fallback below snapped
+      // it straight to "finished" instead of animating smoothly. A repeat
+      // visit (tiles already cached) never showed the stall. Fallback
+      // after 5s in case 'idle' misfires off-screen.
+      map.once('idle', () => {
         if(_loaded) return;
         _loaded = true;
         loadDonegal();
