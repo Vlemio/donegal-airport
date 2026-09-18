@@ -80,21 +80,24 @@ const tariff = [
 const tariffLeft = tariff.slice(0, 8);
 const tariffRight = tariff.slice(8);
 
+// Alfabéiticiúil de réir ainm — ní léirítear oibreoir ar bith os cionn
+// oibreora eile, ionas nach mbeidh gearán faoi cé atá ar barr.
 const taxis = [
-  { name: "Jackie Hughes Airport Transfers", phone: "087 261 8885", href: "tel:+353872618885" },
-  { name: "Josie Joe / Larsson Cabs",        phone: "087 653 6272", href: "tel:+353876536272" },
   { name: "Charlie Mac Taxis",               phone: "087 260 3757", href: "tel:+353872603757" },
-  { name: "Teague Taxis",                    phone: "087 641 5985", href: "tel:+353876415985" },
   { name: "Frank Gallagher",                 phone: "086 821 5936", href: "tel:+353868215936" },
-  { name: "Packie Gallagher",                phone: "087 261 5625", href: "tel:+353872615625" },
+  { name: "Jackie Hughes Airport Transfers", phone: "087 261 8885", href: "tel:+353872618885" },
   { name: "James Rodgers",                   phone: "086 809 3561", href: "tel:+353868093561" },
+  { name: "Josie Joe / Larsson Cabs",        phone: "087 653 6272", href: "tel:+353876536272" },
   { name: "Martin McGlynn",                  phone: "087 259 6521", href: "tel:+353872596521" },
+  { name: "Packie Gallagher",                phone: "087 261 5625", href: "tel:+353872615625" },
+  { name: "Teague Taxis",                    phone: "087 641 5985", href: "tel:+353876415985" },
 ] as const;
 
+// An riail chéanna — alfabéiticiúil de réir ainm.
 const transfers = [
   { name: "Cronan Mac Buses",          phone: "087 237 8888", href: "tel:+353872378888", note: "Aistrithe do ghrúpaí móra agus cóistí" },
-  { name: "Turas Cartha · Nicola Doherty", phone: "087 055 6708", href: "tel:+353870556708", note: "Suas le 8 · turais agus corparáideach" },
   { name: "Donegal Tour Guide · Henry Doohan", phone: "086 333 1031", href: "tel:+353863331031", note: "Tiománaí príobháideach · turais agus corparáideach" },
+  { name: "Turas Cartha · Nicola Doherty", phone: "087 055 6708", href: "tel:+353870556708", note: "Suas le 8 · turais agus corparáideach" },
 ] as const;
 
 const cardTints = [
@@ -237,8 +240,7 @@ const busColumns = [
         >
           Tá an carrchlós díreach os comhair an teirminéil — siúlóid nóiméad
           amháin ón gcarrchlós go dtí an seiceáil isteach. Íoc trí mheaisín
-          (airgead tirim nó cárta) nó tapáil gan teagmháil ag an mbacainn
-          imeachta.
+          (airgead tirim nó cárta) ag an mbealach isteach.
         </p>
       </div>
 
@@ -252,8 +254,8 @@ const busColumns = [
               <p class="font-display text-[3.2rem] leading-none text-white">2 u</p>
               <p class="mt-3 font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">Saor in aisce</p>
               <p class="mt-2 text-sm leading-relaxed text-white/75">
-                An chéad dhá uair saor in aisce — fág, bailigh, nó suigh
-                isteach le haghaidh caife.
+                An chéad dhá uair saor in aisce — fág, bailigh nó lig do scíth
+                le haghaidh caife.
               </p>
             </div>
           </div>
@@ -326,7 +328,20 @@ const busColumns = [
               <p class="font-display text-[3.2rem] leading-none text-white">EV</p>
               <p class="mt-3 font-mono text-[0.82rem] font-bold uppercase tracking-[0.2em] text-white/90">4 × luchtaire 22 kW</p>
               <p class="mt-2 text-sm leading-relaxed text-white/75">
-                Pointí luchtaithe EVBox sa charrchlós. Rochtain tríd an aip EVBox.
+                Pointí luchtaithe EVBox sa charrchlós. Rochtain tríd an aip
+                Everon — íoslódáil ón
+                <a
+                  href="https://apps.apple.com/ie/app/everon/id1439775428"
+                  target="_blank"
+                  rel="noopener"
+                  class="underline decoration-white/40 underline-offset-2 transition-colors hover:text-white hover:decoration-white/70"
+                >App Store</a> nó
+                <a
+                  href="https://play.google.com/store/apps/details?id=com.everon.evdriver.hey"
+                  target="_blank"
+                  rel="noopener"
+                  class="underline decoration-white/40 underline-offset-2 transition-colors hover:text-white hover:decoration-white/70"
+                >Google Play</a>.
               </p>
             </div>
           </div>
@@ -401,19 +416,16 @@ const busColumns = [
             </div>
             <div class="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 py-4">
               <dt class="font-mono text-[0.72rem] font-bold uppercase tracking-[0.16em] text-atlantic">Cúnamh speisialta · PRM</dt>
-              <dd class="text-sm text-ink">Socraigh le d'aerlíne <span class="font-medium">48u</span> roimh ré</dd>
+              <dd class="text-sm text-ink">Socraigh le d'aerlíne <span class="font-medium">48u</span> roimh ré nó cuir in áirithe tríd an aip PRM assist</dd>
             </div>
           </dl>
 
           <div data-animate="fade-up" data-animate-delay="0.2" class="mt-10">
             <p class="font-mono text-[0.72rem] font-bold uppercase tracking-[0.16em] text-atlantic">Ag nascadh ar aghaidh trí Bhaile Átha Cliath</p>
-            <p class="mt-2 text-sm text-ink">
-              Bí i láthair <span class="font-medium">1u 30</span> roimh d'eitilt go Dún na nGall — ansin braitheann sé ar do bhagáiste:
-            </p>
             <dl class="mt-4 divide-y divide-line border-y border-line">
               <div class="py-4">
                 <dt class="font-mono text-[0.68rem] font-bold uppercase tracking-[0.14em] text-sand">Bagáiste cábáin amháin</dt>
-                <dd class="mt-1 text-sm leading-relaxed text-ink">Conair na Nasceitiltí díreach go dtí do gheata — gan slándáil ná inimirce arís.</dd>
+                <dd class="mt-1 text-sm leading-relaxed text-ink">Lean na comharthaí do na nasceitiltí</dd>
               </div>
               <div class="py-4">
                 <dt class="font-mono text-[0.68rem] font-bold uppercase tracking-[0.14em] text-sand">Bagáiste seiceáilte</dt>
@@ -466,11 +478,10 @@ const busColumns = [
             Cíos gluaisteán
           </p>
           <h2 data-split class="mt-3 font-display text-[clamp(3.2rem,5.5vw,5rem)] font-normal leading-[1.02]">
-            Bailigh ó theachtaí.
+            Bailigh ag na teachtaí.
           </h2>
           <p data-animate="fade-up" data-animate-delay="0.05" class="mt-5 max-w-xl text-lg leading-relaxed text-mute">
-            Ceithre oibreoir le deasca nó bualadh-agus-fáiltiú i halla na
-            dteachtaí. Cuir in áirithe go díreach don ráta is fearr.
+            Ceithre oibreoir. Cuir in áirithe go díreach don ráta is fearr.
           </p>
         </div>
 
@@ -564,7 +575,7 @@ const busColumns = [
         Tiománaithe áitiúla, doras go doras.
       </h2>
       <p data-animate="fade-up" data-animate-delay="0.05" class="mt-5 max-w-xl text-base leading-relaxed text-mute">
-        Tá gach oibreoir lonnaithe sa cheantar. Moltar áirithint roimh ré.
+        Tá gach oibreoir lonnaithe sa cheantar. Tá áirithint roimh ré riachtanach.
       </p>
 
       <p data-animate="fade-up" class="mt-12 font-mono text-[1.05rem] font-bold uppercase tracking-[0.16em] text-atlantic">
@@ -623,13 +634,24 @@ const busColumns = [
         data-animate-delay="0.1"
         class="mt-10 bg-line"
       >
-        <div class="bg-[var(--color-bg)] px-8 py-10 sm:px-10">
+        <div class="relative bg-[var(--color-bg)] px-8 py-10 sm:px-10">
           <div>
             <p class="font-mono text-base font-bold uppercase tracking-[0.3em] text-atlantic">Bus · Local Link Dhún na nGall</p>
             <p class="mt-2 font-display text-[clamp(1.4rem,2.5vw,2rem)] font-normal leading-snug text-ink">
               Stadann bealaí <span class="font-sans font-medium tabular-nums">966</span> agus <span class="font-sans font-medium tabular-nums">992</span> ag an aerfort.
             </p>
           </div>
+
+          {/* Lógó oibreora — féach an leagan EN don míniú iomlán. Sa spás
+              saor idir na línte teorann, suíomh/scála socraithe de láimh
+              tríd /plan?edit agus cruacódaithe anseo. */}
+          <img
+            src="/photos/plan/local-link-logo.webp"
+            alt="Local Link Donegal"
+            class="pointer-events-none absolute bottom-24 right-8 h-8 w-auto sm:right-10 sm:h-9"
+            style="transform: translate(-181px, -78px) scale(2.70);"
+            loading="lazy"
+          />
 
           <div class="mt-8 border-t border-line pt-6">
             <p class="font-mono text-[0.82rem] font-bold uppercase tracking-[0.18em] text-sand">Amanna bus ag an aerfort</p>
@@ -664,7 +686,7 @@ const busColumns = [
             <p>Stad bus: Os comhair an Teirminéil.</p>
             <p><span class="text-sand">*</span> Luan–Sath amháin; ritheann gach turas eile gach lá, lena n-áirítear Domhnaigh agus laethanta saoire poiblí.</p>
             <p><span class="text-sand">&sup1;</span> An t-aon nasc atá ag Bealach 992 gach bealach (Luan–Sath) — deimhnigh go díreach le Local Link sula mbraitheann tú air.</p>
-            <p>Deimhnigh i gcónaí ar an sceideal beo.</p>
+            <p class="font-bold">Deimhnigh i gcónaí ar an sceideal beo.</p>
           </div>
 
           <div class="flex flex-col gap-4 border-t border-line pt-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
