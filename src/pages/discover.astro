@@ -16,7 +16,7 @@ const highlights = [
   },
   {
     label: "Mountain & Lough",
-    text: "Errigal, Slieve League and Glenveagh National Park sit within an hour's drive. No queues. No crowds. The park's 16,000 hectares of blanket bog and oak wood are free.",
+    text: "Errigal, Slieve League and Glenveagh National Park sit within an hour's drive. No queues. No crowds. Glenveagh's 16,000 hectares of blanket bog and oak wood are free to explore.",
     link: "#destinations",
     src: "/photos/discover-mountain-lough.webp",
     srcPos: "50% 70%",
@@ -41,6 +41,7 @@ const destinations = [
     src: "/photos/discover-wild-atlantic.webp",
     srcPos: "49% 0%",
     caption: "Wild Atlantic Way · north Donegal",
+    logo: "/photos/discover-waw-logo.webp",
   },
   {
     code: "02",
@@ -50,24 +51,27 @@ const destinations = [
     src: "/photos/discover-errigal.webp",
     srcPos: "60% 78%",
     caption: "Errigal · Co. Donegal",
+    logo: undefined,
   },
   {
     code: "03",
     title: "Glenveagh",
-    drive: "45 min from CFN",
-    tagline: "Ireland's largest national park. Red deer, peregrine falcons, a Victorian castle beside a glacier lough. Entry is free.",
+    drive: "35 min from CFN",
+    tagline: "Ireland's largest national park. Red deer, peregrine falcons, a Victorian castle beside a glacier lough. Free entrance to the park.",
     src: "/photos/discover-glenveagh.webp",
     srcPos: "48% 89%",
     caption: "Glenveagh · Co. Donegal",
+    logo: undefined,
   },
   {
     code: "04",
-    title: "Slieve League",
+    title: "Slieve League · Sliabh Liag",
     drive: "55 min from CFN",
     tagline: "Three times the height of the Cliffs of Moher. A fraction of the visitors. The Atlantic crashes 600 m below the summit.",
     src: "/photos/discover-slieve-league.webp",
     srcPos: "24% 38%",
     caption: "Slieve League · Co. Donegal",
+    logo: undefined,
   },
   {
     code: "05",
@@ -77,6 +81,7 @@ const destinations = [
     src: "/photos/discover-malin-head.webp",
     srcPos: "61% 48%",
     caption: "Malin Head · Co. Donegal",
+    logo: undefined,
   },
   {
     code: "06",
@@ -86,6 +91,7 @@ const destinations = [
     src: "/photos/discover-donegal-town.webp",
     srcPos: "50% 50%",
     caption: "Donegal Town",
+    logo: undefined,
   },
 ] as const;
 
@@ -106,7 +112,7 @@ const activities: {
     code: "01",
     label: "Golf",
     title: "Links Golf Capital of Ireland",
-    tagline: "Ten championship courses within an hour of CFN — Rosapenna, Ballyliffin and Portsalon among the finest links in Europe.",
+    tagline: "Ten top courses within an hour of CFN — Rosapenna, Ballyliffin and Portsalon among the finest links in Europe.",
     src: "/photos/discover-golf.webp",
     srcPos: "50% 50%",
     providers: [],
@@ -181,7 +187,6 @@ const activities: {
     src: "/photos/discover-diving.webp",
     srcPos: "48% 13%",
     providers: [
-      { name: "Dive Arranmore", website: "https://www.divearranmore.com", phone: "+353 86 330 0516", email: "" },
       { name: "Mevagh Dive Centre", website: "https://www.mevaghdiving.com", phone: "+353 74 914 4708", email: "" },
     ],
     moreUrl: "",
@@ -229,17 +234,19 @@ const activities: {
 ];
 
 
+// Ordered nearest to farthest from CFN — real Google Maps drive times, same
+// audited figures as the interactive map's PLACES data (public/map/donegal-map.html).
 const golfClubs = [
-  { name: "Rosapenna Golf Resort",     location: "Downings",    contact: "golf@rosapenna.ie",            phone: "+353 74 91 55000",  website: "https://www.rosapenna.ie",             photo: "/photos/golf/rosapenna.webp" },
-  { name: "Ballyliffin Golf Club",     location: "Ballyliffin", contact: "info@ballyliffingolfclub.com", phone: "+353 74 9376 119",  website: "https://www.ballyliffingolfclub.com",  photo: "/photos/golf/ballyliffin.webp" },
-  { name: "Portsalon Golf Club",       location: "Portsalon",   contact: "admin@portsalongolfclub.ie",   phone: "+353 74 9159459",   website: "https://www.portsalongolfclub.ie",     photo: "/photos/golf/portsalon.webp" },
-  { name: "Narin & Portnoo Golf Club", location: "Portnoo",     contact: "info@nandplinks.com",          phone: "+353 74 95 45107",  website: "https://www.narinandportnoo.com",      photo: "/photos/golf/narin-portnoo.webp" },
   { name: "Cruit Island Golf Club",    location: "Kincasslagh", contact: "info@cruitislandgolfclub.com", phone: "+353 74 9543296",   website: "https://www.cruitislandgolfclub.com",  photo: "/photos/golf/cruit-island.webp" },
-  { name: "Dunfanaghy Golf Club",      location: "Dunfanaghy",  contact: "dunfanaghygolf@eircom.net",    phone: "+353 74 913 6335",  website: "https://www.dunfanaghygolfclub.com",   photo: "/photos/golf/dunfanaghy.webp" },
   { name: "Gweedore Golf Club",        location: "Gweedore",    contact: "gweedoregc@gmail.com",         phone: "+353 74 9531140",   website: "https://www.gweedoregolfclub.com",     photo: "/photos/golf/gweedore.webp" },
+  { name: "Narin & Portnoo Golf Club", location: "Portnoo",     contact: "info@nandplinks.com",          phone: "+353 74 95 45107",  website: "https://www.narinandportnoo.com",      photo: "/photos/golf/narin-portnoo.webp" },
+  { name: "Dunfanaghy Golf Club",      location: "Dunfanaghy",  contact: "dunfanaghygolf@eircom.net",    phone: "+353 74 913 6335",  website: "https://www.dunfanaghygolfclub.com",   photo: "/photos/golf/dunfanaghy.webp" },
+  { name: "Rosapenna Golf Resort",     location: "Downings",    contact: "golf@rosapenna.ie",            phone: "+353 74 91 55000",  website: "https://www.rosapenna.ie",             photo: "/photos/golf/rosapenna.webp" },
+  { name: "Portsalon Golf Club",       location: "Portsalon",   contact: "admin@portsalongolfclub.ie",   phone: "+353 74 9159459",   website: "https://www.portsalongolfclub.ie",     photo: "/photos/golf/portsalon.webp" },
   { name: "Donegal Golf Club",         location: "Murvagh",     contact: "info@donegalgolfclub.ie",      phone: "+353 74 97 34054",  website: "https://www.donegalgolfclub.ie",       photo: "/photos/golf/donegal-club.webp" },
-  { name: "Bundoran Golf Club",        location: "Bundoran",    contact: "info@bundorangolfclub.com",    phone: "+353 71 984 1302",  website: "https://www.bundorangolfclub.com",     photo: "/photos/golf/bundoran.webp" },
   { name: "North West Golf Club",      location: "Buncrana",    contact: "booking@northwestgolfclub.com",phone: "+353 74 936 1715",  website: "https://www.northwestgolfclub.com",    photo: "/photos/golf/north-west.webp" },
+  { name: "Bundoran Golf Club",        location: "Bundoran",    contact: "info@bundorangolfclub.com",    phone: "+353 71 984 1302",  website: "https://www.bundorangolfclub.com",     photo: "/photos/golf/bundoran.webp" },
+  { name: "Ballyliffin Golf Club",     location: "Ballyliffin", contact: "info@ballyliffingolfclub.com", phone: "+353 74 9376 119",  website: "https://www.ballyliffingolfclub.com",  photo: "/photos/golf/ballyliffin.webp" },
 ] as const;
 
 const islands = [
@@ -374,7 +381,7 @@ const islands = [
       <p
         data-animate="fade-up"
         data-animate-delay="0.25"
-        class="mt-6 max-w-lg text-[1rem] leading-relaxed text-white/80"
+        class="mt-6 max-w-lg text-[1rem] leading-relaxed text-white/95"
         style="text-shadow: 0 1px 8px rgba(0,0,0,0.45)"
       >
         Most people land and then travel. Here, you've already arrived somewhere worth being. Fly into Ireland's wildest coast.
@@ -521,7 +528,7 @@ const islands = [
             </figure>
 
             {/* Text below photo — always visible */}
-            <div class="mt-4 flex items-start justify-between gap-4">
+            <div class="mt-4 flex items-start">
               <div>
                 <h3 class="font-display text-[1.5rem] font-bold leading-tight">
                   {d.title}
@@ -530,6 +537,11 @@ const islands = [
                   {d.drive}
                 </p>
               </div>
+              {d.logo && (
+                <div class="flex flex-1 items-start justify-center">
+                  <img src={d.logo} alt="Wild Atlantic Way" class="mt-1 h-8 w-auto shrink-0 opacity-80" loading="lazy" />
+                </div>
+              )}
             </div>
           </li>
         ))}
@@ -647,7 +659,7 @@ const islands = [
                 {a.code === "01" ? (
                   <a href="#golf-panel" class="group/golf flex items-center justify-between gap-2">
                     <span class="font-mono-num text-[0.72rem] tracking-[0.04em] text-ink/55 transition-colors group-hover/golf:text-atlantic">
-                      10 championship courses
+                      10 top courses
                     </span>
                     <span class="shrink-0 font-mono text-[0.7rem] text-atlantic/70">↓</span>
                   </a>
@@ -710,7 +722,7 @@ const islands = [
         <div class="pt-12 pb-2 flex items-end justify-between gap-6">
           <div>
             <p data-animate="fade-up" class="font-mono-num text-[0.82rem] font-bold uppercase tracking-[0.26em] text-atlantic">
-              Golf · 10 championship courses
+              Golf · 10 top courses
             </p>
             <h3 data-animate="fade-up" data-animate-delay="0.1" class="mt-3 font-display text-[clamp(1.6rem,3vw,2.6rem)] font-normal leading-[1.02]">
               Ten courses. One county.
