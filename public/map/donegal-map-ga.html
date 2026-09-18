@@ -162,6 +162,7 @@ let elByName = {};
 let popup = null;
 let raf = null, wawRaf = null;
 let _donF = null, _loaded = false, _revealed = false, _replaying = false;
+let _silGen = 0;
 let _wawStarted = false, _ptsSetup = false;
 let _orig = {};
 let catMap = {}, byName = {};
@@ -710,16 +711,36 @@ function drawSilhouette(f) {
   map.addLayer({ id:'draw-glow', type:'line', source:'draw', layout:{ 'line-cap':'round','line-join':'round' }, paint:{ 'line-color':HC, 'line-width':11, 'line-blur':10, 'line-opacity':0.5 } });
   map.addLayer({ id:'draw',      type:'line', source:'draw', layout:{ 'line-cap':'round','line-join':'round' }, paint:{ 'line-color':'#fff7df', 'line-width':2.8 } });
 
+  // Each call gets its own token so a stale fallback (below) or a late rAF
+  // tick from a PREVIOUS call — e.g. the user hit replay mid-draw — can't
+  // stomp on a newer animation's layers/sources.
+  const myGen = ++_silGen;
+  let finished = false;
+  const finishOnce = () => {
+    if(finished || myGen !== _silGen) return;
+    finished = true;
+    finishDonegal(f);
+  };
+
   const dur = 2300, t0 = performance.now();
   const tick = now => {
+    if(myGen !== _silGen) return;
     const k = Math.min(1, (now-t0)/dur);
     const e = 1 - Math.pow(1-k, 2);
     const n = Math.max(2, Math.floor(e * ring.length));
     if(map.getSource('draw')) map.getSource('draw').setData(lf(ring.slice(0, n)));
     if(k < 1) raf = requestAnimationFrame(tick);
-    else finishDonegal(f);
+    else finishOnce();
   };
   raf = requestAnimationFrame(tick);
+
+  // Safety net: requestAnimationFrame can stall indefinitely if the iframe
+  // goes off-screen/backgrounded mid-animation (e.g. the user keeps
+  // scrolling right as this section's intro kicks in) — same class of bug
+  // as the moveend fallback in startIntro() above. setTimeout still fires
+  // in that case, so force-finish instead of leaving the outline stuck
+  // mid-draw with no markers, no route, and the map unresponsive.
+  setTimeout(finishOnce, dur + 1500);
 }
 
 function finishDonegal(f) {
@@ -776,6 +797,7 @@ function introFly() {
 function replayIntro() {
   if(!map || !_donF) return;
   _replaying = true;
+  _silGen++; // invalidate any in-flight drawSilhouette (rAF tick or its fallback timer)
   cancelAnimationFrame(raf);
   clearMarkers();
   _revealed = false;
