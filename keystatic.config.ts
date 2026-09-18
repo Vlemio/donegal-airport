@@ -69,7 +69,7 @@ export default config({
         }),
         imagePosition: fields.text({
           label: 'Image position',
-          description: 'How the photo is framed (e.g. "30% 70%"). Use the picker at /tools/image-position — paste the photo\'s path, pick "News hero", drag to frame it, then copy the value here. Default: 50% 50%.',
+          description: 'How the photo is framed (e.g. "30% 70%"). Open https://donegal-airport.vercel.app/tools/image-position, drop the same photo in there, pick "News hero", drag to frame it, then copy the value here. Default: 50% 50%.',
           defaultValue: '50% 50%',
           validation: { isRequired: false },
         }),

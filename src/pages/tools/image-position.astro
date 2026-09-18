@@ -1,6 +1,8 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-export const prerender = true;
+// Dynamic (not prerendered) so src/middleware.ts's Basic Auth gate — which
+// only runs for server-rendered requests — actually applies to this page.
+export const prerender = false;
 ---
 
 <BaseLayout title="Image position tool" description="Internal tool — not part of the public site." noindex>
