@@ -162,7 +162,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
   <section
     data-scrub-trigger
     data-hero-scroll
-    class="relative isolate h-screen w-full md:h-[300vh]"
+    class="relative isolate h-screen w-full md:h-[200vh]"
   >
 
     {/* ── Layer 1: sticky background ─────────────────────────────── */}
@@ -228,8 +228,8 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
             class="max-w-[820px] text-[12px] leading-[1.45] md:text-[24px]"
             style="color: var(--hi)"
           >
-            Baile Átha Cliath gach lá. Glaschú ag an deireadh seachtaine — agus
-            roinnt laethanta samhraidh. Tá aerfort Dhún na nGall suite san áit
+            Baile Átha Cliath faoi dhó sa lá. Glaschú i rith na bliana.
+            Tá aerfort Dhún na nGall suite san áit
             a dtosaíonn an tAigéan Atlantach.
           </p>
 
@@ -569,7 +569,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
           <p>
             Tá Carraig Fhinn suite ar ghainmhloch idir an tAigéan Atlantach
             agus Sliabh an Earagail. Ritheann an rúidbhealach díreach cois
-            trá, leis an bhfarraige ar an dá thaobh. Tugadh ceann de na cur
+            trá, leis an bhfarraige ar an dá thaobh. Bronnadh ceann de na cur
             chuige is áille ar domhan air — agus is fós é an bealach is
             tapúla isteach nó amach as an gcontae.
           </p>
@@ -611,8 +611,8 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
             </h2>
             <p data-reveal-after="routes-head" class="mt-4 max-w-sm text-lg leading-relaxed text-ink">
               Baile Átha Cliath faoi dhó sa lá, gach lá. Ceanglaíonn Loganair
-              le Glaschú ar laethanta áirithe. Léarscáil bhealaigh ghearr —
-              agus is suíochán fuinneoige gach suíochán.
+              le Glaschú ar laethanta áirithe. Eitiltí gearra —
+              radhairc iontacha ar feadh an bhealaigh.
             </p>
           </div>
         </div>
@@ -758,18 +758,19 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
       >
         Aitheantas
       </p>
-      {/* data-split (per-character reveal) dropped for this heading only:
-          its shared implementation (animations.ts) collapses whitespace —
-          including &nbsp; — into fresh breakable spaces between per-word
-          spans, which defeats keeping "fhada dhámhachtainí." on one line.
-          data-split-link stays so the awards list below still times its
-          reveal off this heading. */}
+      {/* data-split (per-character reveal) dropped for this heading — its
+          shared implementation (animations.ts) collapses whitespace,
+          including &nbsp;, into fresh breakable spaces between per-word
+          spans, which previously defeated an nbsp used to control a line
+          break. No longer needed for the current text, but data-animate
+          alone still works fine here. data-split-link stays so the awards
+          list below still times its reveal off this heading. */}
       <h2
         data-animate="fade-up"
         data-split-link="awards-head"
         class="mt-3 max-w-4xl font-display text-[2.125rem] font-normal leading-[0.98] text-[#0f3550] md:text-[clamp(3rem,5.5vw,6rem)]"
       >
-        Aerfort beag le seilf fhada&nbsp;dhámhachtainí.
+        Aerfort beag le haitheantas domhanda.
       </h2>
 
       <ul class="mt-16 divide-y divide-ink/10">
