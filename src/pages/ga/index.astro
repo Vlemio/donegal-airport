@@ -41,7 +41,9 @@ function toneFor(s: string) {
 // this function runs against real data below).
 function displayStatus(f: SyncedFlight) {
   const s = f.status || "Scheduled";
-  if (f.type === "arrival" && (s === "En Route" || s === "Departed")) return "On Time";
+  if (f.type === "arrival" && (s === "En Route" || s === "Departed")) {
+    return (f.estLate || f.estVeryLate) ? "Delayed" : "On Time";
+  }
   return s;
 }
 
@@ -56,9 +58,10 @@ const heroDepartures = flightsToday
     time: f.time,
     dest: f.city,
     flight: `${f.flightNo} · ${f.airline}`,
-    status:
-      statusKey(displayStatus(f)) === "delayed" && f.estTime ? `→ ${f.estTime}` :
-      displayStatus(f),
+    // Just "Delayed" — no estimated time here. The exact ETA is one tap
+    // away on /flights; showing it on the hero card too invited people to
+    // treat this teaser panel as the live board.
+    status: displayStatus(f),
     tone: toneFor(displayStatus(f)),
   }));
 const heroArrivals = flightsToday
@@ -68,9 +71,7 @@ const heroArrivals = flightsToday
     time: f.time,
     dest: f.city,
     flight: `${f.flightNo} · ${f.airline}`,
-    status:
-      statusKey(displayStatus(f)) === "delayed" && f.estTime ? `→ ${f.estTime}` :
-      displayStatus(f),
+    status: displayStatus(f),
     tone: toneFor(displayStatus(f)),
   }));
 
@@ -611,8 +612,8 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
             </h2>
             <p data-reveal-after="routes-head" class="mt-4 max-w-sm text-lg leading-relaxed text-ink">
               Baile Átha Cliath faoi dhó sa lá, gach lá. Ceanglaíonn Loganair
-              le Glaschú ar laethanta áirithe. Eitiltí gearra —
-              radhairc iontacha ar feadh an bhealaigh.
+              le Glaschú ar laethanta áirithe. Eitiltí gearra,
+              radhairc iontacha.
             </p>
           </div>
         </div>
@@ -635,7 +636,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
             >
             </div>
             <div class="cfn-hero-content relative z-10 p-10">
-              <p class="font-mono text-[1rem] font-bold uppercase tracking-[0.3em] text-sand [text-shadow:0_1px_10px_rgba(0,0,0,0.5)]">
+              <p class="font-mono text-[1rem] font-bold uppercase tracking-[0.3em] text-sand-bright [text-shadow:0_1px_10px_rgba(0,0,0,0.5)]">
                 {d.country}
               </p>
               <h3
@@ -649,15 +650,15 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
                 style="text-shadow: 0 1px 10px rgba(0,0,0,0.5)"
               >
                 <div>
-                  <dt class="font-bold text-sand">Fad</dt>
+                  <dt class="font-bold text-sand-bright">Fad</dt>
                   <dd class="mt-1 text-ink">{d.duration}</dd>
                 </div>
                 <div>
-                  <dt class="font-bold text-sand">Sceideal</dt>
+                  <dt class="font-bold text-sand-bright">Sceideal</dt>
                   <dd class="mt-1 text-ink">{d.schedule}</dd>
                 </div>
                 <div>
-                  <dt class="font-bold text-sand">Aerlíne</dt>
+                  <dt class="font-bold text-sand-bright">Aerlíne</dt>
                   <dd class="mt-1 text-ink">{d.carrier}</dd>
                 </div>
               </dl>
@@ -713,7 +714,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
               >
               </div>
               <div class="cfn-hero-content absolute inset-x-0 bottom-0 p-6">
-                <p class="font-mono text-[0.92rem] font-bold uppercase tracking-[0.28em] text-sand [text-shadow:0_1px_10px_rgba(0,0,0,0.5)]">
+                <p class="font-mono text-[0.92rem] font-bold uppercase tracking-[0.28em] text-sand-bright [text-shadow:0_1px_10px_rgba(0,0,0,0.5)]">
                   {d.country}
                 </p>
                 <h3
@@ -1191,7 +1192,9 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
   // translated from the already-collapsed English word, not 'En Route'.
   function displayStatus(f) {
     var s = f.status || 'Scheduled';
-    if (f.type === 'arrival' && (s === 'En Route' || s === 'Departed')) return 'On Time';
+    if (f.type === 'arrival' && (s === 'En Route' || s === 'Departed')) {
+      return (f.estLate || f.estVeryLate) ? 'Delayed' : 'On Time';
+    }
     return s;
   }
 
@@ -1211,8 +1214,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
       }
       deps.forEach(function (f) {
         var s = displayStatus(f);
-        var key = statusKey(s);
-        var lbl = key === 'delayed' && f.estTime ? '→ ' + f.estTime : statusLabel(s);
+        var lbl = statusLabel(s);
         var tone = toneFor(s);
         var li = document.createElement('li');
         li.className = 'ops-board-row';
@@ -1238,8 +1240,7 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
       }
       arrs.forEach(function (f) {
         var s = displayStatus(f);
-        var key = statusKey(s);
-        var lbl = key === 'delayed' && f.estTime ? '→ ' + f.estTime : statusLabel(s);
+        var lbl = statusLabel(s);
         var tone = toneFor(s);
         var li = document.createElement('li');
         li.className = 'ops-board-row';
