@@ -133,7 +133,15 @@ const WEB3FORMS_KEY = "REPLACE_WITH_REAL_ACCESS_KEY";
         >
           <input type="hidden" name="access_key" value={WEB3FORMS_KEY} />
           <input type="hidden" name="subject" value="New enquiry — Donegal Airport website" />
-          <input type="checkbox" name="botcheck" class="hidden" style="display:none" tabindex="-1" autocomplete="off" />
+          {/* Honeypot for Web3Forms — off-screen (not display:none), same
+              reasoning as NewsletterForm's: some bots specifically skip
+              fields hidden via display:none/visibility:hidden, so this
+              needs to be "visible" to the DOM/computed-style check while
+              unreachable by a real visitor. */}
+          <label class="contact-honeypot" aria-hidden="true" tabindex="-1">
+            Company
+            <input type="checkbox" name="botcheck" tabindex="-1" autocomplete="off" />
+          </label>
 
           <div class="grid gap-5 sm:grid-cols-2">
             <label class="block">
@@ -359,3 +367,7 @@ const WEB3FORMS_KEY = "REPLACE_WITH_REAL_ACCESS_KEY";
     L.marker(coords, { icon, title: GA ? "Aerfort Dhún na nGall" : "Donegal Airport" }).addTo(map);
   }
 </script>
+
+<style>
+  .contact-honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+</style>
