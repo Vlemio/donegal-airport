@@ -27,7 +27,8 @@
   "a11y": {
     "siteNavigation": "Site navigation",
     "mainNavigation": "Main navigation",
-    "openMenu": "Open menu"
+    "openMenu": "Open menu",
+    "skipToContent": "Skip to content"
   },
   "cookies": {
     "message": "This site uses cookies to enhance your experience.",

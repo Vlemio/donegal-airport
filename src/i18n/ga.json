@@ -27,7 +27,8 @@
   "a11y": {
     "siteNavigation": "Nascleanúint an tsuímh",
     "mainNavigation": "Príomh-nascleanúint",
-    "openMenu": "Oscail an roghchlár"
+    "openMenu": "Oscail an roghchlár",
+    "skipToContent": "Téigh go dtí an príomhábhar"
   },
   "cookies": {
     "message": "Úsáideann an suíomh seo fianáin chun d'eispéireas a fheabhsú.",
