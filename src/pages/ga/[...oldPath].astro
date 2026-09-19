@@ -3,7 +3,7 @@
 // the old WordPress URLs already started with /ga/ (they were WordPress's
 // own Irish-locale slugs, not this site's). See src/data/legacy-redirects.ts.
 import { legacyRedirects } from "../../data/legacy-redirects";
-import NotFoundBody from "../../components/NotFoundBody.astro";
+import NotFoundBodyGa from "../../components/NotFoundBodyGa.astro";
 
 export const prerender = false;
 
@@ -19,4 +19,4 @@ if (target) {
 Astro.response.status = 404;
 ---
 
-<NotFoundBody />
+<NotFoundBodyGa />

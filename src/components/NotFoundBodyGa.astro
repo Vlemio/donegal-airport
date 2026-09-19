@@ -1,0 +1,38 @@
+---
+// Gaeilge counterpart to NotFoundBody.astro (same self-contained pattern:
+// owns its own BaseLayout so both src/pages/ga/404.astro and the GA
+// catch-all's "not found" branch can render it identically). Irish copy
+// below is a working translation, not yet checked by a native speaker —
+// same caveat as the site's other Irish content.
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const title = "Ón rúidbhealach · Aerfort Dhún na nGall";
+const description = "Níl an leathanach seo ann. Cuirimis ar ais ar an gcúrsa ceart thú.";
+---
+
+<BaseLayout title={title} description={description} solidHeader>
+  <section class="mx-auto flex min-h-[calc(100vh-var(--header-h))] max-w-3xl flex-col items-center justify-center px-6 py-32 text-center">
+    <p class="font-mono text-xs uppercase tracking-[0.3em] text-[#866536]">404</p>
+    <h1 class="mt-6 font-display text-5xl leading-[1.05] sm:text-6xl">
+      Tá tú imithe amú ón rúidbhealach.
+    </h1>
+    <p class="mt-6 max-w-xl text-base text-mute">
+      Níor éirigh leis an leathanach a bhí uait é féin a chur ar an gclár. Cuirimis
+      ar ais ar an gcúrsa ceart thú.
+    </p>
+    <div class="mt-10 flex flex-wrap items-center justify-center gap-3">
+      <a
+        href="/ga/"
+        class="rounded-full bg-atlantic px-7 py-3 text-sm font-semibold uppercase tracking-[0.15em] text-atlantic-ink transition-colors hover:bg-atlantic-bright"
+      >
+        Ar ais go dtí an baile
+      </a>
+      <a
+        href="/ga/flights"
+        class="rounded-full border border-atlantic/40 px-7 py-3 text-sm font-semibold uppercase tracking-[0.15em] text-atlantic transition-colors hover:bg-atlantic hover:text-atlantic-ink"
+      >
+        Eitiltí an lae inniu
+      </a>
+    </div>
+  </section>
+</BaseLayout>
