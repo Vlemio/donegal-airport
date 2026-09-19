@@ -1,0 +1,26 @@
+---
+// Catch-all for the old WordPress site's URLs (donegalairport.ie) — see
+// src/data/legacy-redirects.ts for what's mapped and why this exists
+// instead of Astro's own `redirects` config. Astro only reaches this route
+// when nothing more specific matched (every real page here is a static
+// file route, which always wins over a rest-param catch-all), so this is
+// safe to sit at the site root without shadowing anything.
+import { legacyRedirects } from "../data/legacy-redirects";
+import NotFoundBody from "../components/NotFoundBody.astro";
+
+export const prerender = false;
+
+const requested = "/" + (Astro.params.oldPath ?? "");
+// Old WordPress URLs always end in a trailing slash; be forgiving of both.
+const target =
+  legacyRedirects[requested] ??
+  legacyRedirects[requested.endsWith("/") ? requested.slice(0, -1) : requested + "/"];
+
+if (target) {
+  return Astro.redirect(target, 301);
+}
+
+Astro.response.status = 404;
+---
+
+<NotFoundBody />

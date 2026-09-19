@@ -1,0 +1,22 @@
+---
+// GA-prefixed counterpart to src/pages/[...oldPath].astro — a handful of
+// the old WordPress URLs already started with /ga/ (they were WordPress's
+// own Irish-locale slugs, not this site's). See src/data/legacy-redirects.ts.
+import { legacyRedirects } from "../../data/legacy-redirects";
+import NotFoundBody from "../../components/NotFoundBody.astro";
+
+export const prerender = false;
+
+const requested = "/ga/" + (Astro.params.oldPath ?? "");
+const target =
+  legacyRedirects[requested] ??
+  legacyRedirects[requested.endsWith("/") ? requested.slice(0, -1) : requested + "/"];
+
+if (target) {
+  return Astro.redirect(target, 301);
+}
+
+Astro.response.status = 404;
+---
+
+<NotFoundBody />
