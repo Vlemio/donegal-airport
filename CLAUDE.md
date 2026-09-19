@@ -335,7 +335,7 @@ Kling usa el drone-frame como end-keyframe → el aeropuerto que aparece es el R
   - La URL completa hardcodeada en la descripción del campo `imagePosition` de `keystatic.config.ts` (hoy apunta a `https://donegal-airport.vercel.app/tools/image-position`)
   - `site:` en `astro.config.mjs` — **ya está desactualizado hoy** (2026-09-18), apunta a `https://donegal-airport-git-master-errigal.vercel.app` (la URL de preview del bug de Keystatic Cloud de hace semanas), no a `https://donegal-airport.vercel.app` que es la que funciona de verdad ahora mismo. Afecta a las canonical/OG tags y al sitemap
 - [ ] `.env.example` incompleto — no documenta `MAILCHIMP_API_KEY`/`MAILCHIMP_AUDIENCE_ID` que usa `api/newsletter-subscribe.ts` (las claves en sí están bien — solo en variables de entorno, no hardcodeadas)
-- [ ] Favicon solo tiene un PNG — sin `apple-touch-icon` ni `manifest.json`. Menor, no urgente
+- [x] ~~Favicon solo tiene un PNG — sin `apple-touch-icon` ni `manifest.json`~~ — resuelto 2026-09-19, ver auditoría más abajo
 - [ ] Limpieza opcional: `public/proto/` (~15 MB — coches y tazas de prototipo, no referenciados en ningún sitio), `discover-map-bg.png` (7,2 MB), `video/clouds-start.png` (4,4 MB), `plan/cafe-flatwhite.png` (1 MB) y `plan-aircraft-*.jpg`/`plan-cafe-*.jpg`/`plan-landscape-*.jpg` — todos huérfanos, no los sirve ninguna página, pero siguen desplegándose
 - [ ] **Probar en Safari real — PRIORIDAD ALTA** — el sitio usa `color-mix()` (21 veces) y `backdrop-filter` (10 veces); bien soportados en navegadores modernos pero no verificado en un Safari real. Subido de prioridad tras analizar el GA4 de la web actual (2026-09-10): **78,7% del tráfico es móvil**, iOS es el SO nº1 con diferencia (47% de usuarios), y Safari (móvil + in-app) suma **~43% de todo el tráfico por navegador** — casi empatado con Chrome
 - [ ] Link-check completo — solo se auditaron los `href` literales del nav/footer (sin roturas). Un crawl completo de todas las páginas queda pendiente
@@ -360,6 +360,18 @@ Vercel es solo entorno de pruebas — el lanzamiento real será en **Cloudflare 
 - [ ] **Escribir los redirects 301** — usar el sistema nativo de `redirects` de Astro (`astro.config.mjs`), NO el `_redirects` de Cloudflare Pages/Netlify (sintaxis distinta) — así funciona igual en Vercel ahora y en Cloudflare Workers después, sin reescribir nada. Esperar a que se confirmen las filas de confianza media/baja del mapeo antes de escribirlos todos
 - [ ] **Arreglar `site:` en `astro.config.mjs`** (ver nota más arriba, "Quitar el noindex") — esperar a que exista el dominio/proyecto real de Cloudflare antes de tocarlo, para no poner una URL que cambie otra vez
 - [x] ~~Investigar compatibilidad Cloudflare (Keystatic + middleware + adapter)~~ — investigado 2026-09-19: Keystatic funciona bien (Keystatic Cloud evita el único bug conocido, que es de OAuth con GitHub). El middleware de Basic Auth funciona con un ajuste menor si algún día hace falta leer env vars de Cloudflare en tiempo de ejecución. Cloudflare ya no soporta "Pages" para Astro, ahora es "Workers" (cambio de nombre/destino, no de arquitectura). Estimación: una tarde de trabajo, no una migración de varios días
+
+### Auditoría de la web (2026-09-19)
+
+Pasada de SEO técnico/accesibilidad/seguridad a petición de Jose Manuel. Resuelto en 5 commits (`4ea153c`, `1717e49`, `7168ee7`, `165c135`, `23d9867`):
+
+- [x] ~~Sin `apple-touch-icon`/`manifest.json`~~ — creados (180×180 y 192/512 desde `favicon.png`) + `<meta name="theme-color">`
+- [x] ~~Sin enlace "skip to content"~~ — añadido en `BaseLayout.astro` (`.skip-link`, oculto hasta :focus), string en `a11y.skipToContent` de ambos locales
+- [x] ~~404 en gaeilge no existía~~ — `ga/[...oldPath].astro` y `ga/404.astro` renderizaban `NotFoundBody` en inglés (solo el header/footer salían en gaeilge, vía detección de locale por URL en `BaseLayout`). Nuevo `NotFoundBodyGa.astro`
+- [x] ~~Honeypot del formulario de contacto con `display:none`~~ — algunos bots saltan campos así a propósito; cambiado a la técnica off-screen que ya usaba `NewsletterForm.astro`
+- [x] ~~Sin `Strict-Transport-Security`~~ — añadido en `vercel.json` (enforced, sin riesgo)
+- [x] ~~Sin Content-Security-Policy~~ — añadida en modo **Report-Only**, no enforced a propósito: producción usa Keystatic Cloud para el CMS y no se puede enumerar con certeza todos los orígenes que necesita su panel/OAuth, ni probar cabeceras de `vercel.json` contra el dev server local (Vercel solo las aplica en el edge). Report-Only registra violaciones sin bloquear nada — dará datos reales (incluida una sesión real de Keystatic Cloud) antes de plantearse activarla de verdad
+- [ ] **Declaración de accesibilidad** — la web vieja (WordPress) NO tiene una (comprobado en su sitemap). Pendiente preguntar igualmente si aplica: si Donegal Airport entra dentro del ámbito de organismo del sector público, la Directiva UE 2016/2102 (transpuesta en Irlanda) exigiría publicarla. No confirmado si aplica al aeropuerto
 
 ## Design handoff workflow
 
