@@ -373,6 +373,7 @@ const arrRowCount = flightsToday.filter((f) => f.type === "arrival").length;
     departed: '#4db8ff',
     enroute: '#ff8c21',
     onapproach: '#ffc31e', finalcall: '#ffc31e', delayed: '#ffc31e',
+    gotosecurity: '#ffc31e',
     approaching: '#ffd966',
     gateclosed: '#ff5b4d', cancelled: '#ff5b4d', diverted: '#ff5b4d',
   };
@@ -390,6 +391,7 @@ const arrRowCount = flightsToday.filter((f) => f.type === "arrival").length;
     boarding: 'Ag cur ar bord', departed: 'Imithe', landed: 'Tuirlingthe',
     enroute: 'Ar an mbealach', onapproach: 'Ag druidim isteach',
     finalcall: 'Glao deiridh', delayed: 'Moillithe', approaching: 'Ag druidim isteach',
+    gotosecurity: 'Téigh chuig an tslándáil',
     gateclosed: 'Geata dúnta', cancelled: 'Cealaithe', diverted: 'Atreoraithe',
   };
   // Checks the CURRENT page's lang attribute at call time, not which file's

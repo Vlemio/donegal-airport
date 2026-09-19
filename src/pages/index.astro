@@ -27,7 +27,7 @@ function toneFor(s: string) {
   const key = statusKey(s);
   if (key === "checkin") return "grey";
   if (key === "departed") return "info";
-  if (key === "onapproach" || key === "finalcall" || key === "delayed") return "warn";
+  if (key === "onapproach" || key === "finalcall" || key === "delayed" || key === "gotosecurity") return "warn";
   if (key === "gateclosed" || key === "cancelled" || key === "diverted") return "bad";
   return "ok";
 }
@@ -1226,7 +1226,7 @@ const allNews = _newsSorted.map(_mapNews);
     var key = statusKey(s);
     if (key === 'checkin') return 'grey';
     if (key === 'departed') return 'info';
-    if (key === 'onapproach' || key === 'finalcall' || key === 'delayed') return 'warn';
+    if (key === 'onapproach' || key === 'finalcall' || key === 'delayed' || key === 'gotosecurity') return 'warn';
     if (key === 'gateclosed' || key === 'cancelled' || key === 'diverted') return 'bad';
     return 'ok';
   }
@@ -1264,6 +1264,7 @@ const allNews = _newsSorted.map(_mapNews);
     boarding: 'Ag cur ar bord', departed: 'Imithe', landed: 'Tuirlingthe',
     enroute: 'Ar an mbealach', onapproach: 'Ag druidim isteach',
     finalcall: 'Glao deiridh', delayed: 'Moillithe', approaching: 'Ag druidim isteach',
+    gotosecurity: 'Téigh chuig an tslándáil',
     gateclosed: 'Geata dúnta', cancelled: 'Cealaithe', diverted: 'Atreoraithe',
   };
   function statusLabel(s) {
