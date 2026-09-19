@@ -31,6 +31,10 @@ const featured = all[0];
 // else after that goes into the 3-column grid below.
 const sidebarItems = all.slice(1, 5);
 const gridItems = all.slice(5);
+
+// See en/news/index.astro for the full explanation.
+const GRID_INITIAL = 12;
+const hasMoreGridItems = gridItems.length > GRID_INITIAL;
 ---
 
 <BaseLayout title="Nuacht · Aerfort Dhún na nGall" description="Nuacht agus nuashonruithe is déanaí ó Aerfort Dhún na nGall CFN/EIDL.">
@@ -87,9 +91,12 @@ const gridItems = all.slice(5);
           </div>
         </div>
 
-        <div class="np-grid">
-          {gridItems.map((item) => (
-            <a href={`/ga/news/${item.slug}`} class="nc">
+        <div class="np-grid" id="news-grid">
+          {gridItems.map((item, i) => (
+            <a
+              href={`/ga/news/${item.slug}`}
+              class:list={["nc", i >= GRID_INITIAL && "nc--more"]}
+            >
               <div class="nc__media">
                 <span class="nc__flag">{item.kind}</span>
                 <img src={item.image} alt={item.title} class="nc__img" loading="lazy" decoding="async" />
@@ -100,6 +107,13 @@ const gridItems = all.slice(5);
             </a>
           ))}
         </div>
+
+        {hasMoreGridItems && (
+          <button type="button" class="np-more-btn" data-grid-more>
+            <span>Taispeáin níos mó</span>
+            <span class="ar">↓</span>
+          </button>
+        )}
 
       </div>
     </section>
@@ -389,6 +403,36 @@ const gridItems = all.slice(5);
     .nc:hover .nc__foot { color: var(--color-atlantic, #1a4a6e); }
     .nc:hover .nc__foot .ar { transform: translateX(5px); }
 
+    /* See en/news/index.astro for the full explanation. */
+    .nc--more { display: none; }
+    #news-grid.is-expanded .nc--more { display: flex; }
+
+    .np-more-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin: 2.2rem auto 0;
+      padding: 0.75rem 1.6rem;
+      border-radius: 999px;
+      border: 1px solid var(--color-line, rgba(24,29,22,0.16));
+      background: transparent;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--color-ink, #181d16);
+      cursor: pointer;
+      transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+    }
+    .np-more-btn:hover {
+      background: var(--color-ink, #181d16);
+      border-color: var(--color-ink, #181d16);
+      color: #fff;
+    }
+    .np-more-btn .ar { transition: transform 0.25s; }
+    .np-more-btn:hover .ar { transform: translateY(3px); }
+
     /* ---- Responsive ---- */
     @media (max-width: 960px) {
       .np-top .np-inner { grid-template-columns: 1fr; }
@@ -410,5 +454,17 @@ const gridItems = all.slice(5);
     }
   </style>
 
+  <script>
+    document.addEventListener("astro:page-load", () => {
+      const btn = document.querySelector<HTMLButtonElement>("[data-grid-more]");
+      const grid = document.getElementById("news-grid");
+      if (!btn || !grid || btn.dataset.wired === "1") return;
+      btn.dataset.wired = "1";
+      btn.addEventListener("click", () => {
+        grid.classList.add("is-expanded");
+        btn.remove();
+      });
+    });
+  </script>
 
 </BaseLayout>
