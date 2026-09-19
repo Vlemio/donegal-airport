@@ -1,0 +1,9 @@
+---
+// Catch-all for the old WordPress tag archives (donegalairport.ie/tag/
+// <name>/ — 78 of them). Same reasoning as src/pages/category/[...slug].astro:
+// auto-generated taxonomy pages with no content of their own, nobody links
+// to a tag archive on purpose, and the new site has no tag-filtered view.
+export const prerender = false;
+
+return Astro.redirect("/news", 301);
+---

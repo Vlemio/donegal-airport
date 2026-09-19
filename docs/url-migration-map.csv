@@ -1,0 +1,129 @@
+old_url,new_url,confidence,note
+/,/,high,
+/home-gaeilge/,/ga/,high,
+/about-us/,/story,high,confirmed by JM 2026-09-19
+/about-irish/,/ga/story,high,confirmed by JM 2026-09-19
+/contact/,/contact,high,
+/contact-irish/,/ga/contact,high,
+/services/,/plan,high,
+/seirbhisi/,/ga/plan,high,
+/parking-fees/,/plan,high,parking section on /plan has the fee table
+/parking-fees-irish/,/ga/plan,high,
+/car-hire-airport-transfers/,/plan,high,car hire section
+/car-hire-irish/,/ga/plan,high,
+/taxis-airport-transfers/,/plan,high,taxi/transfer section
+/check-in-information/,/plan,high,check-in & baggage section
+/check-in-information-irish/,/ga/plan,high,
+/customs-immigration/,/pilots#ppr,high,confirmed by JM 2026-09-19 — this is the GAR (General Aviation Report) section for private/GA flights, not passenger customs
+/customs-immigration-2/,/pilots#ppr,high,duplicate of above, confirmed
+/custaim-agus-inimirce/,/ga/pilots#ppr,medium,assumed same as EN — CONFIRM
+/paisineiri-le-soghluaisteacht-laghdaithe-prm/,/ga/plan,high,PRM section
+/prm-assist/,/plan,high,PRM section
+/lost-property/,/contact,high,confirmed by JM
+/lost-property-2/,/contact,high,duplicate, confirmed
+/maoin-caillte/,/ga/contact,high,confirmed by JM — Irish for "lost property"
+/help-support/,/contact,high,confirmed by JM
+/cabhair-agus-tacaiocht/,/ga/contact,high,confirmed by JM — Irish for "help and support"
+/travellers-information/,/plan#checkin,high,confirmed by JM — "Know your cut-offs" section
+/exploring-donegal/,/discover,high,
+/places-to-see/,/discover,high,
+/places-to-see-irish/,/ga/discover,high,
+/activities/,/discover,high,activities grid
+/sports-activities/,/discover,high,
+/destination/,/discover,high,JM left this to Claude's judgement — generic WP Travel Engine plugin boilerplate, links out to WAW/golf/places-to-see topics /discover now covers
+/golf-in-donegal/,/discover,high,golf panel section (#golf-panel)
+/galf-i-ndun-na-ngall/,/ga/discover,high,
+/angling-fishing/,/discover,high,
+/angling-and-fishing-irish/,/ga/discover,high,
+/family-fun/,/discover,high,checked the live old page — real content about blue-flag beaches/Tory Island/Glenveagh, matches /discover
+/family-fun-irish/,/ga/discover,high,
+/islands/,/discover,high,islands section
+/islands-irish/,/ga/discover,high,
+/drones/,/pilots,high,Pilots & Drones page
+/drones-irish/,/ga/pilots,high,
+/aerodrome-technical-details/,/pilots,high,aerodrome data section
+/aerodrome-technical-details-irish/,/ga/pilots,high,
+/bealai-bus/,/ga/plan,high,bus section
+/news/,/news,high,
+/news-main-page/,/news,high,duplicate
+/news-gae/,/ga/news,high,
+/careers-at-the-airport/,/contact,medium,decided by JM — no careers page on new site yet
+/new-year-new-career-we-are-hiring/,/news,medium,decided by JM — reads more like a news announcement than a structural page, sent to the news listing instead of contact
+/jobs/,/contact,medium,decided by JM
+/terms-and-conditions/,/terms,high,
+/terms-conditions/,/terms,high,duplicate
+/privacy-policy/,/privacy,high,
+/privacy-policy-irish/,/ga/privacy,high,
+/security-policy/,/security,high,
+/safety-policy/,/safety,high,
+/environmental-policy/,/environmental,high,
+/environmental-policy-irish/,/ga/environmental,high,
+/quality-policy/,/quality,high,
+/quality-policy-irish/,/ga/quality,high,
+/raiteas-beartas-teanga-2/,/language-policy,high,"translated by Claude: ""ráiteas beartas teanga"" = language policy statement — matches"
+/fees-and-charges/,/pilots#fees,high,confirmed by JM
+/fees-charges-irish/,/ga/pilots#fees,high,confirmed by JM
+/new-10kg-carry-on-baggage-policy/,/plan#checkin,high,confirmed by JM — Know your cut-offs section
+/magazine-takeoff/,/,high,confirmed by JM — no equivalent on new site
+/✈️-cafe-carraigfhinne-logo/,/news/cafe-logo-competition,high,confirmed by JM — anchors to the new article added 2026-09-19 (src/content/news/cafe-logo-competition.yaml)
+/cafe-carraigfhinne-logo-design-competition-2/,/news/cafe-logo-competition,high,same
+/the-season-opener-golf-in-donegal/,/discover#golf-panel,high,confirmed by JM
+/elementor-11741/,/,low,unknown WordPress page-builder draft artifact — safe fallback to home
+/my-account-2/,/,high,confirmed by JM — no account feature on new site
+/wp-travel-engine-checkout/,/,high,confirmed by JM — no cart/checkout ever existed as a real feature
+/wp-travel-engine-cart/,/,high,confirmed by JM
+/my-account/,/,high,confirmed by JM
+/checkout/,/,high,confirmed by JM
+/trip-types/,/discover,high,confirmed by JM — sent to Discover Donegal specifically (not home like the rest of this group)
+/trip-search-result/,/discover,high,confirmed by JM
+/wishlist/,/,high,confirmed by JM
+/enquiry-thank-you-page/,/contact,medium,decided by JM — reasonable guess (thank-you page after a contact enquiry)
+/thank-you/,/,high,confirmed by JM
+/book-now-uk-europe/,/flights#book,high,confirmed by JM — added #book anchor to flights.astro + ga/flights.astro for this
+/adventure-centres-irish/,/ga/discover#activities,high,confirmed by JM — Outdoor Adventure card in the activities grid
+,,,
+# --- News / posts (old flat WP slug -> new /news/<slug> from src/content/news/) ---
+/local-students-winning-design-becomes-the-face-of-cafe-carraigfhinne-at-donegal-airport/,/news/cafe-logo-competition,high,article added 2026-09-19 (src/content/news/cafe-logo-competition.yaml), photo pulled from the old article
+/sustainability-at-donegal-airport/,/news/sustainability-2025,high,
+/level-4-transformation-in-airport-carbon-accreditation/,/news/sustainability-2025,high,confirmed by JM — same article as sustainability-2025
+/press-release-regional-airport-programme/,/news/regional-airport-programme,high,
+/regional-airport-programme/,/news/regional-airport-programme,high,duplicate
+/donegal-dublin-route-restored-may-2026/,/news/dublin-route-restored,high,
+/donegal-airport-statement-9th-march-2026/,/news/statement-march-2026,high,
+/donegal-⇄-dublin-pso/,/news/pso-statement-february-2026,high,
+/raiteas-pso-dhun-na-ngall-⇄-bhaile-atha-cliath/,/ga/news/pso-statement-february-2026,high,
+/tbex-coming-to-donegal/,/news/tbex-coming-2025,high,
+/meet-our-new-team-member-eimear-walsh/,/news/eimear-walsh,high,
+/ar-mball-foirne-nua-a-chur-in-aithne/,/ga/news/eimear-walsh,high,
+/ar-mball-foirne-nua-a-chur-in-aithne-2/,/ga/news/eimear-walsh,high,duplicate
+/scoil-gheimhridh-ghaoth-dobhair/,/news/scoil-gheimhridh,high,
+/tbex-travel-bloggers-exchange-2025/,/news/tbex-2025-recap,high,
+/tbex-travel-bloggers-exchange-2025-2/,/news/tbex-2025-recap,high,duplicate
+/earagail-arts-festival/,/news,medium,"checked live — still a real 200 OK page on the old site (Earagail Arts Festival July 2025 promo), no equivalent article exists yet. JM to decide: migrate as a new article or leave retired"
+/ga/theatre-breaks-to-dublin/,/ga/news,medium,"checked live — still a real 200 OK page (Dublin theatre-break travel package promo), not really a news article. JM to decide"
+/donegal-tourism-branding/,/news,medium,"checked live — still a real 200 OK page (new airport artwork/branding installation), no equivalent article exists yet. JM to decide"
+/car-rentals-made-easy/,/news/car-rentals,high,
+/tfi-local-link-donegal-sligo-leitrim-updates/,/news/local-link-updates,high,
+/loganair-year-round-service-to-donegal-takes-flight/,/news/loganair-year-round-2024,high,
+/connectionscorridor/,/news/connections-corridor,high,
+/conair-na-nasceitilti-2022/,/ga/news/connections-corridor,high,
+/changes-to-liquids-aerosols-rules/,/news/lags-rules-2024,high,
+/loganair-sceideal-an-tsamhraidh-agus-an-gheimhridh/,/ga/news/loganair-year-round-2024,high,"translated by Claude: ""sceideal an tsamhraidh agus an gheimhridh"" = summer and winter schedule — matches the entered-service article, not the announcement"
+/loganair-to-deliver-year-round-connectivity-for-donegal/,/news/loganair-announcement-2024,high,
+/aerfort-dhun-na-ngall-on-tg4/,/news/tg4-documentary-announcement,high,"checked all 4 live — every one uses future tense (""will air on Thursday 30th""), matching the announcement article (2023-11-17) not the ""began airing"" one (2023-11-30)"
+/sraith-ar-tg4-faoi-aerfort-dhun-na-ngall/,/ga/news/tg4-documentary-announcement,high,same finding, Irish version
+/tg4-documentary-series-aerfort-dhun-na-ngall/,/news/tg4-documentary-announcement,high,same finding, English version
+/tg4-aerfort-dhun-na-ngall/,/ga/news/tg4-documentary-announcement,high,same finding, Irish version
+/lonely-planets-top-places-to-visit-in-2024/,/news/lonely-planet-2024,high,
+/first-in-ireland-to-install-ecac-eds-cb-c3-screening/,/news/ecac-screening,high,
+/bucketlist/,/news/bucket-list-landings-2018,high,
+/donegal-voted-one-of-worlds-top10-scenic-airports-2016/,/news/scenic-airport-2016,high,
+/news/donegal-voted-one-of-worlds-top-10-scenic-airports-2016/,/news/scenic-airport-2016,high,duplicate (old permalink-structure variant)
+/news-gae/donegal-voted-one-of-worlds-top-10-scenic-airports-2016-irish/,/ga/news/scenic-airport-2016,high,
+/2020-most-scenic-airports-worldwide/,/news/scenic-airport-2020,high,
+/news/2020s-most-scenic-airports-worldwide/,/news/scenic-airport-2020,high,duplicate
+/new-pso-2022/,/news/pso-contract-emerald-2022,high,
+/news/bucket-list/,/news/bucket-list-landings-2018,high,duplicate
+/news-gae/bucket-list-irish/,/ga/news/bucket-list-landings-2018,high,
+/news/covid-19-coronavirus/,/news,low,COVID-era content — no modern equivalent, safe to send to news listing
+/news-gae/covid-19-coronavirus-irish/,/ga/news,low,same

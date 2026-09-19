@@ -1,0 +1,11 @@
+---
+// Catch-all for the old WordPress category archives (donegalairport.ie/
+// category/<name>/ — 8 of them, e.g. /category/news/, /category/pso/).
+// They were auto-generated taxonomy listing pages with no content of their
+// own, and the new site has no category-filtered view — just /news. A
+// single rule here covers all of them instead of listing each by hand in
+// astro.config.mjs's redirects.
+export const prerender = false;
+
+return Astro.redirect("/news", 301);
+---
