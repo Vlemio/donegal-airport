@@ -1081,14 +1081,11 @@ const news = _newsSorted.slice(0, 7).map(_mapNews);
 
   {/* ---------- INQUIRY CTA — Wild Atlantic Way closer ---------- */}
   <section class="relative isolate overflow-hidden border-t border-line">
-    <div class="absolute inset-0 -z-10" aria-hidden="true">
-      <img
-        src="/photos/errigal-winter.webp"
-        alt=""
-        class="h-full w-full object-cover object-[center_60%]"
-        loading="lazy"
-        decoding="async"
-      />
+    <div
+      class="absolute inset-0 -z-10 bg-cover bg-[position:center_60%]"
+      style="background-image:url('/photos/errigal-winter.webp')"
+      aria-hidden="true"
+    >
       <div class="absolute inset-0 bg-black/30"></div>
     </div>
     <div class="mx-auto max-w-7xl px-6 py-32 text-center">

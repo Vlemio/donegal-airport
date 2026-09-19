@@ -1129,15 +1129,16 @@ const allNews = _newsSorted.map(_mapNews);
 
   {/* ---------- INQUIRY CTA — Wild Atlantic Way closer ---------- */}
   <section class="relative isolate overflow-hidden border-t border-line">
-    {/* Errigal winter — full bleed background */}
-    <div class="absolute inset-0 -z-10" aria-hidden="true">
-      <img
-        src="/photos/errigal-winter.webp"
-        alt=""
-        class="h-full w-full object-cover object-[center_60%]"
-        loading="lazy"
-        decoding="async"
-      />
+    {/* Errigal winter — full bleed background. Rendered as a CSS
+        background-image (not <img>) so browsers don't offer "Save image
+        as" on right-click — purely decorative (alt="", aria-hidden) so
+        this costs nothing in SEO/accessibility, unlike doing this to a
+        content photo would. */}
+    <div
+      class="absolute inset-0 -z-10 bg-cover bg-[position:center_60%]"
+      style="background-image:url('/photos/errigal-winter.webp')"
+      aria-hidden="true"
+    >
       <div class="absolute inset-0 bg-black/30"></div>
     </div>
     <div class="mx-auto max-w-5xl px-6 py-32 text-center">
