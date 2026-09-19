@@ -175,6 +175,9 @@ const localeTag: Record<Locale, string> = {
     }
 
     <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#1a4a6e" />
     <meta name="generator" content={Astro.generator} />
     {/* Playfair Display — used for the café-menu names on /plan */}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -315,8 +318,12 @@ const localeTag: Record<Locale, string> = {
     <ClientRouter />
   </head>
   <body class="flex min-h-screen flex-col bg-surface text-ink" data-solid-header={solidHeader || undefined}>
+    {/* Visually hidden until focused (keyboard/screen-reader users only) —
+        lets them jump past the header/nav instead of tabbing through it
+        on every single page. */}
+    <a href="#main-content" class="skip-link">{t("a11y.skipToContent", locale)}</a>
     <Header locale={locale} />
-    <main class="flex-1">
+    <main id="main-content" class="flex-1">
       <slot />
     </main>
     <Footer locale={locale} />
@@ -348,3 +355,26 @@ const localeTag: Record<Locale, string> = {
     </script>
   </body>
 </html>
+
+<style>
+  /* Off-screen until focused — header is z-50 (fixed), so this needs to
+     sit above it once tabbed to, not just above normal page content. */
+  .skip-link {
+    position: absolute;
+    top: -100%;
+    left: 1rem;
+    z-index: 60;
+    padding: 0.7rem 1.2rem;
+    border-radius: 0 0 0.5rem 0.5rem;
+    background: var(--color-atlantic);
+    color: var(--color-atlantic-ink, #fff);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .skip-link:focus {
+    top: 0;
+  }
+</style>
