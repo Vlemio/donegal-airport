@@ -376,7 +376,15 @@ const gridItems = all.slice(5);
     }
     .nc:hover .nc__title { color: var(--color-atlantic, #1a4a6e); }
     .nc__foot {
-      margin-top: 1.1rem;
+      /* auto, not a fixed 1.1rem — this is the whole trick: the grid row
+         already stretches every card to match the tallest one (CSS Grid's
+         default align-items:stretch), and .nc is a flex column, so
+         pushing this to the bottom with margin-top:auto soaks up
+         whatever's left over instead of a fixed gap. A short 1-line title
+         next to a 2-line one in the same row lines up its "Read" link
+         with the others automatically — no per-card height, so it keeps
+         working as new articles shuffle the grid. */
+      margin-top: auto;
       padding-top: 1.1rem;
       border-top: 1px solid var(--color-line, rgba(24,29,22,0.11));
       display: flex;
